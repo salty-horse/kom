@@ -88,7 +88,7 @@ GameList KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				detectedGames.push_back(GameDescriptor(kom_list[0].gameid, kom_list[0].description, Common::EN_ANY, Common::kPlatformPC));
+				detectedGames.push_back(GameDescriptor(kom_list[0].gameid, kom_list[0].description, Common::EN_ANY, Common::kPlatformPC, 0, kUnstableGame));
 				break;
 			}
 		}
