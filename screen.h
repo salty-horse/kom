@@ -77,6 +77,7 @@ public:
 	void drawDirtyRects();
 	void gfxUpdate();
 	void clearScreen();
+	void clearRoom();
 	void drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth, bool invisible = false);
 	void drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
@@ -90,6 +91,7 @@ public:
 	bool isCursorVisible();
 
 	void drawPanel(const byte *panelData);
+	void clearPanel();
 	void updatePanelOnScreen();
 
 	void loadBackground(const Common::String &filename);

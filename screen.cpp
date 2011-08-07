@@ -76,7 +76,7 @@ Screen::Screen(KomEngine *vm, OSystem *system)
 	: _system(system), _vm(vm), _sepiaScreen(0),
 	  _fullRedraw(false), _paletteChanged(false), _newBrightness(256),
 	  _narratorScrollText(0), _narratorWord(0), _narratorTextSurface(0),
-	  _narratorScrollStatus(0) {
+	  _narratorScrollStatus(0), _backgroundRedraw(false) {
 
 	_lastFrameTime = 0;
 
@@ -691,6 +691,11 @@ void Screen::clearScreen() {
 
 	memset(_screenBuf, 0, SCREEN_W * SCREEN_H);
 	_fullRedraw = true;
+}
+
+void Screen::clearRoom() {
+	memset(_screenBuf, 0, SCREEN_W * (SCREEN_H - PANEL_H));
+	_dirtyRects->push_back(Rect(0, 0, SCREEN_W, SCREEN_H - PANEL_H));
 }
 
 static byte lineBuffer[SCREEN_W];
@@ -1338,6 +1343,11 @@ void Screen::drawPanel(const byte *panelData) {
 	_dirtyRects->push_back(Rect(0, ROOM_H, SCREEN_W, SCREEN_H));
 }
 
+void Screen::clearPanel() {
+	memset(_screenBuf + SCREEN_W * (SCREEN_H - PANEL_H), 0, SCREEN_W * PANEL_H);
+	_dirtyRects->push_back(Rect(0, SCREEN_H - PANEL_H, SCREEN_W, SCREEN_H));
+}
+
 void Screen::updatePanelOnScreen() {
 	// Don't update the panel if text is scrolling
 	// TODO: actually check if subtitles are enabled
@@ -1956,7 +1966,7 @@ uint16 Screen::calcWordWidth(const char *word) {
 	uint8 width = 0;
 	for (int i = 0; word[i] != '\0'; ++i)
 		width += *(const uint8 *)_font->getCharData(word[i]) + 1;
-	return width + 4;
+	return width + 4; // +4 for space char
 }
 
 void Screen::writeTextCentered(byte *buf, const char *text, uint8 row, uint8 color, bool isEmbossed) {

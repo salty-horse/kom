@@ -72,7 +72,7 @@ bool SoundSample::loadFile(Common::String filename) {
 		}
 
 		if (!found) {
-			warning("Could not find %s in %s", newName.c_str(), entry.c_str());
+			warning("Could not find %s in %s", entry.c_str(), newName.c_str());
 			delete[] contents;
 			return false;
 		}
