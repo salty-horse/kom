@@ -706,7 +706,7 @@ void Screen::updateCursor() {
 void Screen::updateActionStrings() {
 	Settings *settings = _vm->game()->settings();
 	int hoverId = -1;
-	int hoverType;
+	CollideType hoverType;
 	const char *text1, *text2, *text3, *text4, *space1, *space2, *textRIP;
 	char panelText[200];
 
@@ -716,7 +716,7 @@ void Screen::updateActionStrings() {
 		return;
 
 	if (_vm->game()->player()->commandState != 0 &&
-		_vm->game()->player()->collideType != 0) {
+		_vm->game()->player()->collideType != COLLIDE_NONE) {
 
 		hoverType = _vm->game()->player()->collideType;
 		hoverId = _vm->game()->player()->collideNum;
@@ -746,10 +746,10 @@ void Screen::updateActionStrings() {
 				getObj(settings->objectNum)->desc;
 			text3 = "with";
 			switch (hoverType) {
-			case 2:
+			case COLLIDE_CHAR:
 				text4 = _vm->database()->getChar(hoverId)->_desc;
 				break;
-			case 3:
+			case COLLIDE_OBJECT:
 				text4 = _vm->database()->getObj(hoverId)->desc;
 				break;
 			default:
@@ -799,7 +799,7 @@ void Screen::updateActionStrings() {
 		}
 
 		switch (hoverType) {
-		case 1:
+		case COLLIDE_BOX:
 			if (settings->mouseOverExit) {
 				int exitLoc, exitBox;
 				text3 = "Exit to";
@@ -811,10 +811,10 @@ void Screen::updateActionStrings() {
 				text4 = _vm->database()->getLoc(exitLoc)->desc;
 			}
 			break;
-		case 2:
+		case COLLIDE_CHAR:
 			text4 = _vm->database()->getChar(hoverId)->_desc;
 			break;
-		case 3:
+		case COLLIDE_OBJECT:
 			text4 = _vm->database()->getObj(hoverId)->desc;
 			break;
 		default:
@@ -832,7 +832,7 @@ void Screen::updateActionStrings() {
 	if (text4[0] != '.')
 		space2 = " ";
 
-	if (hoverType == 2) {
+	if (hoverType == COLLIDE_CHAR) {
 		if (!_vm->database()->getChar(hoverId)->_isAlive)
 			textRIP = " (RIP)";
 

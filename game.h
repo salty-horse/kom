@@ -52,6 +52,13 @@ struct RoomDoor {
 	int8 state;
 };
 
+enum CollideType {
+	COLLIDE_NONE = 0,
+	COLLIDE_BOX,
+	COLLIDE_CHAR,
+	COLLIDE_OBJECT
+};
+
 struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
 		narratorPatience(0), lastItemUsed(-1) {}
@@ -60,12 +67,12 @@ struct Settings {
 	uint16 mouseX;
 	uint16 mouseY;
 	int16 mouseBox;
-	int16 overType;
-	int16 oldOverType;
+	CollideType overType;
+	CollideType oldOverType;
 	int16 overNum;
 	int16 oldOverNum;
 	int16 mouseMode;
-	uint16 collideType;
+	CollideType collideType;
 	int16 collideBox;
 	uint16 collideBoxX;
 	uint16 collideBoxY;
@@ -104,10 +111,10 @@ enum CommandType {
 
 /** Player settings */
 struct Player {
-	Player() : isNight(0), sleepTimer(0), collideType(0), collideNum(0) {}
+	Player() : isNight(0), sleepTimer(0), collideType(COLLIDE_NONE), collideNum(0) {}
 	CommandType command;
 	int16 commandState;
-	int16 collideType;
+	CollideType collideType;
 	int16 collideNum;
 	bool narratorTalking;
 	SoundSample spriteSample;

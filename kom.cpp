@@ -171,7 +171,7 @@ void KomEngine::gameLoop() {
 	_database->getChar(0)->_isBusy = false;
 	_game->player()->oldGold = _database->getChar(0)->_gold;
 	_game->settings()->objectNum = _game->settings()->object2Num = -1;
-	_game->settings()->overType = _game->settings()->oldOverType = 0;
+	_game->settings()->overType = _game->settings()->oldOverType = COLLIDE_NONE;
 	_game->settings()->overNum = _game->settings()->oldOverNum = -1;
 	// init something in the procs struct
 	// init some more vars
@@ -210,7 +210,7 @@ void KomEngine::gameLoop() {
 			case CMD_WALK:
 				_game->player()->command = CMD_WALK;
 				_game->player()->commandState = 0;
-				_game->player()->collideType = 0;
+				_game->player()->collideType = COLLIDE_NONE;
 				_game->player()->collideNum = -1;
 				break;
 

@@ -103,26 +103,26 @@ void Input::handleMouse() {
 			if (settings->mouseState == 2) {
 				gotoX = settings->collideBoxX;
 				gotoY = settings->collideBoxY;
-				settings->collideType = 1;
+				settings->collideType = COLLIDE_BOX;
 
 			} else switch (settings->overType) {
-			case 2:
+			case COLLIDE_CHAR:
 				gotoX = settings->collideCharX;
 				gotoY = settings->collideCharY;
-				settings->collideType = 2;
+				settings->collideType = COLLIDE_CHAR;
 				break;
-			case 3:
+			case COLLIDE_OBJECT:
 				gotoX = settings->collideObjX;
 				gotoY = settings->collideObjY;
-				settings->collideType = 3;
+				settings->collideType = COLLIDE_OBJECT;
 				break;
 			default:
 				gotoX = settings->collideBoxX;
 				gotoY = settings->collideBoxY;
-				settings->collideType = 1;
+				settings->collideType = COLLIDE_BOX;
 			}
 
-			if (settings->collideType == 2 || settings->collideType == 3) {
+			if (settings->collideType == COLLIDE_CHAR || settings->collideType == COLLIDE_OBJECT) {
 				if (settings->objectNum < 0) {
 					donutState = _vm->game()->doDonut(0, 0);
 				} else {
@@ -140,12 +140,12 @@ void Input::handleMouse() {
 			if (donutState != -1) {
 				switch (player->command) {
 				case CMD_WALK:
-					if (settings->collideType == 0)
+					if (settings->collideType == COLLIDE_NONE)
 						break;
 					playerChar->_gotoX = gotoX;
 					playerChar->_gotoY = gotoY;
 					player->commandState = 1;
-					player->collideType = 0;
+					player->collideType = COLLIDE_NONE;
 					player->collideNum = -1;
 					break;
 
@@ -153,19 +153,19 @@ void Input::handleMouse() {
 					break;
 
 				case CMD_USE:
-					if (settings->collideType == 0)
+					if (settings->collideType == COLLIDE_NONE)
 						break;
 					playerChar->_gotoX = gotoX;
 					playerChar->_gotoY = gotoY;
 					player->commandState = 1;
 
 					switch (settings->collideType) {
-					case 2:
-						player->collideType = 2;
+					case COLLIDE_CHAR:
+						player->collideType = COLLIDE_CHAR;
 						player->collideNum = settings->collideChar;
 						break;
-					case 3:
-						player->collideType = 3;
+					case COLLIDE_OBJECT:
+						player->collideType = COLLIDE_OBJECT;
 						player->collideNum = settings->collideObj;
 						break;
 					default:
@@ -176,39 +176,37 @@ void Input::handleMouse() {
 					break;
 
 				case CMD_TALK_TO:
-					if (settings->collideType == 0)
+					if (settings->collideType == COLLIDE_NONE)
 						break;
 					playerChar->_gotoX = gotoX;
 					playerChar->_gotoY = gotoY;
 					player->commandState = 1;
-					player->collideType = 2;
+					player->collideType = COLLIDE_CHAR;
 					player->collideNum = settings->collideChar;
 					playerChar->_isBusy = true;
 					break;
 
 				case CMD_PICKUP:
-					if (settings->collideType == 0)
+					if (settings->collideType == COLLIDE_NONE)
 						break;
 					playerChar->_gotoX = gotoX;
 					playerChar->_gotoY = gotoY;
 					player->commandState = 1;
-					player->collideType = 3;
+					player->collideType = COLLIDE_OBJECT;
 					player->collideNum = settings->collideObj;
 					playerChar->_isBusy = true;
 					break;
 
 				case CMD_LOOK_AT:
-					if (settings->collideType == 0)
+					if (settings->collideType == COLLIDE_NONE)
 						break;
 					playerChar->_gotoX = gotoX;
 					playerChar->_gotoY = gotoY;
 					player->commandState = 1;
 
-					assert(settings->collideType > 1);
-
 					// Character
-					if (settings->collideType == 2) {
-						player->collideType = 2;
+					if (settings->collideType == COLLIDE_CHAR) {
+						player->collideType = COLLIDE_CHAR;
 						player->collideNum = settings->collideChar;
 						if (_vm->database()->
 								getChar(settings->collideChar)->_isAlive) {
@@ -217,11 +215,13 @@ void Input::handleMouse() {
 						}
 						playerChar->_isBusy = true;
 
-					// Box
-					} else {
-						player->collideType = 3;
+					// Object
+					} else if (settings->collideType == COLLIDE_OBJECT) {
+						player->collideType = COLLIDE_OBJECT;
 						player->collideNum = settings->collideObj;
 						playerChar->_isBusy = true;
+					} else {
+						error("Error in LOOK_AT");
 					}
 					break;
 

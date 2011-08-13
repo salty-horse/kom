@@ -1041,7 +1041,7 @@ void Game::loopMove() {
 			}
 
 			// Stop characters on collision (when an action is executed on them)
-			if (_player.collideType == 2 && _player.collideNum == chr->_id) {
+			if (_player.collideType == COLLIDE_CHAR && _player.collideNum == chr->_id) {
 				chr->stopChar();
 				chr->_lastDirection = 4;
 			}
@@ -1417,7 +1417,7 @@ void Game::loopInterfaceCollide() {
 
 	_settings.oldOverType = _settings.overType;
 	_settings.oldOverNum = _settings.overNum;
-	_settings.overType = 0;
+	_settings.overType = COLLIDE_NONE;
 	_settings.overNum = -1;
 
 	// TODO: handle inventory
@@ -1430,20 +1430,20 @@ void Game::loopInterfaceCollide() {
 		    _settings.collideBoxZ < _settings.collideCharZ &&
 		    _settings.collideBoxZ < _settings.collideObjZ) {
 
-			_settings.overType = 1;
+			_settings.overType = COLLIDE_BOX;
 			_settings.overNum = _settings.collideBox;
 			_settings.mouseState = 2; // Exit
 
 		} else if (_settings.collideChar >= 0 &&
 			_settings.collideCharZ < _settings.collideObjZ) {
 
-			_settings.overType = 2;
+			_settings.overType = COLLIDE_CHAR;
 			_settings.overNum = _settings.collideChar;
 			_settings.mouseState = 3; // Hotspot
 
 		} else if (_settings.collideObj >= 0) {
 
-			_settings.overType = 3;
+			_settings.overType = COLLIDE_OBJECT;
 			_settings.overNum = _settings.collideObj;
 			_settings.mouseState = 3; // Hotspot
 
@@ -1456,13 +1456,13 @@ void Game::loopInterfaceCollide() {
 			if (_settings.collideChar >= 0 &&
 				_settings.collideCharZ < _settings.collideObjZ) {
 
-				_settings.overType = 2;
+				_settings.overType = COLLIDE_CHAR;
 				_settings.overNum = _settings.collideChar;
 				_settings.mouseState = 3; // Hotspot
 
 			} else if (_settings.collideObj >= 0) {
 
-				_settings.overType = 3;
+				_settings.overType = COLLIDE_OBJECT;
 				_settings.overNum = _settings.collideObj;
 				_settings.mouseState = 3; // Hotspot
 
@@ -1476,7 +1476,7 @@ void Game::loopInterfaceCollide() {
 		if (_settings.collideChar < 0)
 			_settings.mouseState = 0; // Walk
 		else {
-			_settings.overType = 2;
+			_settings.overType = COLLIDE_CHAR;
 			_settings.overNum = _settings.collideChar;
 			_settings.mouseState = 3; // Hotspot
 		}
@@ -1951,8 +1951,7 @@ int8 Game::doDonut(int type, Inventory *inv) {
 
 	} else switch (_settings.collideType) {
 
-	// Character
-	case 2:
+	case COLLIDE_CHAR:
 		if (_vm->database()->getChar(_settings.collideChar)->_isAlive) {
 			verbs[PICKUP] = 6;
 			verbs[FIGHT] = 0;
@@ -1980,8 +1979,7 @@ int8 Game::doDonut(int type, Inventory *inv) {
 
 		break;
 
-	// Object
-	case 3:
+	case COLLIDE_OBJECT:
 		verbs[PICKUP] =
 			_vm->database()->getObj(_settings.collideObj)->isPickable ? 0 : 6;
 		verbs[FIGHT] = 6;
@@ -2104,10 +2102,10 @@ int8 Game::doDonut(int type, Inventory *inv) {
 		_vm->panel()->setActionDesc(verbDesc);
 
 		if (type == 0) {
-			if (_settings.collideType == 2)
+			if (_settings.collideType == COLLIDE_CHAR)
 				hotspotDesc =
 					_vm->database()->getChar(_settings.collideChar)->_desc;
-			else if (_settings.collideType == 3)
+			else if (_settings.collideType == COLLIDE_OBJECT)
 				hotspotDesc =
 					_vm->database()->getObj(_settings.collideObj)->desc;
 			else
@@ -2990,10 +2988,10 @@ void Game::exeUse() {
 		if (_settings.object2Num >= 0) {
 			doCommand(3, 1, _settings.objectNum, 1, _settings.object2Num);
 		} else switch (_settings.collideType) {
-		case 2:
+		case COLLIDE_CHAR:
 			doCommand(3, 1, _settings.objectNum, 2, _player.collideNum);
 			break;
-		case 3:
+		case COLLIDE_OBJECT:
 			doCommand(3, 1, _settings.objectNum, 1, _player.collideNum);
 			break;
 		default:
@@ -3001,10 +2999,10 @@ void Game::exeUse() {
 		}
 
 	} else switch (_settings.collideType) {
-	case 2:
+	case COLLIDE_CHAR:
 		doCommand(3, 1, _player.collideNum, -1, -1);
 		break;
-	case 3:
+	case COLLIDE_OBJECT:
 		doCommand(3, 1, _player.collideNum, -1, -1);
 		break;
 	default:
@@ -3014,7 +3012,7 @@ void Game::exeUse() {
 	_settings.objectNum = _settings.object2Num = -1;
 	_player.command = CMD_NOTHING;
 	_player.commandState = 0;
-	_player.collideType = 0;
+	_player.collideType = COLLIDE_NONE;
 	_player.collideNum = -1;
 }
 
@@ -3023,7 +3021,7 @@ void Game::exeTalk() {
 	doCommand(2, 2, _player.collideNum, -1, -1);
 	_player.command = CMD_TALK_TO;
 	_player.commandState = 0;
-	_player.collideType = 0;
+	_player.collideType = COLLIDE_NONE;
 	_player.collideNum = -1;
 }
 
@@ -3064,7 +3062,7 @@ void Game::exePickup() {
 	case 3:
 		_player.command = CMD_NOTHING;
 		_player.commandState = 0;
-		_player.collideType = 0;
+		_player.collideType = COLLIDE_NONE;
 		_player.collideNum = -1;
 		break;
 	default:
@@ -3073,15 +3071,15 @@ void Game::exePickup() {
 }
 
 void Game::exeLookAt() {
-	assert(_player.collideType != 1);
+	assert(_player.collideType != COLLIDE_BOX);
 
 	_vm->database()->getChar(0)->_isBusy = false;
 
 	switch (_player.collideType) {
-	case 2: // Char
+	case COLLIDE_CHAR:
 		doCommand(5, 2, _player.collideNum, -1, -1);
 		break;
-	case 3: // Object
+	case COLLIDE_OBJECT:
 		doCommand(5, 1, _player.collideNum, -1, -1);
 		break;
 	default:
@@ -3090,7 +3088,7 @@ void Game::exeLookAt() {
 
 	_player.command = CMD_NOTHING;
 	_player.commandState = 0;
-	_player.collideType = 0;
+	_player.collideType = COLLIDE_NONE;
 	_player.collideNum = -1;
 }
 
