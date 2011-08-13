@@ -216,12 +216,13 @@ void Input::handleMouse() {
 					if (settings->collideType == COLLIDE_CHAR) {
 						player->collideType = COLLIDE_CHAR;
 						player->collideNum = settings->collideChar;
-						if (_vm->database()->
-								getChar(settings->collideChar)->_isAlive) {
+						if (_vm->database()->getChar(settings->collideChar)->_isAlive) {
 							playerChar->_gotoX = playerChar->_screenX;
 							playerChar->_gotoY = playerChar->_screenY;
+							player->commandState = 2;
+						} else {
+							playerChar->_isBusy = true;
 						}
-						playerChar->_isBusy = true;
 
 					// Object
 					} else if (settings->collideType == COLLIDE_OBJECT) {
