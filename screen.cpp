@@ -1239,32 +1239,37 @@ void Screen::drawFightBars() {
 
 }
 
-void Screen::printIcon(Inventory *inv, int a, int b) {
+void Screen::printIcon(Inventory *inv, int mode, int objNum) {
 	Actor *act;
 
-	if (a >= 2)
+	if (mode >= 2)
 		act = _vm->actorMan()->getCharIcon();
 	else
 		act = _vm->actorMan()->getObjects();
 
-	if ((inv->mode & 1) == 0 && b >= 0) {
-		warning("TODO: missing code in printIcon");
+	// Grey-out self-use spells - only relevant for Spell O' Kolagate Shield
+	if ((inv->mode & 1) == 0 && objNum >= 0 && _vm->database()->getObj(objNum)->isUseImmediate) {
+		act->setEffect(5);
+		act->setMaskDepth(0, 2);
+		act->setPos(inv->iconX, inv->iconY);
+		act->setRatio(1024, 1024);
+		act->display();
 	} else {
 		act->setEffect(4);
 		act->setMaskDepth(0, 2);
 		act->setPos(inv->iconX, inv->iconY);
 		act->setRatio(1024, 1024);
 
-		if (b < 0 || _vm->game()->settings()->objectNum == b) return;
+		if (objNum < 0 || _vm->game()->settings()->objectNum == objNum) return;
 
-		if (a % 2 == 0) {
-			act->setFrame(b);
+		if (mode % 2 == 0) {
+			act->setFrame(objNum);
 		} else switch (inv->mouseState) {
 		case 0:
 		case 4:
 		case 5:
 		case 6:
-			act->setFrame(b);
+			act->setFrame(objNum);
 			break;
 		case 1:
 		case 3:
@@ -1273,7 +1278,7 @@ void Screen::printIcon(Inventory *inv, int a, int b) {
 			else
 				act->setFrame(1);
 			act->display();
-			act->setFrame(b);
+			act->setFrame(objNum);
 			break;
 		case 2:
 			if (inv->selectedBox == inv->selectedBox2) {
@@ -1284,14 +1289,14 @@ void Screen::printIcon(Inventory *inv, int a, int b) {
 				else
 					act->setFrame(1);
 				act->display();
-				act->setFrame(b);
+				act->setFrame(objNum);
 			} else {
 				if (inv->blinkLight & 4)
 					act->setFrame(0);
 				else
 					act->setFrame(1);
 				act->display();
-				act->setFrame(b);
+				act->setFrame(objNum);
 			}
 			break;
 		}

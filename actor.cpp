@@ -337,6 +337,9 @@ void Actor::display() {
 		} else {
 			//debug("drawing actor: %s", _name.c_str());
 			switch (_effect) {
+			case 5:
+				warning("TODO: Grey-out effect");
+				// Fall-through to 4 for now
 			case 4:
 				_vm->screen()->drawActorFrame4((int8 *)(_framesData + frameStream.pos()),
 					width, height, xStart, yStart);
