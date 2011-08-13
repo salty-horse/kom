@@ -91,7 +91,7 @@ struct Settings {
 	int16 lastItemUsed;
 };
 
-typedef enum {
+enum CommandType {
 	CMD_WALK = 0,
 	CMD_NOTHING,
 	CMD_USE,
@@ -100,7 +100,7 @@ typedef enum {
 	CMD_LOOK_AT,
 	CMD_FIGHT,
 	CMD_CAST_SPELL
-} CommandType;
+};
 
 /** Player settings */
 struct Player {
