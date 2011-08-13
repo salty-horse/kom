@@ -58,8 +58,10 @@ void Input::handleMouse() {
 	if (settings->mouseMode == 0 && _leftClick) {
 		if (settings->mouseY >= INVENTORY_OFFSET) {
 
-			if (settings->objectNum >= 0 && settings->objectType != 2)
-				settings->objectNum = settings->objectType = -1;
+			if (settings->objectNum >= 0 && settings->objectType != OBJECT_ITEM) {
+				settings->objectType = OBJECT_NONE;
+				settings->objectNum = -1;
+			}
 
 			if (settings->objectNum >= 0) {
 				_vm->game()->doInventory(&settings->object2Num, &settings->object2Type, false, 7);
@@ -67,7 +69,8 @@ void Input::handleMouse() {
 				if (settings->objectNum < 0) {
 					settings->objectType = settings->object2Type;
 					settings->objectNum = settings->object2Num;
-					settings->object2Type = settings->object2Num = -1;
+					settings->object2Type = OBJECT_NONE;
+					settings->object2Num = -1;
 					player->commandState = 0;
 				}
 
@@ -81,21 +84,26 @@ void Input::handleMouse() {
 				}
 
 			} else {
-				settings->object2Num = settings->object2Type = -1;
+				settings->object2Type = OBJECT_NONE;
+				settings->object2Num = -1;
 				_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 7);
 				_vm->game()->checkUseImmediate(settings->objectType, settings->objectNum);
 				player->commandState = 0;
 			}
 
 			switch (settings->objectType) {
-			case 0:
+			case OBJECT_SPELL:
 				player->command = CMD_CAST_SPELL;
 				break;
-			case 1:
+			case OBJECT_WEAPON:
 				player->command = CMD_FIGHT;
 				break;
-			case 2:
+			case OBJECT_ITEM:
 				player->command = CMD_USE;
+				break;
+			default:
+				// Do nothing
+				break;
 			}
 
 		// "Exit to"
@@ -248,8 +256,10 @@ void Input::handleMouse() {
 		if (player->commandState < 2 /* TODO - menu check */) {
 
 			// Discard held object
-			if (settings->objectNum >= 0)
-				settings->objectNum = settings->objectType = -1;
+			if (settings->objectNum >= 0) {
+				settings->objectType = OBJECT_NONE;
+				settings->objectNum = -1;
+			}
 
 			player->command = CMD_NOTHING;
 			player->commandState = 0;

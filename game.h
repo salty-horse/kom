@@ -59,6 +59,14 @@ enum CollideType {
 	COLLIDE_OBJECT
 };
 
+enum ObjectType {
+	OBJECT_NONE = -1,
+	OBJECT_SPELL,
+	OBJECT_WEAPON,
+	OBJECT_ITEM
+};
+
+
 struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
 		narratorPatience(0), lastItemUsed(-1) {}
@@ -86,9 +94,9 @@ struct Settings {
 	uint16 collideCharY;
 	int32 collideCharZ;
 	int16 objectNum;
-	int16 objectType;
+	ObjectType objectType;
 	int16 object2Num;
-	int16 object2Type;
+	ObjectType object2Type;
 
 	uint8 dayMode; // 0 - day. 1 - night. 2 - dawn. 3 - dusk
 	uint8 currLocation;
@@ -184,7 +192,7 @@ public:
 	void processTime();
 	bool doStat(const Command *cmd);
 	void doCommand(int command, int type, int id, int type2, int id2);
-	void checkUseImmediate(int16 type, int16 id);
+	void checkUseImmediate(ObjectType type, int16 id);
 	void loopMove();
 	void loopCollide();
 	void loopSpriteCut();
@@ -210,7 +218,7 @@ public:
 	void doGreet(int charId, int response);
 
 	int8 doDonut(int type, Inventory *inv);
-	void doInventory(int16 *objectNum, int16 *objectType, bool shop, uint8 num);
+	void doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 num);
 
 	void doActionGotObject(uint16 obj);
 	void doActionLostObject(uint16 obj);

@@ -961,7 +961,7 @@ void Game::doNoUse() {
 	}
 }
 
-void Game::checkUseImmediate(int16 type, int16 id) {
+void Game::checkUseImmediate(ObjectType type, int16 id) {
 	if (id < 0)
 		return;
 
@@ -978,8 +978,10 @@ void Game::checkUseImmediate(int16 type, int16 id) {
 		exeMagic();
 	}
 
-	_settings.objectType = _settings.objectNum =
-		_settings.object2Type = _settings.object2Num = -1;
+	_settings.objectType = OBJECT_NONE;
+	_settings.objectNum = -1;
+	_settings.object2Type = OBJECT_NONE;
+	_settings.object2Num = -1;
 }
 
 void Game::loopMove() {
@@ -2201,7 +2203,7 @@ int Game::getDonutSegment(int xPos, int yPos) {
 		return segment + 8;
 }
 
-void Game::doInventory(int16 *objectNum, int16 *objectType, bool shop, uint8 mode) {
+void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 mode) {
 	bool inInventory = false;
 	bool inLoop;
 	int objRows, weapSpellRows;
@@ -2419,27 +2421,29 @@ void Game::doInventory(int16 *objectNum, int16 *objectType, bool shop, uint8 mod
 
 		// TODO - something with input
 
-		*objectType = -1;
+		*objectType = OBJECT_NONE;
 		*objectNum = -1;
 
 		inInventory = inv.action;
 
 		if (inv.mouseState == 3 && _settings.objectNum != inv.selectedObj) {
 			if (inv.selectedInvObj >= 0) {
-				*objectType = 2;
+				*objectType = OBJECT_ITEM;
 				*objectNum = inv.selectedInvObj;
 			} else if (inv.selectedWeapObj >= 0) {
-				*objectType = 1;
+				*objectType = OBJECT_WEAPON;
 				*objectNum = inv.selectedWeapObj;
 			} else if (inv.selectedSpellObj >= 0) {
-				*objectType = 0;
+				*objectType = OBJECT_SPELL;
 				*objectNum = inv.selectedSpellObj;
 			}
 		}
 
 		if ((mode & 1) == 0 && *objectNum >= 0 &&
-		    _vm->database()->getObj(*objectNum)->isUseImmediate)
-			*objectNum = *objectType = -1;
+		    _vm->database()->getObj(*objectNum)->isUseImmediate) {
+			*objectType = OBJECT_NONE;
+			*objectNum = -1;
+		}
 
 		_vm->panel()->suppressLoading();
 
@@ -2451,7 +2455,8 @@ void Game::doInventory(int16 *objectNum, int16 *objectType, bool shop, uint8 mod
 			narratorStop();
 			// Look at
 			doCommand(5, 1, *objectNum, -1, -1);
-			*objectNum = *objectType = -1;
+			*objectType = OBJECT_NONE;
+			*objectNum = -1;
 		}
 
 	} while (inInventory);
@@ -2475,8 +2480,10 @@ void Game::doActionGotObject(uint16 obj) {
 void Game::doActionLostObject(uint16 obj) {
 	_vm->panel()->addObject(-obj);
 
-	if (_settings.objectNum == obj)
-		_settings.objectNum = _settings.objectType = -1;
+	if (_settings.objectNum == obj) {
+		_settings.objectType = OBJECT_NONE;
+		_settings.objectNum = -1;
+	}
 }
 
 #define KOM_LABEL_TEXT(VAR, TEXT) \
