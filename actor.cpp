@@ -49,6 +49,8 @@ ActorManager::~ActorManager() {
 	delete _objectsActor;
 	delete _charIconActor;
 	delete _coinageActor;
+	delete _fightBarLActor;
+	delete _fightBarRActor;
 }
 
 int ActorManager::load(const char *filename) {
@@ -105,6 +107,16 @@ void ActorManager::loadExtras() {
 	_coinageActor->enable(0);
 	_coinageActor->setEffect(4);
 	_coinageActor->setMaskDepth(0, 1);
+
+	_fightBarLActor = new Actor(_vm, "kom/oneoffs/healthl.act", false);
+	_fightBarLActor->enable(0);
+	_fightBarLActor->setEffect(4);
+	_fightBarLActor->setMaskDepth(0, 1);
+
+	_fightBarRActor = new Actor(_vm, "kom/oneoffs/healthr.act", false);
+	_fightBarRActor->enable(0);
+	_fightBarRActor->setEffect(4);
+	_fightBarRActor->setMaskDepth(0, 1);
 }
 
 void ActorManager::displayAll() {

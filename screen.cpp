@@ -237,12 +237,12 @@ void Screen::processGraphics(int mode) {
 	}
 
 	// TODO - handle snow
-	// TODO - handle fight bars
-	// TODO - handle mouse
+	drawFightBars();
 
-	// FIXME - add more checks for cursor display, like hit points
-	if (!_vm->game()->player()->narratorTalking &&
-	    _vm->database()->getChar(0)->_spriteCutState == 0 &&
+	// Handle mouse
+	if (_vm->game()->player()->hitPoints > 0 &&
+		!_vm->game()->player()->narratorTalking &&
+		_vm->database()->getChar(0)->_spriteCutState == 0 &&
 		(_vm->game()->player()->commandState == 0 ||
 		 _vm->game()->player()->command == CMD_WALK ||
 		 _vm->game()->player()->command == CMD_NOTHING) &&
@@ -1124,6 +1124,121 @@ void Screen::drawInventory(Inventory *inv) {
 	_vm->panel()->update();
 }
 
+void Screen::drawFightBars() {
+	char buf[32];
+	Player *player = _vm->game()->player();
+	Character *playerChar = _vm->database()->getChar(0);
+	player->hitPoints = playerChar->_hitPoints;
+
+	if (player->hitPointsOld < player->hitPoints) {
+		player->hitPointsOld = player->hitPoints;
+
+	// Tick
+	} else if (player->hitPointsOld > player->hitPoints) {
+		player->hitPointsOld--;
+
+		if (player->fightBarTimer == 0)
+			player->fightBarTimer = 110;
+	}
+
+	if (player->enemyId != -1) {
+		Character *enemyChar = _vm->database()->getChar(player->enemyId);
+
+		if (playerChar->_lastLocation != enemyChar->_lastLocation) {
+			// TODO: handle dust clouds
+		}
+
+		player->enemyHitPoints = enemyChar->_hitPoints;
+		_vm->game()->declareNewEnemy(player->enemyId);
+		if (player->enemyHitPointsOld != player->enemyHitPoints) {
+			if (player->enemyHitPointsOld >= player->enemyHitPoints)
+				player->enemyHitPointsOld--;
+			else
+				player->enemyHitPointsOld++;
+
+			if (player->enemyFightBarTimer == 0) {
+				player->fightBarTimer = player->enemyFightBarTimer = 110;
+			}
+		}
+	}
+
+	// Draw player fight bar
+	if (player->fightBarTimer) {
+		player->fightBarTimer--;
+
+		Actor *act = _vm->actorMan()->getFightBarL();
+		act->enable(1);
+		act->setPos(0, 168);
+		act->setFrame(0);
+		act->display();
+
+		// Draw bar
+		int drawnHitPoints = MIN(player->hitPointsOld, (int16)256);
+		for (int i = 0; i < drawnHitPoints / 2; i++) {
+			act->setFrame(i + 129);
+			act->display();
+		}
+		for (int i = drawnHitPoints / 2; i < 128; i++) {
+			act->setFrame(i + 1);
+			act->display();
+		}
+
+		act->enable(0);
+
+		// Write title
+		const char *desc = _vm->database()->getChar(0)->_desc;
+		writeText(_vm->screen()->screenBuf(), desc, 18, 42, 0, false);
+		writeText(_vm->screen()->screenBuf(), desc, 17, 41, 31, false);
+
+		// Write hit points
+		sprintf(buf, "%d", drawnHitPoints);
+		writeText(_vm->screen()->screenBuf(), buf, 9, 42, 0, false);
+		writeText(_vm->screen()->screenBuf(), buf, 8, 41, 31, false);
+	}
+
+	if (player->enemyId == -1 || playerChar->_lastLocation != _vm->database()->getChar(player->enemyId)->_lastLocation)
+		player->enemyFightBarTimer = 0;
+
+	// Draw enemy fight bar
+	if (player->enemyFightBarTimer) {
+		player->enemyFightBarTimer--;
+
+		Actor *act = _vm->actorMan()->getFightBarR();
+		act->enable(1);
+		act->setPos(0, 168);
+		act->setFrame(0);
+		act->display();
+
+		// Draw bar
+		int drawnHitPoints = MIN(player->enemyHitPointsOld, (int16)256);
+		for (int i = 0; i < drawnHitPoints / 2; i++) {
+			act->setFrame(i + 129);
+			act->display();
+		}
+		for (int i = drawnHitPoints / 2; i < 128; i++) {
+			act->setFrame(i + 1);
+			act->display();
+		}
+
+		act->enable(0);
+
+		// Write title
+		const char *desc = player->enemyDesc;
+		writeTextRight(_vm->screen()->screenBuf(), desc, 18, 286, 0, false);
+		writeTextRight(_vm->screen()->screenBuf(), desc, 17, 285, 31, false);
+
+		// Write hit points
+
+		if (drawnHitPoints >= 0)
+			sprintf(buf, "%d", drawnHitPoints);
+		else
+			strcpy(buf, "Immortal");
+		writeTextRight(_vm->screen()->screenBuf(), buf, 9, 286, 0, false);
+		writeTextRight(_vm->screen()->screenBuf(), buf, 8, 285, 31, false);
+	}
+
+}
+
 void Screen::printIcon(Inventory *inv, int a, int b) {
 	Actor *act;
 
@@ -1344,6 +1459,9 @@ void Screen::writeTextWrap(byte *buf, const char *text, uint8 row, uint16 col, u
 	delete[] txt;
 }
 
+void Screen::writeTextRight(byte *buf, const char *text, uint8 row, uint16 col, uint8 color, bool isEmbossed) {
+	writeText(buf, text, row, col - getTextWidth(text), color, isEmbossed);
+}
 void Screen::writeText(byte *buf, const char *text, uint8 row, uint16 col, uint8 color, bool isEmbossed) {
 	if (isEmbossed)
 		writeTextStyle(buf, text, row, col, 0, true);

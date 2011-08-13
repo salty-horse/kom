@@ -129,6 +129,8 @@ public:
 	Actor *getObjects() { return _objectsActor; }
 	Actor *getCharIcon() { return _charIconActor; }
 	Actor *getCoinage() { return _coinageActor; }
+	Actor *getFightBarL() { return _fightBarLActor; }
+	Actor *getFightBarR() { return _fightBarRActor; }
 	void unload(int idx) { if (idx >= 0) { delete _actors[idx]; _actors[idx] = 0; } }
 	void unloadAll() { for (uint i = 0; i < _actors.size(); i++) unload(i); }
 	void displayAll();
@@ -143,6 +145,8 @@ private:
 	Actor *_objectsActor;
 	Actor *_charIconActor;
 	Actor *_coinageActor;
+	Actor *_fightBarLActor;
+	Actor *_fightBarRActor;
 
 	Actor *getFarthestActor();
 };

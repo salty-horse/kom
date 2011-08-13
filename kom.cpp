@@ -165,6 +165,8 @@ void KomEngine::gameLoop() {
 	// init some global vars, Player settings
 	_game->player()->command = CMD_NOTHING;
 	_game->player()->commandState = 0;
+	_game->player()->hitPoints = _game->player()->hitPointsOld = _database->getChar(0)->_hitPoints;
+	_game->player()->enemyId = _game->player()->lastEnemy = -1;
 	_game->player()->narratorTalking = false;
 	_database->getChar(0)->_isBusy = false;
 	_game->player()->oldGold = _database->getChar(0)->_gold;
@@ -299,9 +301,12 @@ void KomEngine::gameLoop() {
 	// stopGreeting()
 	// ambientStop()
 	if (_gameLoopState == GAMELOOP_DEATH) {
-		// TODO
-		// play death video
-		// play credits
+		// Play death video
+		if (_game->player()->hitPoints == 0) {
+			_game->doActionPlayVideo("MSC999S");
+		}
+
+		// Play credits
 	}
 
 }

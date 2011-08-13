@@ -112,6 +112,15 @@ struct Player {
 	bool narratorTalking;
 	SoundSample spriteSample;
 	SoundSample narratorSample; // Original doesn't store this here
+	int16 fightBarTimer;
+	int16 enemyFightBarTimer;
+	int16 hitPointsOld;
+	int16 hitPoints;
+	int16 enemyHitPointsOld;
+	int16 enemyHitPoints;
+	int16 enemyId;
+	int16 lastEnemy;
+	char enemyDesc[50];
 	uint8 selectedChar; // 0 - thidney. 1 - shahron
 	uint8 selectedQuest;
 	uint8 isNight;
@@ -200,6 +209,8 @@ public:
 	void doActionLostObject(uint16 obj);
 
 	void doLookAt(int charId, int pauseTimer = 0, bool showBackground = false);
+
+	void declareNewEnemy(int16 enemy);
 
 	void exeUse();
 	void exeTalk();

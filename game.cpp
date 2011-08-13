@@ -58,6 +58,10 @@ void Game::enterLocation(uint16 locId) {
 
 	_vm->panel()->showLoading(true);
 
+	// Don't draw fight bars
+	_player.fightBarTimer = _player.enemyFightBarTimer = 0;
+	_player.hitPoints = _player.hitPointsOld;
+
 	// Unload last room elements
 	for (uint i = 0; i < _roomObjects.size(); i++) {
 		if (_roomObjects[i].actorId > -1)
@@ -2092,7 +2096,7 @@ int8 Game::doDonut(int type, Inventory *inv) {
 			_vm->screen()->displayDoors();
 			_vm->actorMan()->displayAll();
 			mouse->display();
-			// TODO - display fight bars
+			_vm->screen()->drawFightBars();
 		}
 
 
@@ -2235,7 +2239,7 @@ void Game::doInventory(int16 *objectNum, int16 *objectType, bool shop, uint8 mod
 		_vm->screen()->drawBackground();
 		_vm->screen()->displayDoors();
 		_vm->actorMan()->displayAll();
-		// TODO - fight bars
+		_vm->screen()->drawFightBars();
 		_vm->screen()->createSepia(shop);
 		_vm->screen()->clearScreen();
 		_vm->panel()->update();
@@ -2932,6 +2936,50 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 	_vm->screen()->pauseBackground(false);
 	_vm->screen()->clearScreen();
 }
+
+static const char *definiteArticle[] = {
+	"The ",
+	"THE ",
+	"Der ",
+	"DER ",
+	"Die ",
+	"DIE ",
+	"Das ",
+	"DAS ",
+	"Le ",
+	"LE ",
+	"La ",
+	"LA ",
+	"Les ",
+	"LES ",
+	NULL
+};
+
+void Game::declareNewEnemy(int16 enemy) {
+	_player.enemyId = enemy;
+	if (_player.enemyId != -1) {
+		if (_player.enemyId != _player.lastEnemy) {
+			Character *chr = _vm->database()->getChar(_player.enemyId);
+
+			_player.lastEnemy = _player.enemyId;
+			_player.enemyHitPoints = _player.enemyHitPointsOld = chr->_hitPoints;
+
+			const char *desc = chr->_desc;
+
+			// Strip definite article
+			bool found = false;
+			for (int i = 0; definiteArticle[i] != NULL && !found; i++) {
+				int len = strlen(definiteArticle[i]);
+				if (strncmp(desc, definiteArticle[i], len) == 0) {
+					desc += len;
+					found = true;
+				}
+			}
+			strcpy(_player.enemyDesc, desc);
+		}
+	}
+}
+
 
 void Game::exeUse() {
 	Character *playerChar = _vm->database()->getChar(0);

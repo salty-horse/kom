@@ -95,6 +95,7 @@ public:
 	void loadMask(const Common::String &filename);
 
 	void drawInventory(Inventory *inv);
+	void drawFightBars();
 
 	void useColorSet(ColorSet *cs, uint start);
 	void setPaletteColor(int index, const byte color[]);
@@ -115,6 +116,7 @@ public:
 
 	void writeTextCentered(byte *buf, const char *text, uint8 row, uint8 color, bool isEmbossed);
 	void writeTextWrap(byte *buf, const char *text, uint8 row, uint16 col, uint16 width, uint8 color, bool isEmbossed);
+	void writeTextRight(byte *buf, const char *text, uint8 row, uint16 col, uint8 color, bool isEmbossed);
 	void writeText(byte *buf, const char *text, uint8 row, uint16 col, uint8 color, bool isEmbossed);
 
 	uint16 getTextWidth(const char *text);
