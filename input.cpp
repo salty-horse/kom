@@ -56,8 +56,11 @@ void Input::handleMouse() {
 	int8 donutState;
 
 	if (settings->mouseMode == 0 && _leftClick) {
+
+		// Panel click
 		if (settings->mouseY >= INVENTORY_OFFSET) {
 
+			// Drop weapon/spell before entering inventory
 			if (settings->objectNum >= 0 && settings->objectType != OBJECT_ITEM) {
 				settings->objectType = OBJECT_NONE;
 				settings->objectNum = -1;
@@ -106,7 +109,7 @@ void Input::handleMouse() {
 				break;
 			}
 
-		// "Exit to"
+		// Room click
 		} else {
 			if (settings->mouseState == 2) {
 				gotoX = settings->collideBoxX;
@@ -235,11 +238,59 @@ void Input::handleMouse() {
 					break;
 
 				case CMD_FIGHT:
-					// TODO
+					if (settings->collideType == COLLIDE_NONE)
+						break;
+
+					// Select weapon from inventory
+					if (settings->objectNum < 0 || settings->objectType != OBJECT_WEAPON)
+						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 2);
+
+					if (settings->objectNum < 0 || settings->objectType != OBJECT_WEAPON ||
+					    !_vm->database()->getChar(settings->collideChar)->_isAlive) {
+
+						player->command = CMD_FIGHT;
+						player->commandState = 0;
+						playerChar->stopChar();
+					}
+					else {
+						// Walk to char
+						playerChar->_gotoX = gotoX;
+						playerChar->_gotoY = gotoY;
+
+						player->commandState = 1;
+						player->collideType = COLLIDE_CHAR;
+						player->collideNum = settings->collideChar;
+						playerChar->_isBusy = true;
+					}
+
 					break;
 
 				case CMD_CAST_SPELL:
-					// TODO
+					if (settings->collideType == COLLIDE_NONE)
+						break;
+
+					// Select spell from inventory
+					if (settings->objectNum < 0 || settings->objectType != OBJECT_SPELL)
+						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 4);
+
+					if (settings->objectNum < 0 || settings->objectType != OBJECT_SPELL ||
+					    !_vm->database()->getChar(settings->collideChar)->_isAlive) {
+
+						player->command = CMD_CAST_SPELL;
+						player->commandState = 0;
+						playerChar->stopChar();
+					}
+					else {
+						// Stand in place
+						playerChar->_gotoX = playerChar->_screenX;
+						playerChar->_gotoY = playerChar->_screenY;
+
+						player->command = CMD_CAST_SPELL;
+						player->commandState = 1;
+						player->collideType = COLLIDE_CHAR;
+						player->collideNum = settings->collideChar;
+						playerChar->_isBusy = true;
+					}
 					break;
 				default:
 					error("Wrong player command");
