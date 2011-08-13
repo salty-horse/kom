@@ -943,24 +943,26 @@ void Screen::drawInventory(Inventory *inv) {
 	inv->iconX += 56;
 
 	// Inventory objects
-	invList = &_vm->database()->getChar(0)->_inventory;
-	for (invId = invList->begin(), invCounter = 0;
-		 invId != invList->end(); ++invId, ++invCounter) {
+	if (inv->mode & 1) {
+		invList = &_vm->database()->getChar(0)->_inventory;
+		for (invId = invList->begin(), invCounter = 0;
+			 invId != invList->end(); ++invId, ++invCounter) {
 
-		if (invCounter == selectedIndex) {
-			inv->isSelected = true;
-			inv->selectedInvObj = *invId;
-			printIcon(inv, 1, *invId + 1);
-		} else {
-			printIcon(inv, 0, *invId + 1);
-		}
+			if (invCounter == selectedIndex) {
+				inv->isSelected = true;
+				inv->selectedInvObj = *invId;
+				printIcon(inv, 1, *invId + 1);
+			} else {
+				printIcon(inv, 0, *invId + 1);
+			}
 
-		inv->iconX += 56;
+			inv->iconX += 56;
 
-		// Move to the next line
-		if (inv->iconX > 272) {
-			inv->iconX = 160;
-			inv->iconY += 40;
+			// Move to the next line
+			if (inv->iconX > 272) {
+				inv->iconX = 160;
+				inv->iconY += 40;
+			}
 		}
 	}
 
@@ -975,20 +977,22 @@ void Screen::drawInventory(Inventory *inv) {
 	inv->iconY = inv->scrollY;
 
 	// Inventory weapons
-	invList = &_vm->database()->getChar(0)->_weapons;
-	for (invId = invList->begin(), invCounter = 0;
-		 invId != invList->end(); ++invId, ++invCounter) {
+	if (inv->mode & 2) {
+		invList = &_vm->database()->getChar(0)->_weapons;
+		for (invId = invList->begin(), invCounter = 0;
+			 invId != invList->end(); ++invId, ++invCounter) {
 
-		if (invCounter == selectedIndex) {
-			inv->isSelected = true;
-			inv->selectedWeapObj = *invId;
-			printIcon(inv, 1, *invId + 1);
-		} else {
-			printIcon(inv, 0, *invId + 1);
+			if (invCounter == selectedIndex) {
+				inv->isSelected = true;
+				inv->selectedWeapObj = *invId;
+				printIcon(inv, 1, *invId + 1);
+			} else {
+				printIcon(inv, 0, *invId + 1);
+			}
+
+			// Move to the next line
+			inv->iconY += 40;
 		}
-
-		// Move to the next line
-		inv->iconY += 40;
 	}
 
 	// Look for selected item
@@ -1002,20 +1006,22 @@ void Screen::drawInventory(Inventory *inv) {
 	inv->iconY = inv->scrollY;
 
 	// Inventory spells
-	invList = &_vm->database()->getChar(0)->_spells;
-	for (invId = invList->begin(), invCounter = 0;
-		 invId != invList->end(); ++invId, ++invCounter) {
+	if (inv->mode & 1) {
+		invList = &_vm->database()->getChar(0)->_spells;
+		for (invId = invList->begin(), invCounter = 0;
+			 invId != invList->end(); ++invId, ++invCounter) {
 
-		if (invCounter == selectedIndex) {
-			inv->isSelected = true;
-			inv->selectedSpellObj = *invId;
-			printIcon(inv, 1, *invId + 1);
-		} else {
-			printIcon(inv, 0, *invId + 1);
+			if (invCounter == selectedIndex) {
+				inv->isSelected = true;
+				inv->selectedSpellObj = *invId;
+				printIcon(inv, 1, *invId + 1);
+			} else {
+				printIcon(inv, 0, *invId + 1);
+			}
+
+			// Move to the next line
+			inv->iconY += 40;
 		}
-
-		// Move to the next line
-		inv->iconY += 40;
 	}
 
 	// Draw item below cursor
