@@ -138,7 +138,22 @@ void Input::handleMouse() {
 					donutState = _vm->game()->doDonut(0, 0);
 				} else {
 					donutState = 0;
-					// TODO
+					switch (settings->objectType) {
+					case OBJECT_SPELL:
+						if (_vm->database()->getChar(settings->collideChar)->_isAlive)
+							player->command = CMD_CAST_SPELL;
+						break;
+					case OBJECT_WEAPON:
+						if (_vm->database()->getChar(settings->collideChar)->_isAlive)
+							player->command = CMD_FIGHT;
+						break;
+					case OBJECT_ITEM:
+						player->command = CMD_USE;
+						break;
+					default:
+						break;
+					}
+
 				}
 
 			} else if (settings->objectNum >= 0) {
