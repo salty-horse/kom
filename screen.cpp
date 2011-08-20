@@ -480,6 +480,7 @@ void Screen::drawActorFrame4(const int8 *data, uint16 width, uint16 height, int1
 		if ((visibleWidth += xStart) <= 0)
 			return;
 
+		startCol = -xStart;
 		xStart = 0;
 	}
 
@@ -496,6 +497,7 @@ void Screen::drawActorFrame4(const int8 *data, uint16 width, uint16 height, int1
 		if ((visibleHeight += yStart) <= 0)
 			return;
 
+		startLine = -yStart;
 		yStart = 0;
 	}
 
