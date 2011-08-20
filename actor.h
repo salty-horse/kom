@@ -74,7 +74,7 @@ public:
 
 
 protected:
-	Actor(KomEngine *vm, const char *filename, bool isMouse);
+	Actor(KomEngine *vm, const char *filename, bool isMouse = false);
 
 	uint8 _framesNum;
 	byte _isPlayerControlled;

@@ -55,7 +55,7 @@ ActorManager::~ActorManager() {
 
 int ActorManager::load(const char *filename) {
 
-	Actor *act = new Actor(_vm, filename, false);
+	Actor *act = new Actor(_vm, filename);
 
 	// find an empty place in the array. if none exist, create a new cell
 	for (uint i = 0; i < _actors.size(); ++i)
@@ -88,35 +88,29 @@ void ActorManager::loadExtras() {
 	// Init CursorMan
 	_mouseActor->display();
 
-	_donutActor = new Actor(_vm, "kom/oneoffs/donut.act", false);
+	_donutActor = new Actor(_vm, "kom/oneoffs/donut.act");
 	_donutActor->enable(0);
 	_donutActor->setEffect(4);
 	_donutActor->setMaskDepth(0, 2);
 
-	_objectsActor = new Actor(_vm, "kom/oneoffs/inv_obj.act", false);
+	_objectsActor = new Actor(_vm, "kom/oneoffs/inv_obj.act");
 	_objectsActor->enable(0);
 	_objectsActor->setEffect(4);
 	_objectsActor->setMaskDepth(0, 1);
 
-	_charIconActor = new Actor(_vm, "kom/oneoffs/charicon.act", false);
+	_charIconActor = new Actor(_vm, "kom/oneoffs/charicon.act");
 	_charIconActor->enable(0);
-	_charIconActor->setEffect(4);
-	_charIconActor->setMaskDepth(0, 1);
 
-	_coinageActor = new Actor(_vm, "kom/oneoffs/coins.act", false);
+	_coinageActor = new Actor(_vm, "kom/oneoffs/coins.act");
 	_coinageActor->enable(0);
-	_coinageActor->setEffect(4);
-	_coinageActor->setMaskDepth(0, 1);
 
-	_fightBarLActor = new Actor(_vm, "kom/oneoffs/healthl.act", false);
+	_fightBarLActor = new Actor(_vm, "kom/oneoffs/healthl.act");
 	_fightBarLActor->enable(0);
 	_fightBarLActor->setEffect(4);
-	_fightBarLActor->setMaskDepth(0, 1);
 
-	_fightBarRActor = new Actor(_vm, "kom/oneoffs/healthr.act", false);
+	_fightBarRActor = new Actor(_vm, "kom/oneoffs/healthr.act");
 	_fightBarRActor->enable(0);
 	_fightBarRActor->setEffect(4);
-	_fightBarRActor->setMaskDepth(0, 1);
 }
 
 void ActorManager::displayAll() {
@@ -189,6 +183,7 @@ Actor::Actor(KomEngine *vm, const char *filename, bool isMouse) : _vm(vm) {
 	_xRatio = _yRatio = 1024;
 	_displayLeft = _displayRight = _displayTop = _displayBottom = 1000;
 	_maskDepth = 0;
+	_depth = 0;
 	_effect = 0;
 
 	f.open(filename);
