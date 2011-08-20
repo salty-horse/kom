@@ -1116,7 +1116,16 @@ void Screen::drawInventory(Inventory *inv) {
 	}
 
 	if (settings->objectNum > 0) {
-		warning("Use item with item");
+		sprintf(panelText, "Use %s", _vm->database()->getObj(settings->objectNum)->desc);
+		_vm->panel()->setActionDesc(panelText);
+
+		if (inv->selectedSpellObj >= 0) {
+			sprintf(panelText, "with %s (%dpts)", descString,
+					_vm->database()->getObj(inv->selectedObj)->spellCost);
+		} else {
+			sprintf(panelText, "with %s", descString);
+		}
+		_vm->panel()->setHotspotDesc(panelText);
 	} else {
 		if (inv->selectedSpellObj >= 0) {
 			sprintf(panelText, "%s (%dpts)", descString,
