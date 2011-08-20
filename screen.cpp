@@ -937,9 +937,9 @@ void Screen::drawInventory(Inventory *inv) {
 	inv->iconY = inv->scrollY;
 
 	if (selectedIndex == 9999) {
-		printIcon(inv, 3, 1);
+		printIcon(inv, 0, 3);
 	} else {
-		printIcon(inv, 2, 1);
+		printIcon(inv, 0, 2);
 	}
 
 	inv->iconX += 56;
@@ -953,9 +953,9 @@ void Screen::drawInventory(Inventory *inv) {
 			if (invCounter == selectedIndex) {
 				inv->isSelected = true;
 				inv->selectedInvObj = *invId;
-				printIcon(inv, 1, *invId + 1);
+				printIcon(inv, *invId, 1);
 			} else {
-				printIcon(inv, 0, *invId + 1);
+				printIcon(inv, *invId, 0);
 			}
 
 			inv->iconX += 56;
@@ -987,9 +987,9 @@ void Screen::drawInventory(Inventory *inv) {
 			if (invCounter == selectedIndex) {
 				inv->isSelected = true;
 				inv->selectedWeapObj = *invId;
-				printIcon(inv, 1, *invId + 1);
+				printIcon(inv, *invId, 1);
 			} else {
-				printIcon(inv, 0, *invId + 1);
+				printIcon(inv, *invId, 0);
 			}
 
 			// Move to the next line
@@ -1016,9 +1016,9 @@ void Screen::drawInventory(Inventory *inv) {
 			if (invCounter == selectedIndex) {
 				inv->isSelected = true;
 				inv->selectedSpellObj = *invId;
-				printIcon(inv, 1, *invId + 1);
+				printIcon(inv, *invId, 1);
 			} else {
-				printIcon(inv, 0, *invId + 1);
+				printIcon(inv, *invId, 0);
 			}
 
 			// Move to the next line
@@ -1027,7 +1027,6 @@ void Screen::drawInventory(Inventory *inv) {
 	}
 
 	// Draw item below cursor
-	// TODO - is this ever called?
 	if (settings->objectNum >= 0) {
 		Actor *act = _vm->actorMan()->getObjects();
 		act->enable(1);
@@ -1061,6 +1060,7 @@ void Screen::drawInventory(Inventory *inv) {
 
 	inv->selectedObj = inv->selectedInvObj & inv->selectedWeapObj & inv->selectedSpellObj;
 
+	// Don't select "held" item
 	if (inv->selectedObj == settings->objectNum) {
 		inv->selectedObj = inv->selectedInvObj = inv->selectedWeapObj = inv->selectedSpellObj = -1;
 		inv->isSelected = false;
@@ -1256,7 +1256,7 @@ void Screen::drawFightBars() {
 
 }
 
-void Screen::printIcon(Inventory *inv, int mode, int objNum) {
+void Screen::printIcon(Inventory *inv, int objNum, int mode) {
 	Actor *act;
 
 	if (mode >= 2)
@@ -1265,7 +1265,7 @@ void Screen::printIcon(Inventory *inv, int mode, int objNum) {
 		act = _vm->actorMan()->getObjects();
 
 	// Grey-out self-use spells - only relevant for Spell O' Kolagate Shield
-	if ((inv->mode & 1) == 0 && objNum >= 0 && _vm->database()->getObj(objNum)->isUseImmediate) {
+	if ((inv->mode & 1) == 0 && objNum > 0 && _vm->database()->getObj(objNum)->isUseImmediate) {
 		act->setEffect(5);
 		act->setMaskDepth(0, 2);
 		act->setPos(inv->iconX, inv->iconY);
@@ -1277,16 +1277,17 @@ void Screen::printIcon(Inventory *inv, int mode, int objNum) {
 		act->setPos(inv->iconX, inv->iconY);
 		act->setRatio(1024, 1024);
 
+		// Don't draw "held" item
 		if (objNum < 0 || _vm->game()->settings()->objectNum == objNum) return;
 
 		if (mode % 2 == 0) {
-			act->setFrame(objNum);
+			act->setFrame(objNum + 1);
 		} else switch (inv->mouseState) {
 		case 0:
 		case 4:
 		case 5:
 		case 6:
-			act->setFrame(objNum);
+			act->setFrame(objNum + 1);
 			break;
 		case 1:
 		case 3:
@@ -1295,7 +1296,7 @@ void Screen::printIcon(Inventory *inv, int mode, int objNum) {
 			else
 				act->setFrame(1);
 			act->display();
-			act->setFrame(objNum);
+			act->setFrame(objNum + 1);
 			break;
 		case 2:
 			if (inv->selectedBox == inv->selectedBox2) {
@@ -1306,14 +1307,14 @@ void Screen::printIcon(Inventory *inv, int mode, int objNum) {
 				else
 					act->setFrame(1);
 				act->display();
-				act->setFrame(objNum);
+				act->setFrame(objNum + 1);
 			} else {
 				if (inv->blinkLight & 4)
 					act->setFrame(0);
 				else
 					act->setFrame(1);
 				act->display();
-				act->setFrame(objNum);
+				act->setFrame(objNum + 1);
 			}
 			break;
 		}

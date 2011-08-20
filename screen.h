@@ -136,7 +136,7 @@ private:
 
 	void setPaletteBrightness();
 
-	void printIcon(Inventory *inv, int mode, int objNum);
+	void printIcon(Inventory *inv, int objNum, int mode);
 
 	void updateActionStrings();
 
