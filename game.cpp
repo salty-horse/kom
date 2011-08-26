@@ -986,32 +986,31 @@ void Game::checkUseImmediate(ObjectType type, int16 id) {
 }
 
 void Game::loopMove() {
-	Character *chr = _vm->database()->getChar(0);
+	Character *playerChar = _vm->database()->getChar(0);
 
-	if (chr->_spriteTimer == 0)
-		chr->moveChar(true);
-	chr->moveCharOther();
+	if (playerChar->_spriteTimer == 0)
+		playerChar->moveChar(true);
+	playerChar->moveCharOther();
 
-	if (chr->_spriteTimer > 0 && _player.spriteCutMoving) {
+	if (playerChar->_spriteTimer > 0 && _player.spriteCutMoving) {
 		warning("TODO: Draw moving sprite");
 	}
 
 	// TODO: something with cbMemory
 
-	if (chr->_gotoBox != chr->_lastBox) {
-		chr->_gotoBox = chr->_lastBox;
+	if (playerChar->_gotoBox != playerChar->_lastBox) {
+		playerChar->_gotoBox = playerChar->_lastBox;
 
-		_vm->database()->setCharPos(0, chr->_lastLocation, chr->_lastBox);
+		_vm->database()->setCharPos(0, playerChar->_lastLocation, playerChar->_lastBox);
 
 		// Run "enter room" script
-		doCommand(7, -1, chr->_lastBox, -1, -1);
+		doCommand(7, -1, playerChar->_lastBox, -1, -1);
 	}
 
 	for (uint16 i = 1; i < _vm->database()->charactersNum(); ++i) {
-		chr = _vm->database()->getChar(i);
+		Character *chr = _vm->database()->getChar(i);
 
 		if (!(chr->_isAlive)) {
-			// TODO - set some stuff
 			chr->_screenH = 0;
 			chr->_offset10 = 0;
 			chr->_offset14 = chr->_offset20 = 262144;
@@ -1025,21 +1024,33 @@ void Game::loopMove() {
 
 		} else {
 			if (chr->_spriteCutState == 0 && chr->_fightPartner < 0) {
-				int16 destBox = chr->_destBox;
 				chr->_gotoLoc = chr->_destLoc;
 
-				if (destBox + 5 <= 3)  {
-					switch (destBox + 5) {
-					case 0:
-					case 1:
-					case 2:
-					case 3:
+				// Special movement types
+				if (chr->_destBox <= -2)  {
+					switch (chr->_destBox) {
+					case -5: // stand in place
+						chr->_gotoLoc = chr->_lastLocation;
+						chr->_gotoX = chr->_screenX;
+						chr->_gotoY = chr->_screenY;
+						break;
+					case -4: // Stop char
+						chr->stopChar();
+						break;
+					case -3: // Go to player's box
+						chr->_gotoLoc = playerChar->_lastLocation;
+						chr->_gotoX = _vm->database()->getMidX(chr->_gotoLoc, playerChar->_gotoBox);
+						chr->_gotoY = _vm->database()->getMidY(chr->_gotoLoc, playerChar->_gotoBox);
+						break;
+					case -2:
+						chr->_gotoLoc = playerChar->_lastLocation;
+						chr->_gotoX = playerChar->_screenX;
+						chr->_gotoY = playerChar->_screenY;
 						break;
 					}
-					// TODO
 				} else {
-					chr->_gotoX = _vm->database()->getMidX(chr->_gotoLoc, destBox);
-					chr->_gotoY = _vm->database()->getMidY(chr->_gotoLoc, destBox);
+					chr->_gotoX = _vm->database()->getMidX(chr->_gotoLoc, chr->_destBox);
+					chr->_gotoY = _vm->database()->getMidY(chr->_gotoLoc, chr->_destBox);
 				}
 			}
 
