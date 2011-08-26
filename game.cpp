@@ -731,8 +731,13 @@ bool Game::doStat(const Command *cmd) {
 
 			break;
 		case 474:
+			// Rejuvenate hit/spell points
 			if (strcmp(j->arg1, "REFRESH") == 0) {
-				warning("TODO: Unhandled external action: REFRESH");
+				for (int i = 0; i < _vm->database()->charactersNum(); ++i) {
+					Character *chr = _vm->database()->getChar(i);
+					chr->_hitPoints = MIN(chr->_hitPoints + 5, chr->_hitPointsMax);
+					chr->_spellPoints = MIN(chr->_spellPoints + 5, chr->_spellPointsMax);
+				}
 			} else {
 				db->setVar(j->arg2, doExternalAction(j->arg1));
 			}
