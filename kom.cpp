@@ -312,8 +312,16 @@ void KomEngine::gameLoop() {
 		if (_flicLoaded == 0)
 			_game->loopInterfaceCollide();
 
-		if (_gameLoopTimer++ > 0x20000)
+		if (++_gameLoopTimer > 0x20000)
 			_gameLoopTimer -= 0x10000;
+
+		if (_game->player()->sleepTimer != 0) {
+			_game->player()->sleepTimer--;
+
+			// setDay is also called by the scripts, so why is this here?
+			if (_game->player()->sleepTimer == 0)
+				_game->setDay();
+		}
 
 		if (_input->debugMode()) {
 			_input->resetDebugMode();
