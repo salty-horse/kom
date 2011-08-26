@@ -55,7 +55,7 @@ class Input;
 class Panel;
 class Screen;
 
-enum {
+enum GameLoopState {
 	GAMELOOP_RUNNING = 0,
 	GAMELOOP_DEATH,
 	GAMELOOP_SELECTION,
@@ -116,7 +116,7 @@ private:
 	Game *_game;
 	Font *_font;
 
-	int _gameLoopState;
+	GameLoopState _gameLoopState;
 	int _gameLoopTimer;
 };
 
