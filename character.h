@@ -135,7 +135,7 @@ public:
 	uint16 _spriteScope;
 	uint16 _spriteTimer;
 	uint16 _spriteBox;
-	uint16 _sprite8c;
+	uint16 _spriteType;
 	const char *_spriteName;
 	int16 _scopeInUse;
 	int16 _scopeWanted;

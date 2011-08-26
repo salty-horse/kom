@@ -123,7 +123,6 @@ bool Screen::init() {
 }
 
 void Screen::processGraphics(int mode) {
-	int scale;
 
 	// handle screen objects
 	Common::Array<RoomObject> *roomObjects = _vm->game()->getObjects();
@@ -183,7 +182,7 @@ void Screen::processGraphics(int mode) {
 		chr->_start3PrevPrev = chr->_start3Prev;
 		chr->_start3Prev = chr->_start3;
 
-		scale = (chr->_start5 * 88) / 60;
+		int scale = (chr->_start5 * 88) / 60;
 
 		if (mode > 0) {
 

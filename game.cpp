@@ -991,8 +991,8 @@ void Game::loopMove() {
 		chr->moveChar(true);
 	chr->moveCharOther();
 
-	if (chr->_spriteTimer > 0) {
-		// TODO
+	if (chr->_spriteTimer > 0 && _player.spriteCutMoving) {
+		warning("TODO: Draw moving sprite");
 	}
 
 	// TODO: something with cbMemory
@@ -1173,7 +1173,7 @@ void Game::loopSpriteCut() {
 		case 2:
 			if (chr->_stopped) {
 				chr->_lastDirection = 4;
-				if (chr->_sprite8c != 0 || strlen(chr->_spriteName) >= 2) {
+				if (chr->_spriteType != 0 || strlen(chr->_spriteName) >= 2) {
 					chr->_spriteTimer = 0;
 					chr->setScope(101);
 					chr->_spriteCutState = 3;
@@ -1621,7 +1621,7 @@ void Game::doActionSpriteScene(const char *name, int charId, int loc, int box) {
 		chr->_spriteCutState = 1;
 
 	chr->_spriteName = name;
-	chr->_sprite8c = 0;
+	chr->_spriteType = 0;
 	chr->_isBusy = true;
 }
 
@@ -3060,11 +3060,11 @@ void Game::exePickup() {
 			) * playerChar->_start5 / 256;
 
 		if (distance < 50)
-			playerChar->_sprite8c = 1;
+			playerChar->_spriteType = 1;
 		else if (distance <= 120)
-			playerChar->_sprite8c = 2;
+			playerChar->_spriteType = 2;
 		else
-			playerChar->_sprite8c = 3;
+			playerChar->_spriteType = 3;
 		break;
 	case 3:
 		_player.command = CMD_NOTHING;

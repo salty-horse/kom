@@ -427,13 +427,12 @@ void Character::setScopeX(int16 scope) {
 		String name(_spriteName);
 		name.toLowercase();
 
-		switch (_sprite8c) {
+		switch (_spriteType) {
 		case 0:
 			if (_loadedScopeXtend != -1 && _actorId != -1) {
 				_vm->actorMan()->unload(_actorId);
 				_actorId = -1;
 			}
-			// TODO: load sprite
 
 			// If char is thidney
 			if (_vm->game()->player()->selectedChar == 0) {
