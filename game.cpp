@@ -1487,7 +1487,7 @@ int16 Game::doExternalAction(const char *action) {
 
 	} else if (strcmp(action, "sleepon") == 0) {
 		setNight();
-		_vm->ambientPause(true);
+		_vm->ambientStop();
 		_player.sleepTimer = 300;
 
 	} else if (strcmp(action, "sleepoff") == 0) {

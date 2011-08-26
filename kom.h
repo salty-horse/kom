@@ -84,9 +84,7 @@ public:
 	void quitGame() { _gameLoopState = GAMELOOP_QUIT; }
 
 	void ambientStart(int locId);
-
-	// TODO - original deletes the data. check if there's a benefit
-	void ambientStop() { _sound->stopSample(_ambientSample); }
+	void ambientStop();
 	void ambientPause(bool paused) { _sound->pauseSample(_ambientSample, paused); }
 
 	uint8 _flicLoaded;

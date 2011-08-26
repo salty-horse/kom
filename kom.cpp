@@ -323,7 +323,7 @@ void KomEngine::gameLoop() {
 
 	// narratorStop()
 	// stopGreeting()
-	// ambientStop()
+	ambientStop();
 	if (_gameLoopState == GAMELOOP_DEATH) {
 		// Play death video
 		if (_game->player()->hitPoints == 0) {
@@ -410,7 +410,15 @@ void KomEngine::ambientStart(int locId) {
 	// TODO: Change volume
 	} else if (musicVolume != _playingMusicVolume ) {
 	}
+}
 
+void KomEngine::ambientStop() {
+	if (_ambientSample.isLoaded()) {
+		_sound->stopSample(_ambientSample);
+		_ambientSample.unload();
+		_playingMusicId = 0;
+		_playingMusicVolume = 0;
+	}
 }
 
 } // End of namespace Kom
