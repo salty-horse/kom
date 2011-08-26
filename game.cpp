@@ -40,10 +40,6 @@ namespace Kom {
 using Common::String;
 
 Game::Game(KomEngine *vm, OSystem *system) : _system(system), _vm(vm) {
-
-	// FIXME: Temporary
-	_player.selectedChar = _player.selectedQuest = 0;
-
 	_videoPlayer = new VideoPlayer(_vm);
 	_rnd = new Common::RandomSource("kom");
 }

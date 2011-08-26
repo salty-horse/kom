@@ -128,26 +128,50 @@ Common::Error KomEngine::run() {
 	_cashSample.loadFile(samplesDir + "cash.raw");
 	_loseItemSample.loadFile(samplesDir + "loseitem.raw");
 
-	if (_game->player()->selectedChar == 0) {
-		_database->init("thid");
-	} else {
-		_database->init("shar");
-	}
-
 	_actorMan->loadExtras();
 
 	_screen->showMouseCursor(true);
 
 	_panel->enable(true);
 
-	// temporary test
-	_game->setDay();
+	_gameLoopState = GAMELOOP_SELECTION;
 
 	while (_gameLoopState != GAMELOOP_QUIT) {
-		gameLoop();
-		_panel->setLocationDesc("");
-		_panel->setActionDesc("");
-		_panel->setHotspotDesc("");
+		if (_gameLoopState == GAMELOOP_RUNNING) {
+			gameLoop();
+			_panel->setLocationDesc("");
+			_panel->setActionDesc("");
+			_panel->setHotspotDesc("");
+		}
+
+		switch (_gameLoopState) {
+		case GAMELOOP_RUNNING:
+			break;
+		case GAMELOOP_DEATH:
+			break;
+		case GAMELOOP_SELECTION:
+			ambientStop();
+
+			// TODO
+
+			_game->player()->selectedChar = 0;
+			_game->player()->selectedQuest = 0;
+
+			// TODO
+
+			if (_game->player()->selectedChar == 0) {
+				_database->init("thid");
+			} else {
+				_database->init("shar");
+			}
+
+			//TODO
+
+			_gameLoopState = GAMELOOP_RUNNING;
+			break;
+		case GAMELOOP_QUIT:
+			break;
+		}
 	}
 
 	return Common::kNoError;
