@@ -68,7 +68,7 @@ public:
 	int getXPos() { return _xPos; }
 	int getYPos() { return _yPos; }
 	uint8 getFramesNum() { return _framesNum; }
-	bool inPos(uint32 x, uint32 y) {
+	bool inPos(int32 x, int32 y) {
 		return x >= _displayLeft && x <= _displayRight &&
 		       y >= _displayTop && y <= _displayBottom; }
 
@@ -97,10 +97,10 @@ protected:
 	uint8 _scope;
 	uint8 _effect;
 	int _isActive;
-	uint32 _displayLeft;
-	uint32 _displayRight;
-	uint32 _displayTop;
-	uint32 _displayBottom;
+	int32 _displayLeft;
+	int32 _displayRight;
+	int32 _displayTop;
+	int32 _displayBottom;
 	Scope _scopes[8];
 
 private:
