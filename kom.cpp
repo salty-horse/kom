@@ -339,8 +339,11 @@ void KomEngine::gameLoop() {
 		}
 
 		// Play credits
-	}
 
+		// FIXME
+		_gameLoopState = GAMELOOP_QUIT;
+		warning("FIXME: End");
+	}
 }
 
 void KomEngine::ambientStart(int locId) {
