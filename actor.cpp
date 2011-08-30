@@ -194,7 +194,7 @@ Actor::Actor(KomEngine *vm, const char *filename, bool isMouse) : _vm(vm) {
 
 	_isMouse = isMouse;
 	_isPlayerControlled = !f.readByte();
-	_framesNum = f.readByte();
+	_framesNum = f.readSint16LE();
 
 	f.seek(10);
 	_framesDataSize = f.size() - f.pos();
@@ -208,7 +208,7 @@ Actor::~Actor() {
 	delete[] _framesData;
 }
 
-void Actor::defineScope(uint8 scopeId, int8 minFrame, int8 maxFrame, int8 startFrame) {
+void Actor::defineScope(uint8 scopeId, int16 minFrame, int16 maxFrame, int16 startFrame) {
 	assert(scopeId < 8);
 
 	_scopes[scopeId].minFrame = minFrame;
@@ -216,7 +216,7 @@ void Actor::defineScope(uint8 scopeId, int8 minFrame, int8 maxFrame, int8 startF
 	_scopes[scopeId].startFrame = startFrame;
 }
 
-void Actor::defineScopeAlias(uint8 scopeId, const uint8 *aliasData, uint8 length) {
+void Actor::defineScopeAlias(uint8 scopeId, const int16 *aliasData, uint8 length) {
 	assert(scopeId < 8);
 
 	_scopes[scopeId].minFrame = 0;
@@ -240,7 +240,7 @@ void Actor::switchScope(uint8 scopeId, uint16 animDuration) {
 		setScope(scopeId, animDuration);
 }
 
-void Actor::setAnim(uint8 minFrame, uint8 maxFrame, uint16 animDuration) {
+void Actor::setAnim(int16 minFrame, int16 maxFrame, uint16 animDuration) {
 	if (minFrame <= maxFrame) {
 		_minFrame = minFrame;
 		_maxFrame = maxFrame;
@@ -280,7 +280,7 @@ void Actor::animate() {
 }
 
 void Actor::display() {
-	uint8 frame;
+	int16 frame;
 	int32 offset;
 	int16 width, height;
 	int32 xStart, yStart;
@@ -349,11 +349,11 @@ void Actor::display() {
 	}
 }
 
-const uint8 Actor::_exitCursorAnimation[] = {
+const int16 Actor::_exitCursorAnimation[] = {
 	5, 6, 7, 8, 9, 10, 11, 12, 13, 12, 11, 10, 9, 8, 7, 6
 };
 
-const uint8 Actor::_inventoryCursorAnimation[] = {
+const int16 Actor::_inventoryCursorAnimation[] = {
 	21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 21, 21, 21
 };
 

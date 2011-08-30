@@ -29,10 +29,10 @@ namespace Kom {
 
 struct Scope {
 	Scope() : aliasData(0), minFrame(0), maxFrame(0), startFrame(-1) {}
-	int8 minFrame;
-	int8 maxFrame;
-	int8 startFrame;
-	const uint8* aliasData;
+	int16 minFrame;
+	int16 maxFrame;
+	int16 startFrame;
+	const int16* aliasData;
 };
 
 class KomEngine;
@@ -44,18 +44,18 @@ friend class ActorManager;
 public:
 	~Actor();
 
-	void defineScope(uint8 scopeId, int8 minFrame, int8 maxFrame, int8 startFrame);
+	void defineScope(uint8 scopeId, int16 minFrame, int16 maxFrame, int16 startFrame);
 
 	/**
 	 * Allows a hard-coded frame sequence. It is only used for the exit/inventory cursor
 	 * animations which repeat the edge frames several times and play the frames
 	 * forward and then in reverse
 	 */
-	void defineScopeAlias(uint8 scopeId, const uint8 *aliasData, uint8 length);
+	void defineScopeAlias(uint8 scopeId, const int16 *aliasData, uint8 length);
 
 	void setScope(uint8 scopeId, uint16 animDuration);
 	void switchScope(uint8 scopeId, uint16 animDuration);
-	void setAnim(uint8 minFrame, uint8 maxFrame, uint16 animDuration);
+	void setAnim(int16 minFrame, int16 maxFrame, uint16 animDuration);
 	void animate();
 	void display();
 
@@ -64,10 +64,10 @@ public:
 	void setRatio(uint16 xRatio, uint16 yRatio) { _xRatio = xRatio; _yRatio = yRatio; }
 	void setMaskDepth(int maskDepth, int depth) { _maskDepth = maskDepth; _depth = depth; }
 	void setEffect(uint8 effect) { _effect = effect; }
-	void setFrame(uint8 frame) { _currentFrame = frame; }
+	void setFrame(int16 frame) { _currentFrame = frame; }
 	int getXPos() { return _xPos; }
 	int getYPos() { return _yPos; }
-	uint8 getFramesNum() { return _framesNum; }
+	int16 getFramesNum() { return _framesNum; }
 	bool inPos(int32 x, int32 y) {
 		return x >= _displayLeft && x <= _displayRight &&
 		       y >= _displayTop && y <= _displayBottom; }
@@ -76,11 +76,11 @@ public:
 protected:
 	Actor(KomEngine *vm, const char *filename, bool isMouse = false);
 
-	uint8 _framesNum;
+	int16 _framesNum;
 	byte _isPlayerControlled;
-	uint8 _currentFrame;
-	uint8 _minFrame;
-	uint8 _maxFrame;
+	int16 _currentFrame;
+	int16 _minFrame;
+	int16 _maxFrame;
 	uint16 _animDurationTimer;
 	uint16 _animDuration;
 	bool _reverseAnim;
@@ -112,8 +112,8 @@ private:
 
 	bool _isMouse;
 
-	static const uint8 _exitCursorAnimation[];
-	static const uint8 _inventoryCursorAnimation[];
+	static const int16 _exitCursorAnimation[];
+	static const int16 _inventoryCursorAnimation[];
 };
 
 class ActorManager {
