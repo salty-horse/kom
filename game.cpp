@@ -1268,18 +1268,27 @@ void Game::loopInterfaceCollide() {
 				playerChar->_screenX, playerChar->_screenY,
 				&_settings.collideBox, &_settings.collideBoxX,
 				&_settings.collideBoxY);
+
+	// Found a box
 	} else {
 		Box *box = _vm->database()->getBox(playerChar->_lastLocation,
 				_settings.collideBox);
 
 		boxId = _settings.collideBox;
 
+		// Change to a linked box
 		if ((box->attrib & 8) != 0) {
-			int link = _vm->database()->getFirstLink(
-						playerChar->_lastLocation,
-						_settings.collideBox);
-			if (link != -1)
-				boxId = link;
+			// Find last link
+			for (int i = 5; i >= 0; i--) {
+				int link = _vm->database()->getBoxLink(
+							playerChar->_lastLocation,
+							_settings.collideBox,
+							i);
+				if (link != -1) {
+					boxId = link;
+					break;
+				}
+			}
 		}
 
 		box = _vm->database()->getBox(playerChar->_lastLocation,
