@@ -1349,6 +1349,14 @@ void Screen::writeText(byte *buf, const char *text, uint8 row, uint16 col, uint8
 		writeTextStyle(buf, text, row, col, 0, true);
 
 	writeTextStyle(buf, text, row, col, color, false);
+
+	// Report dirty rect if above panel area
+	if (row < SCREEN_H - PANEL_H) {
+		if (isEmbossed)
+			_dirtyRects->push_back(Rect(col - 1, row - 1, col + getTextWidth(text) + 1, row + 8 + 1));
+		else
+			_dirtyRects->push_back(Rect(col, row, col + getTextWidth(text), row + 8));
+	}
 }
 void Screen::writeTextStyle(byte *buf, const char *text, uint8 startRow, uint16 startCol, uint8 color, bool isBackground) {
 	uint16 col = startCol;
