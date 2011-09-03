@@ -266,8 +266,7 @@ void Input::handleMouse() {
 						player->command = CMD_FIGHT;
 						player->commandState = 0;
 						playerChar->stopChar();
-					}
-					else {
+					} else {
 						// Walk to char
 						playerChar->_gotoX = gotoX;
 						playerChar->_gotoY = gotoY;
@@ -294,8 +293,7 @@ void Input::handleMouse() {
 						player->command = CMD_CAST_SPELL;
 						player->commandState = 0;
 						playerChar->stopChar();
-					}
-					else {
+					} else {
 						// Stand in place
 						playerChar->_gotoX = playerChar->_screenX;
 						playerChar->_gotoY = playerChar->_screenY;
