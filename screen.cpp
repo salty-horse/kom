@@ -112,10 +112,7 @@ Screen::~Screen() {
 }
 
 bool Screen::init() {
-	_system->beginGFXTransaction();
-		initCommonGFX(false);
-		_system->initSize(SCREEN_W, SCREEN_H);
-	_system->endGFXTransaction();
+	initGraphics(SCREEN_W, SCREEN_H, false);
 
 	useColorSet(_c0ColorSet, 0);
 
