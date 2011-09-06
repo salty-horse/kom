@@ -1488,7 +1488,7 @@ void Screen::writeText(byte *buf, const char *text, uint8 row, uint16 col, uint8
 	writeTextStyle(buf, text, row, col, color, false);
 
 	// Report dirty rect if above panel area
-	if (row < SCREEN_H - PANEL_H) {
+	if (buf == _screenBuf && row < SCREEN_H - PANEL_H) {
 		if (isEmbossed)
 			_dirtyRects->push_back(Rect(col - 1, row - 1, col + getTextWidth(text) + 1, row + 8 + 1));
 		else
