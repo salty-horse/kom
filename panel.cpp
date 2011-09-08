@@ -160,8 +160,6 @@ void Panel::update() {
 			// Regular object
 			if (currObj < 10000) {
 				frame = currObj + 1;
-				if (_gotObjTime == 12)
-					_vm->sound()->playSampleSFX(_vm->_swipeSample, false);
 
 			// Money
 			} else {
