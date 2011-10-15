@@ -184,7 +184,37 @@ void Game::enterLocation(uint16 locId) {
 	_vm->panel()->suppressLoading();
 }
 
-void Game::hitExit(uint16 charId, bool something) {
+//* Make sure no room has 5 characters */
+void Game::housingProblem(uint16 charId) {
+	Character *chr = _vm->database()->getChar(charId);
+
+	bool mustMove = false;
+
+	for (int attempt = 0; attempt < 5; ++attempt) {
+		int count = 0;
+
+		for (int i = 0; i < _vm->database()->charactersNum(); ++i) {
+			Character *chr2 = _vm->database()->getChar(i);
+
+			if (chr->_lastLocation == chr2->_lastLocation) {
+				count++;
+			}
+		}
+
+		if (count >= 5)
+			mustMove = true;
+
+		// If we already teleported, and there are still 5 characters,
+		// stop trying if the player is not in the same room
+		if (count < 5 && (!mustMove || chr->_lastLocation != _vm->database()->getChar(0)->_lastLocation))
+			return;
+
+		// Cast teleport spell, and re-check
+		doCommand(3, 1, 65, 2, chr->_id);
+	}
+}
+
+void Game::hitExit(uint16 charId, bool checkHousing) {
 	int exitLoc, exitBox;
 	Character *chr = _vm->database()->getChar(charId);
 
@@ -193,9 +223,8 @@ void Game::hitExit(uint16 charId, bool something) {
 
 	if (charId == 0) {
 		enterLocation(exitLoc);
-	} else if (something) {
-		// TODO? used for cheat codes?
-		// housingProblem(charId);
+	} else if (checkHousing) {
+		housingProblem(charId);
 	}
 
 	chr->_gotoBox = -1;

@@ -188,7 +188,7 @@ public:
 	~Game();
 
 	void enterLocation(uint16 locId);
-	void hitExit(uint16 charId, bool something);
+	void hitExit(uint16 charId, bool checkHousing);
 	void processTime();
 	bool doStat(const Command *cmd);
 	void doCommand(int command, int type, int id, int type2, int id2);
@@ -268,6 +268,8 @@ private:
 	void moveCharOther(uint16 charId);
 
 	int getDonutSegment(int xPos, int yPos);
+
+	void housingProblem(uint16 charId);
 };
 
 } // End of namespace Kom
