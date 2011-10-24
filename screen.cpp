@@ -761,7 +761,7 @@ void Screen::updateActionStrings() {
 			else
 				text3 = "Cast spell at";
 
-			if (hoverId != 2)
+			if (hoverType != 2)
 				text4 = "...";
 			else
 				text4 = _vm->database()->getChar(hoverId)->_desc;
