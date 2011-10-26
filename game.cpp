@@ -927,7 +927,7 @@ void Game::doCommand(int command, int type, int id, int type2, int id2) {
 
 	// Pick up
 	case 4:
-		if (!_vm->database()->giveObject(id, 0, false))
+		if (!_vm->database()->giveObject(id, 0))
 			doProc(315, 1, id, -1, -1);
 		break;
 
@@ -942,8 +942,26 @@ void Game::doCommand(int command, int type, int id, int type2, int id2) {
 			if (chr->_isAlive) {
 				doProc(316, 2, id, -1, -1);
 				doLookAt(id);
+
+			// Move all items to player
 			} else {
-				warning("TODO: look at dead char");
+				while (!chr->_inventory.empty()) {
+					_vm->database()->giveObject(chr->_inventory.front(), 0);
+				}
+				while (!chr->_weapons.empty()) {
+					_vm->database()->giveObject(chr->_weapons.front(), 0);
+				}
+				while (!chr->_spells.empty()) {
+					_vm->database()->giveObject(chr->_spells.front(), 0);
+				}
+				_vm->database()->getChar(0)->_gold = chr->_gold;
+				chr->_gold = 0;
+				chr->_isVisible = false;
+				chr->_locationId = 0;
+				chr->_box = 0;
+				doActionMoveChar(id, 0, 0);
+				chr->_destLoc = -4;
+				chr->_destBox = -4;
 			}
 			break;
 		case 3:

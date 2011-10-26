@@ -164,7 +164,7 @@ public:
 			int16 *collideBox, uint16 *collideBoxX, uint16 *collideBoxY);
 
 	void setCharPos(int charId, int loc, int box);
-	bool giveObject(int obj, int charId, bool noAnimation);
+	bool giveObject(int obj, int charId, bool noAnimation = false);
 
 	Process *getProc(uint16 procIndex) const { return procIndex < _procsNum ? &(_processes[procIndex]) : NULL; }
 	Character *getChar(uint16 charIndex) const { return charIndex < _charactersNum ? &(_characters[charIndex]) : NULL; }

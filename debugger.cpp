@@ -70,7 +70,7 @@ bool Debugger::Cmd_Give(int argc, const char **argv) {
 			DebugPrintf("No such object\n");
 			return true;
 		} else {
-			if (_vm->database()->giveObject(objId, 0, false))
+			if (_vm->database()->giveObject(objId, 0))
 				DebugPrintf("Got %s\n", obj->desc);
 			else
 				DebugPrintf("Could not get %s\n", obj->desc);
