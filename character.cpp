@@ -417,10 +417,19 @@ void Character::setScopeX(int16 scope) {
 	if (_loadedScopeXtend != -1 && _scopeInUse == scope)
 		return;
 
-	// TODO - check spell effect and handle cabbage/grave/cutscene
-
+	// grave
 	if (scope == 100) {
-		warning("TODO: grave");
+		if (_loadedScopeXtend != -1) {
+			_vm->actorMan()->unload(_actorId);
+			_actorId = -1;
+		}
+		_actorId = _vm->actorMan()->load("kom/actors/grave.act");
+		act = _vm->actorMan()->get(_actorId);
+		act->enable(1);
+		act->defineScope(0, 0, 0, 0);
+		act->setScope(0, 1);
+		_scopeInUse = scope;
+		_loadedScopeXtend = -9999;
 
 	// sprite cutscene
 	} else if (scope == 101) {
