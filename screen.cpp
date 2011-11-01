@@ -1224,6 +1224,14 @@ void Screen::drawFightBars() {
 
 		// Draw bar
 		int drawnHitPoints = MIN(player->enemyHitPointsOld, (int16)256);
+
+		// Draw a full bar for immortal enemies
+		bool immortal = false;
+		if (drawnHitPoints < 0) {
+			drawnHitPoints = 256;
+			immortal = true;
+		}
+
 		for (int i = 0; i < drawnHitPoints / 2; i++) {
 			act->setFrame(i + 129);
 			act->display();
@@ -1241,8 +1249,7 @@ void Screen::drawFightBars() {
 		writeTextRight(_vm->screen()->screenBuf(), desc, 17, 285, 31, false);
 
 		// Write hit points
-
-		if (drawnHitPoints >= 0)
+		if (!immortal)
 			sprintf(buf, "%d", drawnHitPoints);
 		else
 			strcpy(buf, "Immortal");
