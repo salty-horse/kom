@@ -389,6 +389,80 @@ void Character::stopChar() {
 	_vm->database()->setCharPos(_id, _lastLocation, _lastBox);
 }
 
+//* Make sure no room has 5 characters */
+void Character::housingProblem() {
+	bool mustMove = false;
+
+	for (int attempt = 0; attempt < 5; ++attempt) {
+		int count = 0;
+
+		for (int i = 0; i < _vm->database()->charactersNum(); ++i) {
+			Character *chr2 = _vm->database()->getChar(i);
+
+			if (_lastLocation == chr2->_lastLocation) {
+				count++;
+			}
+		}
+
+		if (count >= 5)
+			mustMove = true;
+
+		// If we already teleported, and there are still 5 characters,
+		// stop trying if the player is not in the same room
+		if (count < 5 && (!mustMove || _lastLocation != _vm->database()->getChar(0)->_lastLocation))
+			return;
+
+		// Cast teleport spell, and re-check
+		_vm->game()->doCommand(3, 1, 65, 2, _id);
+	}
+}
+
+void Character::hitExit(bool checkHousing) {
+	int exitLoc, exitBox;
+
+	_vm->database()->getExitInfo(_lastLocation, _lastBox, &exitLoc, &exitBox);
+
+	if (_id == 0) {
+		_vm->game()->enterLocation(exitLoc);
+	} else if (checkHousing) {
+		housingProblem();
+	}
+
+	_gotoBox = -1;
+	_lastLocation = exitLoc;
+	_lastBox = exitBox;
+
+	for (int i = 0; i < 6; ++i) {
+		int8 linkBox = _vm->database()->getBoxLink(exitLoc, exitBox, i);
+
+		if (linkBox == -1 || (_vm->database()->getBox(exitLoc, linkBox)->attrib & 0xe) != 0)
+			continue;
+
+		_screenX = _vm->database()->getMidX(exitLoc, linkBox);
+		_screenY = _vm->database()->getMidY(exitLoc, linkBox);
+
+		if (_spriteCutState == 0) {
+			_gotoX = _screenX;
+			_gotoY = _screenY;
+			_gotoLoc = exitLoc;
+		} else if (_lastLocation == _gotoLoc) {
+			_gotoX = _vm->database()->getMidX(_lastLocation, _spriteBox);
+			_gotoY = _vm->database()->getMidY(_lastLocation, _spriteBox);
+		}
+
+		_start3 = _screenX * 256;
+		_start4 = _screenY * 256;
+		_start3PrevPrev = _start3Prev;
+		_start3Prev = _start3;
+		_start4PrevPrev = _start4Prev;
+		_start4Prev = _start4;
+		_start5 = 65280;
+		_start5Prev = 65536;
+		_start5PrevPrev = 66048;
+		_lastDirection = 4;
+	}
+}
+
 void Character::setScope(int16 scope) {
 	//Actor *act;
 	int16 newScope = scope;

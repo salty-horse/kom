@@ -143,6 +143,7 @@ public:
 	void moveChar(bool param);
 	void moveCharOther();
 	void stopChar();
+	void hitExit(bool checkHousing);
 	void setScope(int16 scope);
 	void unsetSpell();
 
@@ -151,6 +152,8 @@ public:
 private:
 	void setScopeX(int16 scope);
 	void setAnimation(int16 anim, int16 scope);
+
+	void housingProblem();
 
 protected:
 	static KomEngine *_vm;
