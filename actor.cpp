@@ -112,7 +112,6 @@ void ActorManager::loadExtras() {
 	_fightBarRActor->enable(0);
 	_fightBarRActor->setEffect(4);
 
-	// TODO: Load 4 more clouds
 	Actor *act;
 	_cloudActorId = load("kom/oneoffs/cloud.act");
 	act = get(_cloudActorId);
@@ -134,6 +133,14 @@ void ActorManager::loadExtras() {
 	act->defineScope(1, 1, 1, 1);
 	act->defineScope(2, 2, 2, 2);
 	act->defineScope(3, 3, 3, 3);
+
+	for (int i = 0; i < 4; i++) {
+		_cloudNPC[i] = load("kom/oneoffs/cloud.act");
+		act = get(_cloudNPC[i]);
+		act->enable(0);
+		act->defineScope(0, 0, 3, 0);
+		act->setScope(0, 2);
+	}
 }
 
 void ActorManager::displayAll() {

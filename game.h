@@ -70,7 +70,9 @@ enum ObjectType {
 struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
 		narratorPatience(0), lastItemUsed(-1), lastWeaponUsed(-1),
-		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0) {}
+		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0) {
+			for (int i = 0; i < 4; i++) fightNPCCloud[i].charId = -1;
+		}
 	uint16 mouseState;
 	bool mouseOverExit;
 	uint16 mouseX;
@@ -120,6 +122,11 @@ struct Settings {
 	int16 fightEffectTimer;
 	int16 fightEffectScope;
 	Character fightEffectChar;
+
+	struct NPCCloud {
+		int16 charId;
+		int16 timer;
+	} fightNPCCloud[4];
 };
 
 enum CommandType {
@@ -247,6 +254,7 @@ public:
 
 	void declareNewEnemy(int16 enemy);
 	void doFight(int enemyId, int weaponId);
+	void doNPCFight(int attacker, int defender);
 
 	void exeUse();
 	void exeTalk();
@@ -278,7 +286,7 @@ private:
 	bool doProc(int command, int type, int id, int type2, int id2);
 	void doNoUse();
 	int16 doExternalAction(const char *action);
-	bool doActionCollide(uint16 char1, int16 char2);
+	bool doActionCollide(int16 char1, int16 char2);
 
 	void doActionDusk();
 	void doActionDawn();

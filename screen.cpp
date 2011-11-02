@@ -152,6 +152,53 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 
 	// handle dust clouds - NPCs
 	for (int i = 0; i < 4; i++) {
+		Actor *act = _vm->actorMan()->getNPCCloudActor(i);
+		act->enable(0);
+		if (settings->fightNPCCloud[i].timer == 0)
+			continue;
+
+		// Fight started
+		if (settings->fightNPCCloud[i].timer == 35) {
+			_vm->sound()->playSampleSFX(_vm->_weaponSample, false);
+		}
+
+		Character *fighter = _vm->database()->getChar(settings->fightNPCCloud[i].charId);
+
+		// Figure out fight distance from player
+		static const int fightDistanceVolume[] = { 256, 115, 50, 20, 10, 0 };
+		int distance = 0;
+		if (playerChar->_lastLocation != fighter->_lastLocation) {
+			int fightLoc = fighter->_lastLocation;
+			int newLoc = playerChar->_lastLocation;
+			for (distance = 1; distance < (int)sizeof(fightDistanceVolume) - 1; distance++) {
+				newLoc = _vm->database()->loc2loc(newLoc, fightLoc);
+				if (newLoc == -1)
+					break;
+			}
+		}
+
+		// TODO - decrease volume
+		// int volume = fightDistanceVolume[distance];
+
+		// Draw cloud
+		if (playerChar->_lastLocation == fighter->_lastLocation) {
+			int scale = fighter->_start5 * 88 / 60;
+			act->enable(1);
+			act->setPos(fighter->_screenX / 2, fighter->_start4 / 256 / 2);
+			act->setRatio(fighter->_ratioX / scale, fighter->_ratioY / scale);
+			act->setMaskDepth(fighter->_priority, fighter->_start5);
+		}
+		settings->fightNPCCloud[i].timer--;
+
+		// End fight
+		if (settings->fightNPCCloud[i].timer == 0) {
+			act->enable(0);
+			fighter->_isBusy = false;
+			_vm->database()->getChar(fighter->_fightPartner)->_isBusy = false;
+			_vm->database()->getChar(fighter->_fightPartner)->_fightPartner = -1;
+			fighter->_fightPartner = -1;
+			settings->fightNPCCloud[i].charId = -1;
+		}
 	}
 
 	// unload actors in other rooms
@@ -218,6 +265,8 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 						_vm->database()->getPriority(chr->_lastLocation, chr->_lastBox),
 						maskDepth);
 				act->setRatio(chr->_ratioX / scale, chr->_ratioY / scale);
+			} else if (chr->_actorId != -1) {
+				_vm->actorMan()->get(chr->_actorId)->enable(0);
 			}
 		}
 	}

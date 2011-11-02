@@ -766,8 +766,8 @@ bool Game::doStat(const Command *cmd) {
 		case 474:
 			// Rejuvenate hit/spell points
 			if (strcmp(j->arg1, "REFRESH") == 0) {
-				for (int i = 0; i < _vm->database()->charactersNum(); ++i) {
-					Character *chr = _vm->database()->getChar(i);
+				for (int i = 0; i < db->charactersNum(); ++i) {
+					Character *chr = db->getChar(i);
 					chr->_hitPoints = MIN(chr->_hitPoints + 5, chr->_hitPointsMax);
 					chr->_spellPoints = MIN(chr->_spellPoints + 5, chr->_spellPointsMax);
 				}
@@ -826,10 +826,41 @@ bool Game::doStat(const Command *cmd) {
 		case 486:
 			_settings.fightEnabled = false;
 			break;
-		case 487:
-			//warning("TODO: npcFight(%d, %d)", j->arg2, j->arg3);
+		case 487: {
+			Character *chr1 = db->getChar(j->arg2);
+			if (!chr1->_isAlive || chr1->_isBusy) {
+				keepProcessing = false;
+				break;
+			}
+
+			Character *chr2 = db->getChar(j->arg3);
+			if (!chr2->_isAlive || chr2->_isBusy) {
+				keepProcessing = false;
+				break;
+			}
+			if (!doActionCollide(j->arg2, j->arg3)) {
+				keepProcessing = false;
+				break;
+			}
+
+			doNPCFight(j->arg2, j->arg3);
+			doNPCFight(j->arg3, j->arg2);
+
+			// Find unused cloud
+			for (int i = 0; i < 4; i++) {
+				if (_settings.fightNPCCloud[i].charId == -1) {
+					_settings.fightNPCCloud[i].charId = MIN(j->arg2, j->arg3);
+					_settings.fightNPCCloud[i].timer = 35;
+					chr1->_fightPartner = j->arg3;
+					chr2->_fightPartner = j->arg2;
+					chr1->_isBusy = true;
+					chr2->_isBusy = true;
+					break;
+				}
+			}
 			keepProcessing = false;
 			break;
+		}
 		case 488:
 			warning("TODO: castSpell(%d, %d, %d)", j->arg2, j->arg3, j->arg4);
 			break;
@@ -1153,7 +1184,7 @@ void Game::loopMove() {
 				chr->_lastDirection = 4;
 			}
 
-			// TODO - fight-related thing
+			// TODO - greet-related thing
 
 			if (chr->_mode == 1)
 				chr->stopChar();
@@ -1486,6 +1517,11 @@ void Game::loopInterfaceCollide() {
 		if (chr->_spriteCutState != 0 && chr->_scopeInUse != 12)
 			continue;
 
+		// Characters in the current room may have no actor
+		// if they are in a fight
+		if (chr->_actorId == -1)
+			continue;
+
 		// If the mouse is over the drawn character
 		Actor *act = _vm->actorMan()->get(chr->_actorId);
 		if (!act->inPos(_settings.mouseX / 2, _settings.mouseY / 2))
@@ -1671,7 +1707,7 @@ void Game::doActionMoveChar(uint16 charId, int16 loc, int16 box) {
 	chr->_lastDirection = 4;
 }
 
-bool Game::doActionCollide(uint16 char1, int16 char2) {
+bool Game::doActionCollide(int16 char1, int16 char2) {
 	Character *chr1 = _vm->database()->getChar(char1);
 	Character *chr2 = _vm->database()->getChar(char2);
 
@@ -3114,8 +3150,8 @@ void Game::doFight(int enemyId, int weaponId) {
 			damage = _vm->rnd()->getRandomNumber(damageRange - 1) + playerChar->_minDamage + 1;
 		}
 
-		int damageToEnemy = MAX(playerChar->_strength - enemy->_defense, 0);
-		enemy->_hitPoints -= damageToEnemy + damage;
+		int baseDamageToEnemy = MAX(playerChar->_strength - enemy->_defense, 0);
+		enemy->_hitPoints -= baseDamageToEnemy + damage;
 		if (enemy->_hitPoints <= 0) {
 			enemy->unsetSpell();
 			enemy->_hitPoints = 0;
@@ -3146,12 +3182,55 @@ void Game::doFight(int enemyId, int weaponId) {
 	}
 
 	// Damage player
-	int damageToPlayer = MAX(enemy->_strength - playerChar->_defense, 0);
-	playerChar->_hitPoints -= damageToPlayer + enemyDamage;
+	int baseDamageToPlayer = MAX(enemy->_strength - playerChar->_defense, 0);
+	playerChar->_hitPoints -= baseDamageToPlayer + enemyDamage;
 	if (playerChar->_hitPoints <= 0) {
 		playerChar->unsetSpell();
 		playerChar->_hitPoints = 0;
 		playerChar->_isAlive = false;
+	}
+}
+
+void Game::doNPCFight(int attackerId, int defenderId) {
+	Character *attacker = _vm->database()->getChar(attackerId);
+	Character *defender = _vm->database()->getChar(defenderId);
+
+	if (!defender->_isMortal)
+		return;
+
+	int damageRange = MAX(attacker->_maxDamage - attacker->_minDamage, 1);
+	int attackDamage = _vm->rnd()->getRandomNumber(damageRange - 1) + attacker->_minDamage + 1;
+
+	// Use held weapon
+	if (!attacker->_weapons.empty()) {
+		int weaponId = *attacker->_weapons.begin();
+		if (attackerId == 0)
+			weaponId = _settings.lastWeaponUsed;
+
+		Object *weapon = _vm->database()->getObj(weaponId);
+
+		// Don't use thermal detonator
+		if (weapon->minDamage == -10)
+			return;
+
+		int weaponRange = MAX(weapon->maxDamage - weapon->minDamage, 1);
+		attackDamage = _vm->rnd()->getRandomNumber(weaponRange - 1) + weapon->minDamage + 1;
+	}
+
+	int baseDamage = MAX(attacker->_strength - defender->_defense, 0);
+	defender->_hitPoints -= baseDamage + attackDamage;
+	if (defender->_hitPoints <= 0) {
+		defender->unsetSpell();
+		defender->_hitPoints = 0;
+		defender->_isAlive = false;
+		if (defender->_spellMode != 0) {
+			// TODO: doActionUnsetSpell(defenderId, defender->_spellMode);
+		}
+		defender->_mode = 0;
+		defender->_modeCount = 0;
+		defender->_spellMode = 0;
+		defender->_spellDuration = 0;
+		// TODO: doActionSetSpell(defenderId, 0);
 	}
 }
 
