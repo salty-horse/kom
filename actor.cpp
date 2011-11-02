@@ -111,6 +111,29 @@ void ActorManager::loadExtras() {
 	_fightBarRActor = new Actor(_vm, "kom/oneoffs/healthr.act");
 	_fightBarRActor->enable(0);
 	_fightBarRActor->setEffect(4);
+
+	// TODO: Load 4 more clouds
+	Actor *act;
+	_cloudActorId = load("kom/oneoffs/cloud.act");
+	act = get(_cloudActorId);
+	act->enable(0);
+	act->defineScope(0, 0, 3, 0);
+	act->setScope(0, 2);
+
+	_cloudEffectActorId = load("kom/oneoffs/cloudic1.act");
+	act = get(_cloudEffectActorId);
+	act->enable(0);
+	act->setMaskDepth(0, 1);
+	act->defineScope(0, 0, 7, 0);
+	act->defineScope(1, 8, 12, 8);
+
+	_cloudWordActorId = load("kom/oneoffs/cloudic2.act");
+	act = get(_cloudWordActorId);
+	act->enable(0);
+	act->defineScope(0, 0, 0, 0);
+	act->defineScope(1, 1, 1, 1);
+	act->defineScope(2, 2, 2, 2);
+	act->defineScope(3, 3, 3, 3);
 }
 
 void ActorManager::displayAll() {

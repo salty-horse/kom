@@ -72,7 +72,7 @@ public:
 
 	byte *screenBuf() { return _screenBuf; }
 
-	void processGraphics(int mode);
+	void processGraphics(int mode, bool samplePlaying = false);
 	void drawDirtyRects();
 	void gfxUpdate();
 	void clearScreen();

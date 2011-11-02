@@ -131,6 +131,9 @@ public:
 	Actor *getCoinage() { return _coinageActor; }
 	Actor *getFightBarL() { return _fightBarLActor; }
 	Actor *getFightBarR() { return _fightBarRActor; }
+	Actor *getCloudActor() { return get(_cloudActorId); }
+	Actor *getCloudEffectActor() { return get(_cloudEffectActorId); }
+	Actor *getCloudWordActor() { return get(_cloudWordActorId); }
 	void unload(int idx) { if (idx >= 0) { delete _actors[idx]; _actors[idx] = 0; } }
 	void unloadAll() { for (uint i = 0; i < _actors.size(); i++) unload(i); }
 	void displayAll();
@@ -147,6 +150,9 @@ private:
 	Actor *_coinageActor;
 	Actor *_fightBarLActor;
 	Actor *_fightBarRActor;
+	int _cloudActorId;
+	int _cloudEffectActorId;
+	int _cloudWordActorId;
 
 	Actor *getFarthestActor();
 };

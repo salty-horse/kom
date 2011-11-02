@@ -37,10 +37,10 @@ public:
 	Character() :
 		_mode(0), _modeCount(0), _isBusy(false), _isAlive(true), _isVisible(true),
 		_spellMode(0), _gold(0),
-		_actorId(-1), _screenH(0), _screenDH(0), _offset0c(0), _offset10(0),
+		_actorId(-1), _screenH(0), _offset0c(0), _offset10(0),
 		_offset14(262144), _offset1c(0), _offset20(262144), _offset28(0), _ratioX(262144),
 		_ratioY(262144), _relativeSpeed(1024), _direction(0), _lastDirection(2),
-		_stoppedTime(0), _spriteName(0),
+		_stopped(true), _stoppedTime(0), _spriteName(0),
 		_scopeInUse(-1), _scopeWanted(8), _loadedScopeXtend(-1), _priority(0), _fightPartner(-1),
 		_spriteCutState(0), _spriteScope(0), _spriteTimer(0), _spriteBox(0), _somethingX(0),
 		_somethingY(0) {}
@@ -59,7 +59,7 @@ public:
 	int _data6;
 	int _data7;
 	int _data8;
-	int _data9;
+	int _isMortal;
 	int _hitPoints;
 	int _hitPointsMax;
 	uint16 _mode;
@@ -74,8 +74,8 @@ public:
 	int _oldHitPoints;
 	int _oldStrength;
 	int _oldDefense;
-	int _damageMin;
-	int _damageMax;
+	int _minDamage;
+	int _maxDamage;
 	int _data14; // spell speed - unused
 	int _data15; // spell time - unused
 	int _data16;
@@ -93,8 +93,7 @@ public:
 	int16 _actorId;
 	int16 _screenX;
 	int16 _screenY;
-	int16 _screenH;
-	int16 _screenDH;
+	int32 _screenH;
 	int32 _offset0c;
 	int32 _offset10;
 	int32 _offset14;

@@ -119,7 +119,10 @@ bool Screen::init() {
 	return true;
 }
 
-void Screen::processGraphics(int mode) {
+void Screen::processGraphics(int mode, bool samplePlaying) {
+	Settings *settings = _vm->game()->settings();
+	Player *player = _vm->game()->player();
+	Character *playerChar = _vm->database()->getChar(0);
 
 	// handle screen objects
 	Common::Array<RoomObject> *roomObjects = _vm->game()->getObjects();
@@ -147,13 +150,15 @@ void Screen::processGraphics(int mode) {
 		}
 	}
 
-	// handle dust clouds
+	// handle dust clouds - NPCs
+	for (int i = 0; i < 4; i++) {
+	}
 
 	// unload actors in other rooms
 	for (int i = 1; i < _vm->database()->charactersNum(); ++i) {
 		Character *chr = _vm->database()->getChar(i);
 
-		if (_vm->database()->getChar(0)->_lastLocation != chr->_lastLocation ||
+		if (playerChar->_lastLocation != chr->_lastLocation ||
 			!_vm->database()->getChar(i)->_isVisible) {
 
 			if (chr->_loadedScopeXtend != -1) {
@@ -183,9 +188,8 @@ void Screen::processGraphics(int mode) {
 
 		if (mode > 0) {
 
-			// TODO - disable actor if in fight
-			if (_vm->database()->getChar(0)->_lastLocation == chr->_lastLocation &&
-				chr->_isVisible) {
+			if (playerChar->_lastLocation == chr->_lastLocation &&
+				chr->_fightPartner == -1 && chr->_isVisible) {
 
 				int maskDepth;
 
@@ -198,10 +202,10 @@ void Screen::processGraphics(int mode) {
 							 / scale) / 256 / 2);
 					maskDepth = 32767;
 				} else if (i == 0 && chr->_spriteTimer != 0 &&
-						   _vm->game()->player()->spriteCutMoving) {
+						   player->spriteCutMoving) {
 
-					act->setPos(_vm->game()->player()->spriteCutX,
-								_vm->game()->player()->spriteCutY);
+					act->setPos(player->spriteCutX,
+								player->spriteCutY);
 					maskDepth = chr->_start5;
 				} else {
 					act->setPos(chr->_screenX / 2,
@@ -218,7 +222,251 @@ void Screen::processGraphics(int mode) {
 		}
 	}
 
-	// TODO - handle dust clouds again?
+	Character *enemyChar = _vm->database()->getChar(player->enemyId);
+
+	// handle dust clouds
+	if (settings->fightTimer != 0) {
+		Actor *playerActor = _vm->actorMan()->get(playerChar->_actorId);
+		Actor *enemyActor = _vm->actorMan()->get(enemyChar->_actorId);
+		playerActor->enable(0);
+		enemyActor->enable(0);
+		playerChar->stopChar();
+		enemyChar->stopChar();
+		enemyChar->_spriteCutState = 0;
+		enemyChar->_spriteTimer = 0;
+	}
+
+	switch (settings->fightState) {
+	// No fight. Check player health
+	case 0:
+		if (player->hitPointsOld == player->hitPoints &&
+			(!playerChar->_isAlive || player->hitPoints == 0)) {
+			_vm->endGame();
+		}
+		_vm->actorMan()->getCloudWordActor()->enable(0);
+		_vm->actorMan()->getCloudActor()->enable(0);
+		break;
+
+	// Fight ended
+	case 1:
+		settings->fightState = 0;
+		_vm->actorMan()->getCloudWordActor()->enable(0);
+		_vm->actorMan()->getCloudActor()->enable(0);
+		_vm->actorMan()->get(playerChar->_actorId)->enable(1);
+		_vm->actorMan()->get(enemyChar->_actorId)->enable(1);
+		_vm->sound()->stopSample(_vm->_weaponSample);
+
+		// Play death sound
+		if (!_vm->database()->getChar(player->collideNum)->_isAlive) {
+			_vm->sound()->playSampleSFX(_vm->_ripSample, false);
+		}
+
+		// Return item to cursor
+		switch (settings->objectType) {
+		case OBJECT_SPELL:
+			player->command = CMD_CAST_SPELL;
+			break;
+		case OBJECT_WEAPON:
+			player->command = CMD_FIGHT;
+			break;
+		case OBJECT_ITEM:
+			player->command = CMD_USE;
+			break;
+		default:
+			// Do nothing
+			break;
+		}
+		player->commandState = 0;
+		player->collideType = COLLIDE_NONE;
+		player->collideNum = -1;
+		playerChar->_isBusy = false;
+		_vm->database()->getChar(player->enemyId)->_isBusy = false;
+		break;
+
+	// Fight started
+	case 2:
+		if (!_vm->database()->getChar(player->collideNum)->_isAlive) {
+			settings->fightState = 0;
+			break;
+		}
+		_vm->game()->declareNewEnemy(player->collideNum);
+		player->hitPointsOld = playerChar->_hitPoints;
+
+		// Don't start a fight when the narrator is talking
+		if (!samplePlaying) {
+			playerChar->_isBusy = false;
+
+			if (player->fightEnemy >= 0) {
+				player->fightEnemy = -1;
+				_vm->game()->doCommand(6, 2, player->collideNum, 1, player->fightWeapon);
+			} else if (settings->objectNum >= 0) {
+				_vm->game()->doCommand(6, 2, player->collideNum, 1, settings->objectNum);
+			}
+		}
+
+		if (!_vm->game()->cb()->cloudActive || !settings->fightEnabled) {
+			settings->objectType = OBJECT_NONE;
+			settings->objectNum = -1;
+			settings->fightState = 0;
+			player->commandState = 0;
+			player->collideType = COLLIDE_NONE;
+			player->collideNum = -1;
+			break;
+		}
+
+		playerChar->_isBusy = true;
+		_vm->database()->getChar(player->enemyId)->_isBusy = true;
+		settings->fightState = 3;
+		settings->fightTimer = 40;
+		settings->fightWordTimer = 0;
+		player->commandState = 2;
+		_vm->actorMan()->getCloudWordActor()->enable(1);
+		_vm->actorMan()->getCloudActor()->enable(1);
+
+		// TODO: consult weapons table. use default effect for now
+		/*
+		if (settings->objectNum >= 0 && weaponsArray[player->weaponSoundEffect] != settings->objectNum) {
+			for (int i = 0; i < 10; i++) {
+				if (weaponsArray[i] == settings->objectNum) {
+					player->weaponSoundEffect = i;
+					_vm->panel()->showLoading(true);
+					_vm->loadWeaponSample(i);
+					_vm->panel()->showLoading(false);
+					break;
+				}
+			}
+		}
+		*/
+
+		_vm->sound()->playSampleSFX(_vm->_weaponSample, false); // FIXME: actually mode "2"
+		player->fightBarTimer = 110;
+		player->enemyFightBarTimer = 110;
+
+		// Set up cloud actors
+		{
+			int scale = playerChar->_start5 * 88 / 60;
+			_vm->actorMan()->getCloudActor()->setPos(playerChar->_screenX / 2, playerChar->_start4 / 256 / 2);
+			_vm->actorMan()->getCloudActor()->setRatio(256 * 1024 / scale, 256 * 1024 / scale);
+			_vm->actorMan()->getCloudActor()->setMaskDepth(playerChar->_priority, playerChar->_start5 - 10);
+
+			_vm->actorMan()->getCloudWordActor()->setRatio(256 * 1024 / scale, 256 * 1024 / scale);
+			_vm->actorMan()->getCloudWordActor()->setMaskDepth(playerChar->_priority, playerChar->_start5 - 11);
+		}
+
+		// FALL-THROUGH
+
+	// Fight in progress
+	case 3: {
+		int scale = playerChar->_start5 * 88 / 60;
+		settings->fightTimer--;
+		if (settings->fightTimer == 0) {
+			settings->fightState = 1;
+			settings->fightWordTimer = 0;
+		}
+
+		// Set up cloud word
+		if (settings->fightWordTimer == 0) {
+
+			settings->fightWordTimer = 3;
+
+			// "Hard" hits stay longer on the screen
+			if (player->hitPointsOld - player->hitPoints < 10)
+				settings->fightWordTimer++;
+			if (player->hitPointsOld - player->hitPoints < 5)
+				settings->fightWordTimer++;
+
+			settings->fightWordX = playerChar->_screenX * scale + (_vm->rnd()->getRandomNumber(200) - 100) * 256;
+			settings->fightWordY = playerChar->_screenY * scale - _vm->rnd()->getRandomNumberRng(50, 150) * 256;
+			settings->fightWordStepX = _vm->rnd()->getRandomNumberRng(256 * 8, 1750 * 8) * 2;
+			settings->fightWordStepY = 256 * 8 - _vm->rnd()->getRandomNumberRng(256 * 4, 256 * 64);
+			if (playerChar->_screenX * scale > settings->fightWordX) {
+				settings->fightWordStepX *= -1;
+			}
+			if (++settings->fightWordScope >= 4)
+				settings->fightWordScope = 0;
+			_vm->actorMan()->getCloudWordActor()->setScope(settings->fightWordScope, 2);
+		}
+
+		if (settings->fightWordTimer != 0) {
+			settings->fightWordTimer--;
+			_vm->actorMan()->getCloudWordActor()->setPos(settings->fightWordX / scale / 2, settings->fightWordY / scale / 2);
+			settings->fightWordX += settings->fightWordStepX;
+			settings->fightWordY += settings->fightWordStepY;
+			settings->fightWordStepX /= 16;
+			settings->fightWordStepY /= 16;
+		}
+
+		if (settings->fightEffectPause != 0) {
+			--settings->fightEffectPause;
+
+			// Init effect actor
+			if (settings->fightEffectPause == 0) {
+				settings->fightEffectTimer = 120;
+				if (++settings->fightEffectScope >= 2)
+					settings->fightEffectScope = 0;
+
+				_vm->actorMan()->getCloudEffectActor()->setScope(settings->fightEffectScope, 2);
+				settings->fightEffectChar._screenX = playerChar->_screenX;
+				settings->fightEffectChar._screenY = playerChar->_screenY;
+				settings->fightEffectChar._start3 = playerChar->_start3;
+				settings->fightEffectChar._start4 = playerChar->_start4;
+				settings->fightEffectChar._start5 = playerChar->_start5;
+				settings->fightEffectChar._lastLocation = playerChar->_lastLocation;
+				settings->fightEffectChar._lastBox = playerChar->_lastBox;
+				settings->fightEffectChar._offset10 = 0;
+				settings->fightEffectChar._screenH = -2621440;
+				settings->fightEffectChar._offset0c = -983040;
+				settings->fightEffectChar._walkSpeed = 1536;
+				settings->fightEffectChar._relativeSpeed = 1024;
+				settings->fightEffectChar._gotoLoc = playerChar->_lastLocation;
+
+				uint16 xPos;
+				if (_vm->rnd()->getRandomNumber(100) > 50)
+					xPos = 639;
+				else
+					xPos = 0;
+
+				uint16 yPos = _vm->rnd()->getRandomNumber(40) + settings->fightEffectChar._screenY - 20;
+
+				int16 dummy;
+				_vm->database()->getClosestBox(playerChar->_lastLocation, xPos, yPos,
+					settings->fightEffectChar._screenX, settings->fightEffectChar._screenY,
+					&dummy, &settings->fightEffectChar._gotoX, &settings->fightEffectChar._gotoY);
+			}
+		}
+		break;
+	}
+	default:
+		break;
+	}
+
+	// Fight effects stay around after the cloud is gone
+	if (settings->fightEffectTimer != 0) {
+		settings->fightEffectTimer--;
+
+		settings->fightEffectChar.moveCharOther();
+		int z = settings->fightEffectChar._start5 * 88 / 60;
+		if (playerChar->_lastLocation == settings->fightEffectChar._lastLocation &&
+			settings->fightEffectTimer != 0) {
+			_vm->actorMan()->getCloudEffectActor()->enable(1);
+		} else {
+			settings->fightEffectTimer = 0;
+			_vm->actorMan()->getCloudEffectActor()->enable(0);
+		}
+
+		_vm->actorMan()->getCloudEffectActor()->setPos(settings->fightEffectChar._screenX / 2, settings->fightEffectChar._start4 / 256 / 2);
+		_vm->actorMan()->getCloudEffectActor()->setRatio(256 * 1024 / z, 256 * 1024 / z);
+		_vm->actorMan()->getCloudEffectActor()->setMaskDepth(settings->fightEffectChar._priority, settings->fightEffectChar._start5 - 11);
+
+
+		// FIXME: Bug in original? This is never true (thus fails to reset the effect)
+		if (settings->fightEffectChar._screenH == 0 && !settings->fightEffectChar._stopped) {
+			settings->fightEffectTimer = 0;
+			settings->fightEffectPause = 60;
+			_vm->actorMan()->getCloudEffectActor()->enable(0);
+		}
+	}
+
 	// TODO - handle magic actors
 
 	if (mode > 0) {
@@ -236,22 +484,22 @@ void Screen::processGraphics(int mode) {
 	drawFightBars();
 
 	// Handle mouse
-	if (_vm->game()->player()->hitPoints > 0 &&
-		!_vm->game()->player()->narratorTalking &&
-		_vm->database()->getChar(0)->_spriteCutState == 0 &&
-		(_vm->game()->player()->commandState == 0 ||
-		 _vm->game()->player()->command == CMD_WALK ||
-		 _vm->game()->player()->command == CMD_NOTHING) &&
-		_vm->game()->player()->spriteCutNum == 0) {
+	if (player->hitPoints > 0 &&
+		!player->narratorTalking &&
+		playerChar->_spriteCutState == 0 &&
+		(player->commandState == 0 ||
+		 player->command == CMD_WALK ||
+		 player->command == CMD_NOTHING) &&
+		player->spriteCutNum == 0) {
 
-		if (_vm->game()->settings()->mouseMode > 0)
-			_vm->game()->settings()->mouseMode--;
+		if (settings->mouseMode > 0)
+			settings->mouseMode--;
 
 	} else
-		_vm->game()->settings()->mouseMode = 3;
+		settings->mouseMode = 3;
 
 	// TODO - Check menu request
-	if (_vm->game()->settings()->mouseMode == 0) {
+	if (settings->mouseMode == 0) {
 		updateCursor();
 		showMouseCursor(true);
 	} else {
@@ -1158,7 +1406,10 @@ void Screen::drawFightBars() {
 		Character *enemyChar = _vm->database()->getChar(player->enemyId);
 
 		if (playerChar->_lastLocation != enemyChar->_lastLocation) {
-			// TODO: handle dust clouds
+			if (_vm->game()->settings()->fightState == 0) {
+				enemyChar->_isBusy = false;
+				player->enemyId = -1;
+			}
 		}
 
 		player->enemyHitPoints = enemyChar->_hitPoints;
@@ -1255,8 +1506,14 @@ void Screen::drawFightBars() {
 			strcpy(buf, "Immortal");
 		writeTextRight(_vm->screen()->screenBuf(), buf, 9, 286, 0, false);
 		writeTextRight(_vm->screen()->screenBuf(), buf, 8, 285, 31, false);
-	}
 
+		if (player->enemyFightBarTimer == 0) {
+			if (_vm->game()->settings()->fightState == 0) {
+				_vm->database()->getChar(player->enemyId)->_isBusy = false;
+				player->enemyId = -1;
+			}
+		}
+	}
 }
 
 void Screen::printIcon(Inventory *inv, int objNum, int mode) {

@@ -256,14 +256,14 @@ void Database::initCharacters() {
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d %d",
 			&(_characters[index]._data8),
-			&(_characters[index]._data9),
+			&(_characters[index]._isMortal),
 			&(_characters[index]._hitPoints));
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d %d %d",
 			&(_characters[index]._strength),
 			&(_characters[index]._defense),
-			&(_characters[index]._damageMin),
-			&(_characters[index]._damageMax));
+			&(_characters[index]._minDamage),
+			&(_characters[index]._maxDamage));
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d %d %d",
 			&(_characters[index]._data14),
@@ -361,8 +361,8 @@ void Database::initObjects() {
 			&(_objects[index].price),
 			&(_objects[index].data11),
 			&(_objects[index].spellCost),
-			&(_objects[index].data12),
-			&(_objects[index].data13));
+			&(_objects[index].minDamage),
+			&(_objects[index].maxDamage));
 
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d",
@@ -401,8 +401,8 @@ void Database::initObjects() {
 			_objects[i].price,
 			_objects[i].data11,
 			_objects[i].spellCost,
-			_objects[i].data12,
-			_objects[i].data13,
+			_objects[i].minDamage,
+			_objects[i].maxDamage,
 			_objects[i].ownerType,
 			_objects[i].ownerId,
 			_objects[i].box,
@@ -1042,7 +1042,7 @@ bool Database::isInLine(int loc, int box, int x, int y) {
 
 void Database::getClosestBox(int loc, uint16 mouseX, uint16 mouseY,
 		int16 screenX, int16 screenY,
-		int16 *collideBox, uint16 *collideBoxX, uint16 *collideBoxY) {
+		int16 *collideBox, int16 *collideBoxX, int16 *collideBoxY) {
 
 	int tmp = 399;
 	int tmpBox = -1;

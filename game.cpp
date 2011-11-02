@@ -25,6 +25,7 @@
 
 #include "common/str.h"
 #include "common/textconsole.h"
+#include "common/util.h"
 
 #include "kom/kom.h"
 #include "kom/game.h"
@@ -41,12 +42,10 @@ using Common::String;
 
 Game::Game(KomEngine *vm, OSystem *system) : _system(system), _vm(vm) {
 	_videoPlayer = new VideoPlayer(_vm);
-	_rnd = new Common::RandomSource("kom");
 }
 
 Game::~Game() {
 	delete _videoPlayer;
-	delete _rnd;
 }
 
 void Game::enterLocation(uint16 locId) {
@@ -377,9 +376,14 @@ bool Game::doProc(int command, int type, int id, int type2, int id2) {
 	bool foundFight = false;
 
 	switch (type) {
-	case 1: // Object
-		proc = _vm->database()->getObj(id)->proc;
+	case 1: { // Object
+		// id can be -1 when doFight is called with no last used weapon
+		Object *obj = _vm->database()->getObj(id);
+		if (obj == NULL)
+			return false;
+		proc = obj->proc;
 		break;
+	}
 	case 2: // Char
 		proc = _vm->database()->getChar(id)->_proc;
 		break;
@@ -472,7 +476,7 @@ bool Game::doStat(const Command *cmd) {
 			db->setVar(j->arg2, 0);
 			break;
 		case 334:
-			db->setVar(j->arg2, _rnd->getRandomNumber(j->arg3 - 1));
+			db->setVar(j->arg2, _vm->rnd()->getRandomNumber(j->arg3 - 1));
 			break;
 		case 337:
 			keepProcessing = db->getVar(j->arg2) == 0;
@@ -539,7 +543,7 @@ bool Game::doStat(const Command *cmd) {
 				keepProcessing = db->getObj(j->arg2)->ownerId != 0;
 			break;
 		case 387:
-			keepProcessing = db->giveObject(j->arg2, 0, false);
+			keepProcessing = db->giveObject(j->arg2, 0);
 			break;
 		case 391:
 			keepProcessing = db->getChar(0)->_gold != 0;
@@ -679,8 +683,8 @@ bool Game::doStat(const Command *cmd) {
 		case 438:
 			db->getChar(j->arg2)->_strength = j->arg3;
 			db->getChar(j->arg2)->_defense = j->arg4;
-			db->getChar(j->arg2)->_damageMin = j->arg5;
-			db->getChar(j->arg2)->_damageMax = j->arg6;
+			db->getChar(j->arg2)->_minDamage = j->arg5;
+			db->getChar(j->arg2)->_maxDamage = j->arg6;
 			break;
 		case 439:
 			db->getChar(j->arg2)->_relativeSpeed = j->arg3;
@@ -812,6 +816,10 @@ bool Game::doStat(const Command *cmd) {
 		case 481:
 			doGreet(j->arg2, j->arg3);
 			break;
+		case 484:
+			_player.fightEnemy = j->arg2;
+			_player.fightWeapon = j->arg3;
+			break;
 		case 485:
 			_settings.fightEnabled = true;
 			break;
@@ -819,7 +827,7 @@ bool Game::doStat(const Command *cmd) {
 			_settings.fightEnabled = false;
 			break;
 		case 487:
-			// warning("TODO: npcFight(%d, %d)", j->arg2, j->arg3);
+			//warning("TODO: npcFight(%d, %d)", j->arg2, j->arg3);
 			keepProcessing = false;
 			break;
 		case 488:
@@ -968,8 +976,46 @@ void Game::doCommand(int command, int type, int id, int type2, int id2) {
 			break;
 		}
 		break;
-	case 6:
+
+	// Fight
+	case 6: {
+		if (id2 != -1)
+			_settings.lastWeaponUsed = id2;
+		else
+			id2 = _settings.lastWeaponUsed;
+
+		if (_settings.lastWeaponUsed != -1) {
+			Object *weapon = _vm->database()->getObj(_settings.lastWeaponUsed);
+
+			// Special handling of thermal detonator
+			if (weapon->minDamage == -10 && weapon->maxDamage == 1) {
+				doActionPlayVideo("gin51g");
+				_cb.cloudActive = false;
+				doActionPlayVideo("msc999s");
+				_vm->endGame();
+				break;
+			}
+		}
+
+		if (!_settings.fightEnabled) {
+			doProc(317, 2, id, 1, id2);
+			break;
+		}
+
+		if (doProc(319, 1, id2, -1, -1)) {
+			_cb.cloudActive = false;
+			break;
+		}
+
+		if (doProc(317, 2, id, 1, id2)) {
+			_cb.cloudActive = false;
+			break;
+		}
+
+		doFight(id, id2);
+		_cb.cloudActive = true;
 		break;
+	}
 
 	// Enter room
 	case 7:
@@ -1708,7 +1754,7 @@ void Game::doActionPlayVideo(const char *name) {
 		"gnt", "grn", "in1", "in2",
 		"in3", "in4", "jack", "kng",
 		"krys", "man", "msh", "pxe",
-		"rnd", "sman", "stw", "sty",
+		"_vm->rnd", "sman", "stw", "sty",
 		"ter", "trl1", "trl2", "trl3",
 		"wig"
 	};
@@ -1832,7 +1878,7 @@ void Game::doActionPlaySample(const char *name) {
 	if (_player.spriteSample.isLoaded()) {
 		_vm->sound()->stopSample(_player.spriteSample);
 		_player.spriteSample.unload();
-		// TODO: another initialization
+		// TODO: another greeting initialization
 	}
 
 	sampleName.toLowercase();
@@ -1886,12 +1932,8 @@ void Game::doActionPlaySample(const char *name) {
 	_vm->actorMan()->pauseAnimAll(true);
 
 	while (isNarratorPlaying()) {
-		//warning("loop");
 		if (mode & 2) {
-			//warning("cond");
-			_cb.samplePlaying = true;
-			_vm->screen()->processGraphics(1);
-			_cb.samplePlaying = false;
+			_vm->screen()->processGraphics(1, /*samplePlaying=*/ true);
 		}
 
 		// TODO: break on space and esc as well
@@ -3053,6 +3095,65 @@ void Game::declareNewEnemy(int16 enemy) {
 	}
 }
 
+void Game::doFight(int enemyId, int weaponId) {
+	Character *playerChar = _vm->database()->getChar(0);
+	Character *enemy = _vm->database()->getChar(enemyId);
+
+	// Calculate player attack
+	if (enemy->_isMortal) {
+		int damageRange;
+		int damage;
+
+		// Use a weapon
+		if (weaponId != -1) {
+			Object *weapon = _vm->database()->getObj(weaponId);
+			damageRange = MAX(weapon->maxDamage - weapon->minDamage, 1);
+			damage = _vm->rnd()->getRandomNumber(damageRange - 1) + weapon->minDamage + 1;
+		} else {
+			damageRange = MAX(playerChar->_maxDamage - playerChar->_minDamage, 1);
+			damage = _vm->rnd()->getRandomNumber(damageRange - 1) + playerChar->_minDamage + 1;
+		}
+
+		int damageToEnemy = MAX(playerChar->_strength - enemy->_defense, 0);
+		enemy->_hitPoints -= damageToEnemy + damage;
+		if (enemy->_hitPoints <= 0) {
+			enemy->unsetSpell();
+			enemy->_hitPoints = 0;
+			enemy->_isAlive = false;
+			if (enemy->_spellMode != 0) {
+				// TODO: doActionUnsetSpell(enemyId, enemy->_spellMode);
+			}
+			enemy->_mode = 0;
+			enemy->_modeCount = 0;
+			enemy->_spellMode = 0;
+			enemy->_spellDuration = 0;
+			// TODO: doActionSetSpell(enemyId, 0);
+		}
+	}
+
+	// Calculate enemy attack
+	int enemyDamageRange;
+	int enemyDamage;
+
+	// Use held weapon unless it's the thermal detonator
+	if (!enemy->_weapons.empty() && _vm->database()->getObj(*enemy->_weapons.begin())->minDamage != -10) {
+		Object *weapon = _vm->database()->getObj(*enemy->_weapons.begin());
+		enemyDamageRange = MAX(weapon->maxDamage - weapon->minDamage, 1);
+		enemyDamage = _vm->rnd()->getRandomNumber(enemyDamageRange - 1) + weapon->minDamage + 1;
+	} else {
+		enemyDamageRange = MAX(enemy->_maxDamage - enemy->_minDamage, 1);
+		enemyDamage = _vm->rnd()->getRandomNumber(enemyDamageRange - 1) + enemy->_minDamage + 1;
+	}
+
+	// Damage player
+	int damageToPlayer = MAX(enemy->_strength - playerChar->_defense, 0);
+	playerChar->_hitPoints -= damageToPlayer + enemyDamage;
+	if (playerChar->_hitPoints <= 0) {
+		playerChar->unsetSpell();
+		playerChar->_hitPoints = 0;
+		playerChar->_isAlive = false;
+	}
+}
 
 void Game::exeUse() {
 	Character *playerChar = _vm->database()->getChar(0);
@@ -3168,7 +3269,13 @@ void Game::exeLookAt() {
 }
 
 void Game::exeFight() {
-	warning("TODO: exeFight");
+	switch (_player.commandState) {
+	case 1: // Dust clouds
+		_settings.fightState = 2;
+		break;
+	default:
+		break;
+	}
 }
 
 void Game::exeMagic() {

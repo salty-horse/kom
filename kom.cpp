@@ -60,6 +60,8 @@ KomEngine::KomEngine(OSystem *system)
 	_game = 0;
 	_gameLoopState = GAMELOOP_RUNNING;
 	_playingMusicId = _playingMusicVolume = 0;
+
+	_rnd = new Common::RandomSource("kom");
 }
 
 KomEngine::~KomEngine() {
@@ -71,6 +73,8 @@ KomEngine::~KomEngine() {
 	delete _debugger;
 	delete _panel;
 	delete _game;
+
+	delete _rnd;
 }
 
 Common::Error KomEngine::run() {
@@ -121,12 +125,17 @@ Common::Error KomEngine::run() {
 
 	// Load sound effects
 	static String samplesDir("kom/samples/");
+	_ripSample.loadFile(samplesDir + "rip.raw");
 	_hotspotSample.loadFile(samplesDir + "hotspot.raw");
 	_doorsSample.loadFile(samplesDir + "doors.raw");
 	_clickSample.loadFile(samplesDir + "mouse_l.raw");
 	_swipeSample.loadFile(samplesDir + "swipe.raw");
 	_cashSample.loadFile(samplesDir + "cash.raw");
 	_loseItemSample.loadFile(samplesDir + "loseitem.raw");
+	_fightSample.loadFile(samplesDir + "fight.raw");
+
+	_game->player()->weaponSoundEffect = 8;
+	loadWeaponSample(_game->player()->weaponSoundEffect);
 
 	_actorMan->loadExtras();
 
@@ -189,6 +198,7 @@ void KomEngine::gameLoop() {
 	// init some global vars, Player settings
 	_game->player()->command = CMD_NOTHING;
 	_game->player()->commandState = 0;
+	_game->player()->fightEnemy = -1;
 	_game->player()->hitPoints = _game->player()->hitPointsOld = _database->getChar(0)->_hitPoints;
 	_game->player()->enemyId = _game->player()->lastEnemy = -1;
 	_game->player()->narratorTalking = false;
@@ -197,6 +207,10 @@ void KomEngine::gameLoop() {
 	_game->settings()->objectNum = _game->settings()->object2Num = -1;
 	_game->settings()->overType = _game->settings()->oldOverType = COLLIDE_NONE;
 	_game->settings()->overNum = _game->settings()->oldOverNum = -1;
+	_game->settings()->fightState = 0;
+	_game->settings()->fightTimer = 0;
+	_game->settings()->fightWordTimer = 0;
+	_game->settings()->fightEffectPause = 100;
 	// init something in the procs struct
 	// init some more vars
 	// some tricks with the loop input based on day/night
@@ -204,7 +218,6 @@ void KomEngine::gameLoop() {
 	_game->player()->isNight = (_game->settings()->dayMode == 1 || _game->settings()->dayMode == 3) ? 1 : 0;
 	// fadeTo(target = 256, speed = 16)
 	_game->cb()->talkInitialized = false;
-	_game->cb()->samplePlaying = false;
 	// TODO: loop actually starts with the menu, and then switches to RUNNING
 	_gameLoopTimer = 0;
 	_gameLoopState = GAMELOOP_RUNNING;
@@ -227,7 +240,18 @@ void KomEngine::gameLoop() {
 		_game->loopMove();
 		_game->loopCollide();
 
-		// TODO: if in a fight, do something
+		// In case fight has been initiated through a script, set the fight state
+		if (_game->player()->fightEnemy >= 0) {
+			_game->player()->command = CMD_FIGHT;
+			_game->player()->commandState = 1;
+			_game->player()->collideNum = _game->player()->fightEnemy;
+			_game->player()->collideType = COLLIDE_CHAR;
+			_game->settings()->collideChar = _game->player()->fightEnemy;
+			_database->getChar(0)->_gotoX = _database->getChar(0)->_screenX;
+			_database->getChar(0)->_gotoY = _database->getChar(0)->_screenY;
+			_database->getChar(0)->_direction = 0;
+			_database->getChar(0)->_stopped = true;
+		}
 
 		if (_game->player()->commandState != 0 && _database->getChar(0)->_stopped) {
 			switch (_game->player()->command) {
@@ -431,5 +455,14 @@ void KomEngine::ambientStop() {
 		_playingMusicVolume = 0;
 	}
 }
+
+void KomEngine::loadWeaponSample(int id) {
+	static const char *weaponsTable[] = {
+		"BASEBAT", "BASEBAT", "CATTLE", "CHAINSAW", "MALLET",
+		"MALLET", "SABER", "SWORD", "FIGHT", "FIGHT"
+	};
+	_weaponSample.loadFile(String("kom/samples/") + weaponsTable[id] + ".raw");
+}
+
 
 } // End of namespace Kom

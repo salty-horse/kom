@@ -44,8 +44,8 @@ struct EventLink {
 struct Object {
 	Object() : data1(0), type(0), data2(0), proc(0),
 	           data4(0), isCarryable(0), isContainer(0), isVisible(0), isSprite(0), isUseImmediate(0),
-	           isPickable(0), isUsable(0), price(0), data11(0), spellCost(0), data12(0),
-	           data13(0), ownerType(0), ownerId(0), box(0), data16(0), data17(0),
+	           isPickable(0), isUsable(0), price(0), data11(0), spellCost(0), minDamage(0),
+	           maxDamage(0), ownerType(0), ownerId(0), box(0), data16(0), data17(0),
 	           data18(0) {}
 
 	char name[7];
@@ -65,8 +65,8 @@ struct Object {
 	int price;
 	int data11;
 	int spellCost;
-	int data12;
-	int data13;
+	int minDamage;
+	int maxDamage;
 	int ownerType;
 	int ownerId;
 	int box;
@@ -161,7 +161,7 @@ public:
 	bool isInLine(int loc, int box, int x, int y);
 	void getClosestBox(int loc, uint16 mouseX, uint16 mouseY,
 			int16 screenX, int16 screenY,
-			int16 *collideBox, uint16 *collideBoxX, uint16 *collideBoxY);
+			int16 *collideBox, int16 *collideBoxX, int16 *collideBoxY);
 
 	void setCharPos(int charId, int loc, int box);
 	bool giveObject(int obj, int charId, bool noAnimation = false);

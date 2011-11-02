@@ -26,6 +26,7 @@
 #include "engines/engine.h"
 #include "common/error.h"
 #include "common/scummsys.h"
+#include "common/random.h"
 
 #include "kom/sound.h"
 #include "kom/debugger.h"
@@ -78,6 +79,7 @@ public:
 	Panel *panel() const { return _panel; }
 	Game *game() const { return _game; }
 	Sound *sound() const { return _sound; }
+	Common::RandomSource *rnd() const { return _rnd; }
 
 	int gameLoopTimer() { return _gameLoopTimer; }
 	void endGame() { _gameLoopState = GAMELOOP_DEATH; }
@@ -87,15 +89,20 @@ public:
 	void ambientStop();
 	void ambientPause(bool paused) { _sound->pauseSample(_ambientSample, paused); }
 
+	void loadWeaponSample(int id);
+
 	uint8 _flicLoaded;
 
 	// Samples
+	SoundSample _ripSample;
 	SoundSample _hotspotSample;
 	SoundSample _doorsSample;
 	SoundSample _clickSample;
 	SoundSample _swipeSample;
 	SoundSample _cashSample;
 	SoundSample _loseItemSample;
+	SoundSample _fightSample;
+	SoundSample _weaponSample;
 	SoundSample _ambientSample;
 
 	// music
@@ -116,6 +123,8 @@ private:
 
 	GameLoopState _gameLoopState;
 	int _gameLoopTimer;
+
+	Common::RandomSource *_rnd;
 };
 
 } // End of namespace Kom

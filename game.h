@@ -25,12 +25,12 @@
 
 #include "common/scummsys.h"
 #include "common/array.h"
-#include "common/random.h"
 
 #include "kom/kom.h"
 #include "kom/database.h"
 #include "kom/sound.h"
 #include "kom/video_player.h"
+#include "kom/character.h"
 
 namespace Kom {
 
@@ -69,7 +69,8 @@ enum ObjectType {
 
 struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
-		narratorPatience(0), lastItemUsed(-1) {}
+		narratorPatience(0), lastItemUsed(-1), lastWeaponUsed(-1),
+		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0) {}
 	uint16 mouseState;
 	bool mouseOverExit;
 	uint16 mouseX;
@@ -82,8 +83,8 @@ struct Settings {
 	int16 mouseMode;
 	CollideType collideType;
 	int16 collideBox;
-	uint16 collideBoxX;
-	uint16 collideBoxY;
+	int16 collideBoxX;
+	int16 collideBoxY;
 	int16 collideBoxZ;
 	int16 collideObj;
 	uint16 collideObjX;
@@ -104,6 +105,21 @@ struct Settings {
 	bool fightEnabled;
 	uint16 narratorPatience;
 	int16 lastItemUsed;
+	int16 lastWeaponUsed;
+
+	// Fight stuff
+	int16 fightState;
+	int16 fightTimer;
+	int16 fightWordTimer;
+	int32 fightWordX;
+	int32 fightWordY;
+	int32 fightWordStepX;
+	int32 fightWordStepY;
+	int16 fightWordScope;
+	int16 fightEffectPause;
+	int16 fightEffectTimer;
+	int16 fightEffectScope;
+	Character fightEffectChar;
 };
 
 enum CommandType {
@@ -127,6 +143,8 @@ struct Player {
 	bool narratorTalking;
 	SoundSample spriteSample;
 	SoundSample narratorSample; // Original doesn't store this here
+	int16 fightEnemy;
+	int16 fightWeapon;
 	int16 fightBarTimer;
 	int16 enemyFightBarTimer;
 	int16 hitPointsOld;
@@ -139,6 +157,8 @@ struct Player {
 	uint8 selectedChar; // 0 - thidney. 1 - shahron
 	uint8 selectedQuest;
 	uint8 isNight;
+	int weaponSoundEffect;
+	SoundSample weaponSample;
 	int oldGold;
 	uint16 sleepTimer;
 	bool spriteCutMoving;
@@ -153,7 +173,7 @@ struct Cb {
 	int16 data1;
 	int16 data2;
 	bool talkInitialized;
-	bool samplePlaying;
+	bool cloudActive;
 };
 
 struct Inventory {
@@ -226,6 +246,7 @@ public:
 	void doLookAt(int charId, int pauseTimer = 0, bool showBackground = false);
 
 	void declareNewEnemy(int16 enemy);
+	void doFight(int enemyId, int weaponId);
 
 	void exeUse();
 	void exeTalk();
@@ -244,8 +265,6 @@ private:
 
 	Common::Array<RoomObject> _roomObjects;
 	Common::Array<RoomDoor> _roomDoors;
-
-	Common::RandomSource *_rnd;
 
     // Settings
     Settings _settings;
@@ -275,3 +294,4 @@ private:
 } // End of namespace Kom
 
 #endif
+
