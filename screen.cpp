@@ -1301,7 +1301,7 @@ void Screen::drawInventory(Inventory *inv) {
 	inv->iconY = inv->scrollY;
 
 	// Inventory spells
-	if (inv->mode & 1) {
+	if (inv->mode & 4) {
 		invList = &_vm->database()->getChar(0)->_spells;
 		for (invId = invList->begin(), invCounter = 0;
 			 invId != invList->end(); ++invId, ++invCounter) {

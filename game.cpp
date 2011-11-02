@@ -2352,16 +2352,11 @@ int Game::getDonutSegment(int xPos, int yPos) {
 void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 mode) {
 	bool inInventory = false;
 	bool inLoop;
-	int objRows, weapSpellRows;
 	Character *playerChar = _vm->database()->getChar(0);
 	bool leftClick, rightClick;
 	Inventory inv;
 
 	do {
-		int objCount;
-		int weapCount;
-		int spellCount;
-
 		inv.shop = shop;
 		inv.mode = mode;
 		inLoop = true;
@@ -2398,24 +2393,24 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 		_vm->actorMan()->getObjects()->enable(1);
 		inv.action = 0;
 
-		objCount = 0;
+		int objCount = 0;
 		if (mode & 1)
 			objCount = playerChar->_inventory.size();
 
-		weapCount = 0;
+		int weapCount = 0;
 		if (mode & 2)
 			weapCount = playerChar->_weapons.size();
 
-		spellCount = 0;
+		int spellCount = 0;
 		if (mode & 4)
 			spellCount = playerChar->_spells.size();
 
 		inv.mouseState = 0;
 		inv.bottomEdge = 83;
 
-		objRows = (objCount + 2) / 3;
+		int objRows = (objCount + 2) / 3;
 		if (objRows < 1) objRows = 1;
-		weapSpellRows = MAX(weapCount, spellCount);
+		int weapSpellRows = MAX(weapCount, spellCount);
 
 		inv.totalRows = MAX(objRows, weapSpellRows);
 
