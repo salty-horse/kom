@@ -336,6 +336,11 @@ bool Game::doProc(int command, int type, int id, int type2, int id2) {
 				if(doStat(&(*i)))
 					return true;
 				break;
+			case 317: // Fight
+				foundFight = true;
+				if(doStat(&(*i)))
+					return true;
+				break;
 			case 314: // Talk to
 			case 315: // Pick up
 			case 318: // Enter room
