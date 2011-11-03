@@ -689,6 +689,14 @@ bool Game::doStat(const Command *cmd) {
 		case 434:
 			keepProcessing = doActionCollide(j->arg2, j->arg3);
 			break;
+		case 436:
+			keepProcessing = db->getObj(j->arg2)->spellCost <=
+				db->getChar(j->arg3)->_spellPoints;
+			break;
+		case 437:
+			keepProcessing = db->getObj(j->arg2)->spellCost >
+				db->getChar(j->arg3)->_spellPoints;
+			break;
 		case 438:
 			db->getChar(j->arg2)->_strength = j->arg3;
 			db->getChar(j->arg2)->_defense = j->arg4;
