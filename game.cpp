@@ -184,8 +184,9 @@ void Game::enterLocation(uint16 locId) {
 }
 
 void Game::processTime() {
+	Character *playerChar =_vm->database()->getChar(0);
 	if (_settings.dayMode == 0) {
-		if (_vm->database()->getChar(0)->_isBusy && _settings.gameCycles >= 6000)
+		if (playerChar->_isBusy && _settings.gameCycles >= 6000)
 			_settings.gameCycles = 5990;
 
 		if (_vm->database()->getLoc(_settings.currLocation)->allowedTime == 2) {
@@ -198,7 +199,7 @@ void Game::processTime() {
 
 		if (_settings.gameCycles < 6000) {
 
-			if (!_vm->database()->getChar(0)->_isBusy)
+			if (!playerChar->_isBusy)
 				(_settings.gameCycles)++;
 
 		} else if (_vm->database()->getLoc(_settings.currLocation)->allowedTime == 0) {
@@ -211,7 +212,7 @@ void Game::processTime() {
 
 	} else if (_settings.dayMode == 1) {
 
-		if (_vm->database()->getChar(0)->_isBusy && _settings.gameCycles >= 3600)
+		if (playerChar->_isBusy && _settings.gameCycles >= 3600)
 			_settings.gameCycles = 3590;
 
 		if (_vm->database()->getLoc(_settings.currLocation)->allowedTime == 1) {
@@ -224,8 +225,8 @@ void Game::processTime() {
 
 		if (_settings.gameCycles < 3600) {
 
-			if (!_vm->database()->getChar(0)->_isBusy)
-				(_settings.gameCycles)++;
+			if (!playerChar->_isBusy)
+				_settings.gameCycles++;
 
 		} else if (_vm->database()->getLoc(_settings.currLocation)->allowedTime == 0) {
 			_settings.dayMode = 2;
@@ -234,7 +235,7 @@ void Game::processTime() {
 			_settings.dayMode = 0;
 			_settings.gameCycles = 0;
 
-			// TODO - increase hit points and spell points
+			playerChar->_hitPoints = MIN(playerChar->_hitPoints + 2, playerChar->_hitPointsMax);
 		}
 	}
 
