@@ -15,7 +15,6 @@ BUGS
 * narrator subtitles disappear when the audio stops, even before they finish scrolling.
 * room 34 -- "look at" and "use" on the arcade machine doesn't play the "rupert" audio
 * kom/cutsconv/bst/bst01g0.smk seems corrupt - check if original game falls back to playing the .flc
-* Possible bug? When orcs fight elves, no graves are left behind (reproduced once)
 
 MISSING FEATURES
 ================

@@ -268,6 +268,8 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 						_vm->database()->getPriority(chr->_lastLocation, chr->_lastBox),
 						maskDepth);
 				act->setRatio(chr->_ratioX / scale, chr->_ratioY / scale);
+
+				_vm->actorMan()->get(chr->_actorId)->enable(1);
 			} else if (chr->_actorId != -1) {
 				_vm->actorMan()->get(chr->_actorId)->enable(0);
 			}
