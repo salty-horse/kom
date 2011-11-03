@@ -462,9 +462,9 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 				settings->fightEffectChar._start5 = playerChar->_start5;
 				settings->fightEffectChar._lastLocation = playerChar->_lastLocation;
 				settings->fightEffectChar._lastBox = playerChar->_lastBox;
-				settings->fightEffectChar._offset10 = 0;
+				settings->fightEffectChar._height = 0;
 				settings->fightEffectChar._screenH = -2621440;
-				settings->fightEffectChar._offset0c = -983040;
+				settings->fightEffectChar._screenHDelta = -983040;
 				settings->fightEffectChar._walkSpeed = 1536;
 				settings->fightEffectChar._relativeSpeed = 1024;
 				settings->fightEffectChar._gotoLoc = playerChar->_lastLocation;

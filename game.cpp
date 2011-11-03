@@ -1058,7 +1058,7 @@ void Game::loopMove() {
 
 		if (!(chr->_isAlive)) {
 			chr->_screenH = 0;
-			chr->_offset10 = 0;
+			chr->_height = 0;
 			chr->_offset14 = chr->_offset20 = 262144;
 			chr->_scopeWanted = 100;
 			chr->moveCharOther();

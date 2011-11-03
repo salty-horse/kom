@@ -296,79 +296,81 @@ void Character::moveChar(bool param) {
 }
 
 void Character::moveCharOther() {
-	if (_offset10 != 0 || _screenH != 0) {
-		if (_screenH > _offset10)
-			_offset0c -= 65536;
+
+	// Height
+	if (_height != 0 || _screenH != 0) {
+		if (_screenH > _height)
+			_screenHDelta -= 0x10000;
 		else
-			_offset0c += 65536;
+			_screenHDelta += 0x10000;
 	}
 
-	_screenH += _offset0c;
+	_screenH += _screenHDelta;
 
 	if (_screenH > 0) {
-		if (_offset0c <= 262144) {
-			_screenH = _offset0c = 0;
+		if (_screenHDelta <= 0x40000) {
+			_screenH = _screenHDelta = 0;
 		} else {
 			_screenH = 1;
-			_offset0c /= -4;
+			_screenHDelta /= -4;
 		}
 	}
 
 	// X ratio
 	if (_ratioX < _offset14) {
 		if (_offset1c < 0)
-			_offset1c += 131072;
+			_offset1c += 0x20000;
 		else
-			_offset1c += 65536;
+			_offset1c++;
 	} else if (_ratioX > _offset14) {
 		if (_offset1c > 0)
-			_offset1c -= 131072;
+			_offset1c -= 0x20000;
 		else
-			_offset1c -= 65536;
+			_offset1c -= 0x10000;
 	}
 
 	if (_ratioX != _offset14) {
-		int32 foo = abs(_ratioX - _offset14);
+		int32 delta = abs(_ratioX - _offset14);
 
-		if (foo <= 65536 && abs(_offset1c) <= 131072) {
+		if (delta <= 0x10000 && abs(_offset1c) <= 0x20000) {
 			_offset1c = 0;
 			_ratioX = _offset14;
 		} else {
 			_ratioX += _offset1c;
 		}
 
-		if (_ratioX < 1280) {
+		if (_ratioX < 0x500) {
 			_offset1c /= -2;
-			_ratioX = 1280;
+			_ratioX = 0x500;
 		}
 	}
 
 	// Y ratio
 	if (_ratioY < _offset20) {
 		if (_offset28 < 0)
-			_offset28 += 131072;
+			_offset28 += 0x20000;
 		else
-			_offset28 += 65536;
+			_offset28++;
 	} else if (_ratioY > _offset20) {
 		if (_offset28 > 0)
-			_offset28 -= 131072;
+			_offset28 -= 0x20000;
 		else
-			_offset28 -= 65536;
+			_offset28 -= 0x10000;
 	}
 
 	if (_ratioY != _offset20) {
-		int32 foo = abs(_ratioY - _offset20);
+		int32 delta = abs(_ratioY - _offset20);
 
-		if (foo <= 65536 && abs(_offset28) <= 131072) {
+		if (delta <= 0x10000 && abs(_offset28) <= 0x20000) {
 			_offset28 = 0;
 			_ratioY = _offset20;
 		} else {
 			_ratioY += _offset28;
 		}
 
-		if (_ratioY < 1280) {
+		if (_ratioY < 0x500) {
 			_offset28 /= -2;
-			_ratioY = 1280;
+			_ratioY = 0x500;
 		}
 	}
 }

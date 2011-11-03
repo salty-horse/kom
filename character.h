@@ -37,7 +37,7 @@ public:
 	Character() :
 		_mode(0), _modeCount(0), _isBusy(false), _isAlive(true), _isVisible(true),
 		_spellMode(0), _gold(0),
-		_actorId(-1), _screenH(0), _offset0c(0), _offset10(0),
+		_actorId(-1), _screenH(0), _screenHDelta(0), _height(0),
 		_offset14(262144), _offset1c(0), _offset20(262144), _offset28(0), _ratioX(262144),
 		_ratioY(262144), _relativeSpeed(1024), _direction(0), _lastDirection(2),
 		_stopped(true), _stoppedTime(0), _spriteName(0),
@@ -94,8 +94,8 @@ public:
 	int16 _screenX;
 	int16 _screenY;
 	int32 _screenH;
-	int32 _offset0c;
-	int32 _offset10;
+	int32 _screenHDelta;
+	int32 _height;
 	int32 _offset14;
 	int32 _offset1c;
 	int32 _offset20;
