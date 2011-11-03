@@ -129,7 +129,7 @@ public:
 	int32 _start5;
 	int32 _start5Prev;
 	int32 _start5PrevPrev;
-	uint32 _offset78;
+	int32 _offset78;
 	int16 _fightPartner;
 	uint8 _spriteCutState;
 	uint16 _spriteScope;
