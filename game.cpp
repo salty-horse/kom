@@ -882,7 +882,6 @@ bool Game::doStat(const Command *cmd) {
 					break;
 				}
 			}
-			keepProcessing = false;
 			break;
 		}
 		case 488:
