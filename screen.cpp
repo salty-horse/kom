@@ -154,6 +154,9 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 	for (int i = 0; i < 4; i++) {
 		Actor *act = _vm->actorMan()->getNPCCloudActor(i);
 		act->enable(0);
+		if (settings->fightNPCCloud[i].charId == -1)
+			continue;
+
 		if (settings->fightNPCCloud[i].timer == 0)
 			continue;
 
