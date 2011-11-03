@@ -497,7 +497,7 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 		settings->fightEffectTimer--;
 
 		settings->fightEffectChar.moveCharOther();
-		int z = settings->fightEffectChar._start5 * 88 / 60;
+		int scale = settings->fightEffectChar._start5 * 88 / 60;
 		if (playerChar->_lastLocation == settings->fightEffectChar._lastLocation &&
 			settings->fightEffectTimer != 0) {
 			_vm->actorMan()->getCloudEffectActor()->enable(1);
@@ -506,8 +506,9 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 			_vm->actorMan()->getCloudEffectActor()->enable(0);
 		}
 
-		_vm->actorMan()->getCloudEffectActor()->setPos(settings->fightEffectChar._screenX / 2, settings->fightEffectChar._start4 / 256 / 2);
-		_vm->actorMan()->getCloudEffectActor()->setRatio(256 * 1024 / z, 256 * 1024 / z);
+		_vm->actorMan()->getCloudEffectActor()->setPos(settings->fightEffectChar._screenX / 2,
+				                                       (settings->fightEffectChar._screenH / scale + settings->fightEffectChar._start4) / 256 / 2);
+		_vm->actorMan()->getCloudEffectActor()->setRatio(256 * 1024 / scale, 256 * 1024 / scale);
 		_vm->actorMan()->getCloudEffectActor()->setMaskDepth(settings->fightEffectChar._priority, settings->fightEffectChar._start5 - 11);
 
 
