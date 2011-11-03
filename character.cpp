@@ -424,7 +424,8 @@ void Character::hitExit(bool checkHousing) {
 
 	_vm->database()->getExitInfo(_lastLocation, _lastBox, &exitLoc, &exitBox);
 
-	if (_id == 0) {
+	// Check pointer since spells also have charId 0
+	if (this == _vm->database()->getChar(0)) {
 		_vm->game()->enterLocation(exitLoc);
 	} else if (checkHousing) {
 		housingProblem();
@@ -466,18 +467,68 @@ void Character::hitExit(bool checkHousing) {
 }
 
 void Character::setScope(int16 scope) {
-	//Actor *act;
 	int16 newScope = scope;
 
-	// TODO - handle spell effect (overrides the scope)
+	bool tick = (_vm->gameLoopTimer() % 3 == 1);
 
-	// TODO - hack
-	//if (_vm->database()->getChar(charId)->actorId == -1) {
+	// Rotate char under Float spell
+	if (_spellMode == 4) {
+		switch (_scopeInUse - 4) {
+		case 0:
+			if (tick) newScope = 5;
+			break;
+		case 1:
+			if (tick) newScope = 6;
+			break;
+		case 2:
+			if (tick) newScope = 7;
+			break;
+		case 3:
+			if (tick) newScope = 8;
+			break;
+		case 4:
+			if (tick) newScope = 9;
+			break;
+		case 5:
+			if (tick) newScope = 10;
+			break;
+		case 6:
+			if (tick) newScope = 11;
+			break;
+		case 7:
+			if (tick) newScope = 4;
+			break;
+		default:
+			newScope = 8;
+		}
+	}
+
 	setScopeX(newScope);
-	//}
+	if (_actorId == -1)
+		return;
 
-	// TODO - a bit more
-	//act = _vm->actorMan()->get(_vm->database()->getChar(charId)->actorId);
+	if (_spellMode == 6) { // Invisibility
+		_vm->actorMan()->get(_actorId)->setEffect(3);
+	} else if (_spellMode < 5 || 6 < _spellMode) {
+		_vm->actorMan()->get(_actorId)->setEffect(0);
+	}
+
+	// Flicker Shield spell
+	if (this == _vm->database()->getChar(0)) {
+		Player *player = _vm->game()->player();
+		int mask;
+		if (player->colgateTimer > 5)
+			mask = 2;
+		else
+			mask = 1;
+		if ((player->colgateTimer & mask) == 0) {
+			_vm->actorMan()->get(_actorId)->setEffect(0);
+		} else {
+			_vm->actorMan()->get(_actorId)->setEffect(2);
+		}
+		if (player->colgateTimer > 0)
+			player->colgateTimer--;
+	}
 }
 
 void Character::setScopeX(int16 scope) {
@@ -492,6 +543,13 @@ void Character::setScopeX(int16 scope) {
 
 	if (_loadedScopeXtend != -1 && _scopeInUse == scope)
 		return;
+
+	// If cabbage spell is on, don't change scope
+	if (_spellMode == 1 && scope != 102) {
+		scope = 102;
+		if (_loadedScopeXtend != -1 || _scopeInUse == 102)
+			return;
+	}
 
 	// grave
 	if (scope == 100) {
@@ -595,7 +653,20 @@ void Character::setScopeX(int16 scope) {
 			error("Illegal sprite type");
 		}
 	} else if (scope == 102) {
-		warning("TODO: cabbage");
+		if (_loadedScopeXtend != -1 && _actorId >= 0) {
+			_vm->actorMan()->unload(_actorId);
+			_actorId = -1;
+		}
+		_vm->panel()->showLoading(true);
+			_actorId = _vm->actorMan()->load("kom/actors/cabbage.act");
+			act = _vm->actorMan()->get(_actorId);
+			act->enable(1);
+			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
+			act->setScope(0, 3);
+			_spriteScope = scope;
+			_scopeInUse = scope;
+			_loadedScopeXtend = -7777;
+		_vm->panel()->showLoading(false);
 
 	// regular scope
 	} else if (scope < 100) {
@@ -666,21 +737,20 @@ void Character::unsetSpell() {
 		_strength = _oldStrength;
 		_defense = _oldDefense;
 
-		// FIXME: check if 3 is never used
-		assert(_spellMode != 3);
+		if (_spellMode == 3 && _isMortal)
+			_hitPoints *= 2;
 
-		if (_spellMode == 1) {
+		if (_spellMode == 1)
 			_hitPoints = _oldHitPoints;
-		}
 	}
 
 	if (_spellMode != 0) {
-		// TODO - doActionUnsetSpell(_spellMode)
+		_vm->game()->doActionUnsetSpell(_id, _spellMode);
 	}
 
 	_mode = _modeCount = _spellMode = _spellDuration = 0;
 
-	// TODO - doActionSetSpell
+	_vm->game()->doActionSetSpell(_id, 0);
 }
 
 KomEngine *Character::_vm = 0;

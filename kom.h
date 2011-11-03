@@ -101,6 +101,10 @@ public:
 	SoundSample _swipeSample;
 	SoundSample _cashSample;
 	SoundSample _loseItemSample;
+	SoundSample _magicSample;
+	SoundSample _fluffSample;
+	SoundSample _colgateSample;
+	SoundSample _colgateOffSample;
 	SoundSample _fightSample;
 	SoundSample _weaponSample;
 	SoundSample _ambientSample;

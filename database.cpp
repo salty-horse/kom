@@ -237,7 +237,7 @@ void Database::initCharacters() {
 		sscanf(line.c_str(), "%*d %s %d %d",
 			_characters[index]._name,
 			&(_characters[index]._xtend),
-			&(_characters[index]._data2));
+			&(_characters[index]._type));
 
 		line = f.readLine();
 		strcpy(_characters[index]._desc, line.c_str());
@@ -344,7 +344,7 @@ void Database::initObjects() {
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d %d",
 			&(_objects[index].type),
-			&(_objects[index].data2),
+			&(_objects[index].spellType),
 			&(_objects[index].proc));
 		line = f.readLine();
 		sscanf(line.c_str(), "%d %d %d %d %d %d %d %d",
@@ -388,7 +388,7 @@ void Database::initObjects() {
 			_objects[i].data1,
 			_objects[i].desc,
 			_objects[i].type,
-			_objects[i].data2,
+			_objects[i].spellType,
 			_objects[i].proc,
 			_objects[i].data4,
 			_objects[i].isCarryable,

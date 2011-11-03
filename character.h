@@ -35,6 +35,7 @@ class Database;
 struct Character {
 public:
 	Character() :
+		_id(-1),
 		_mode(0), _modeCount(0), _isBusy(false), _isAlive(true), _isVisible(true),
 		_spellMode(0), _gold(0),
 		_actorId(-1), _screenH(0), _screenHDelta(0), _height(0),
@@ -50,7 +51,7 @@ public:
 	// character
 	char _name[7];
 	int _xtend;
-	int _data2;
+	int _type;
 	char _desc[50];
 	int _proc;
 	int _locationId;

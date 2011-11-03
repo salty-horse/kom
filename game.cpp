@@ -267,11 +267,13 @@ void Game::processChars() {
 				}
 				break;
 			case 2:
-				warning("TODO: processChars 2");
+				if (ch->_spellDuration == 0)
+					ch->unsetSpell();
+				else
+					ch->_spellDuration--;
 				break;
 			case 4:
 			case 5:
-				warning("TODO: processChars 4/5");
 				break;
 			}
 		}
@@ -562,6 +564,90 @@ bool Game::doStat(const Command *cmd) {
 			if (db->getChar(j->arg2)->_spellPoints > db->getChar(j->arg2)->_spellPointsMax)
 				db->getChar(j->arg2)->_spellPoints = db->getChar(j->arg2)->_spellPointsMax;
 			break;
+		case 420: {
+			Character *targetChar = _vm->database()->getChar(j->arg2);
+			if (targetChar->_spellMode == 5)
+				break;
+			targetChar->unsetSpell();
+
+			Object *spellObj = _vm->database()->getObj(j->arg3);
+
+			doActionSetSpell(j->arg2, spellObj->spellType);
+
+			// Airstrike spell
+			if (spellObj->spellType == 9) {
+				doActionPlayVideo("msc013g");
+				doSpellAttack(j->arg2, j->arg3);
+
+				Location *loc = _vm->database()->getLoc(targetChar->_locationId);
+				for (Common::List<int>::iterator it = loc->characters.begin();
+				     it != loc->characters.begin(); it++) {
+					Character *chr = _vm->database()->getChar(*it);
+
+					// Don't harm the player or immortal chars
+					if (chr->_type == 1 || !chr->_isMortal)
+						continue;
+
+					chr->_hitPoints -= 25;
+					if (chr->_hitPoints <= 0) {
+						chr->_hitPoints = 0;
+						chr->_isAlive = false;
+					}
+				}
+
+			// Damaging spells
+			} else if (spellObj->spellType == 10 ||
+			           spellObj->spellType == 11) {
+				doSpellAttack(j->arg2, j->arg3);
+
+			} else if (spellObj->spellType == 7 ||
+			           spellObj->spellType == 8 ||
+			           spellObj->spellType == 12) {
+				// Do nothing - handled by scripts
+
+			// Other spells
+			} else {
+				targetChar->_mode = 2;
+				targetChar->_modeCount = 0;
+				targetChar->_spellMode = spellObj->spellType;
+				targetChar->_spellDuration = 600;
+
+				// Do nothing with Shield
+				if (spellObj->spellType != 5)
+					break;
+
+				targetChar->_oldStrength = targetChar->_strength;
+				targetChar->_oldDefense = targetChar->_defense;
+				targetChar->_oldHitPoints = targetChar->_hitPoints;
+				if (!targetChar->_isMortal)
+					break;
+
+				switch (spellObj->spellType) {
+				case 1: // Cabbage
+					targetChar->_strength = 1;
+					targetChar->_defense = 1;
+					targetChar->_hitPoints = 1;
+					break;
+				case 2: // Slow motion
+					targetChar->_strength = MAX(1, (int)(targetChar->_strength * 0.75));
+					targetChar->_defense = MAX(1, targetChar->_defense / 2);
+					break;
+				case 3: // Dwarf
+					targetChar->_strength = MAX(1, targetChar->_strength / 2);
+					targetChar->_defense = MAX(1, targetChar->_defense / 2);
+					targetChar->_hitPoints = MAX(1, targetChar->_hitPoints / 2);
+					break;
+				case 4: // Floater
+					targetChar->_defense = MAX(1, targetChar->_defense / 4);
+					break;
+				case 6: // Invisibility
+					targetChar->_defense = MAX(1, (int)(targetChar->_defense * 1.5));
+					break;
+				}
+			}
+
+			break;
+		}
 		case 422:
 			db->setVar(j->arg2, db->getChar(j->arg3)->_hitPoints);
 			break;
@@ -713,9 +799,10 @@ bool Game::doStat(const Command *cmd) {
 			delete conv;
 			break;
 		case 478:
+			// Cabbage or floater spells
 			if (db->getChar(j->arg2)->_spellMode == 1 ||
 			    db->getChar(j->arg2)->_spellMode == 4)
-				warning("TODO: unset spell");
+				db->getChar(j->arg2)->unsetSpell();
 
 			conv = new Conv(_vm, j->arg2);
 			if (!conv->doTalk(j->arg3, j->arg4)) {
@@ -725,9 +812,10 @@ bool Game::doStat(const Command *cmd) {
 			delete conv;
 			break;
 		case 479:
+			// Cabbage or floater spells
 			if (db->getChar(j->arg2)->_spellMode == 1 ||
 			    db->getChar(j->arg2)->_spellMode == 4)
-				warning("TODO: unset spell");
+				db->getChar(j->arg2)->unsetSpell();
 
 			conv = new Conv(_vm, j->arg2);
 			if (!conv->doTalk(db->getVar(j->arg3), j->arg4)) {
@@ -785,7 +873,10 @@ bool Game::doStat(const Command *cmd) {
 			break;
 		}
 		case 488:
-			warning("TODO: castSpell(%d, %d, %d)", j->arg2, j->arg3, j->arg4);
+			castSpell(j->arg3, j->arg2, j->arg4);
+			if (j->arg3 != -1) {
+				db->getChar(j->arg3)->_spellPoints -= db->getObj(j->arg2)->spellCost;
+			}
 			break;
 		case 489:
 			db->getChar(j->arg2)->_spellMode = j->arg3;
@@ -870,7 +961,7 @@ void Game::doCommand(int command, int type, int id, int type2, int id2) {
 				doNoUse();
 				break;
 			case 2:
-				warning("TODO: unset spell(id2)");
+				_vm->database()->getChar(id2)->unsetSpell();
 				if (!(result = doProc(321, 1, id, 2, id2)))
 					result = doProc(320, 2, id2, 1, id);
 
@@ -1019,7 +1110,7 @@ void Game::checkUseImmediate(ObjectType type, int16 id) {
 	if (type != 0) {
 		doCommand(3, 1, id, -1, -1);
 	} else {
-		_player.commandState = 0;
+		_player.commandState = 1;
 		_player.collideNum = 0;
 		_settings.objectType = type;
 		_settings.objectNum = id;
@@ -1123,7 +1214,50 @@ void Game::loopMove() {
 		}
 	}
 
-	// TODO - handle magic actors
+	// Move magic characters
+	for (int i = 0; i < 10; i++) {
+		Character *magicChar = _vm->database()->getMagicChar(i);
+		Spell *spell = &_spells[i];
+		Character *targetChar = NULL;
+
+		if (magicChar->_id == -1)
+			continue;
+
+		if (!spell->doneHold) {
+			// Stay on the caster for the held duration
+			targetChar = magicChar;
+			if (spell->holdDuration == 0)
+				spell->doneHold = true;
+			else
+				spell->holdDuration--;
+		} else {
+			targetChar = _vm->database()->getChar(spell->targetId);
+			if (spell->duration == 0) {
+				if (magicChar->_id == 9999) { // Dark lord
+					_vm->actorMan()->getMagicDarkLord(i)->enable(0);
+
+				} else {
+					_vm->actorMan()->get(magicChar->_actorId)->enable(0);
+				}
+				magicChar->_id = -1;
+
+			} else {
+				spell->duration--;
+				if (spell->duration <= 8) {
+					magicChar->_screenH = 0;
+				}
+			}
+		}
+
+		if (magicChar->_lastLocation == targetChar->_lastLocation ||
+		    _vm->database()->loc2loc(magicChar->_lastLocation, targetChar->_lastLocation) != -1) {
+			magicChar->_gotoLoc = targetChar->_lastLocation;
+			magicChar->_gotoX = targetChar->_screenX;
+			magicChar->_gotoY = targetChar->_screenY;
+		}
+		magicChar->moveChar(false);
+		magicChar->moveCharOther();
+	}
 }
 
 void Game::loopCollide() {
@@ -1155,7 +1289,15 @@ void Game::loopCollide() {
 		}
 	}
 
-	// TODO: collide magic actors
+	// Collide magic characters
+	for (int i = 0; i < 10; i++) {
+		Character *magicChar = _vm->database()->getMagicChar(i);
+		if (magicChar->_id == -1)
+			continue;
+		if ((_vm->database()->getBox(magicChar->_lastLocation, magicChar->_lastBox)->attrib & 1) != 0) {
+			magicChar->hitExit(true);
+		}
+	}
 
 	// Collide characters with doors
 	for (uint16 i = 0; i < _vm->database()->charactersNum(); ++i) {
@@ -1255,6 +1397,51 @@ void Game::loopSpriteCut() {
 			break;
 		default:
 			break;
+		}
+	}
+}
+
+void Game::loopSpells() {
+	for (int i = 0; i < 10; i++) {
+		Spell *spell = &_spells[i];
+		Character *magicChar = _vm->database()->getMagicChar(i);
+
+		if (magicChar->_id == -1)
+			continue;
+
+		Character *targetChar = _vm->database()->getChar(spell->targetId);
+
+		if (!spell->doneHold)
+			continue;
+		if (magicChar->_lastBox != targetChar->_lastBox)
+			continue;
+		if (ABS(magicChar->_start3 - targetChar->_start3) >= 2 * 256)
+			continue;
+		if (ABS(magicChar->_start4 - targetChar->_start4) >= 2 * 256)
+			continue;
+
+		if (targetChar->_spellMode == 5 ||
+		    (targetChar->_id != 0 && _player.colgateTimer != 0)) {
+
+			spell->doneHold = 2;
+			spell->duration = 40;
+			magicChar->_screenH = -0x640000;
+			magicChar->_height = -0x3840000;
+			magicChar->_screenHDelta = -0x320000;
+			_player.colgateTimer = 3;
+			_vm->sound()->playSampleSFX(_vm->_colgateSample, false);
+
+		} else {
+			if (!targetChar->_isAlive)
+				continue;
+
+			doCommand(3, 1, spell->spellId, 2, spell->targetId);
+
+			if (magicChar->_id == 9999)
+				_vm->actorMan()->getMagicDarkLord(i)->enable(0);
+			else
+				_vm->actorMan()->get(magicChar->_actorId)->enable(0);
+			magicChar->_id = -1;
 		}
 	}
 }
@@ -1612,9 +1799,14 @@ void Game::doActionMoveChar(uint16 charId, int16 loc, int16 box) {
 	}
 
 	if (_vm->database()->loc2loc(loc, chr->_lastLocation) == -1) {
-		// TODO: magicActors thing
-		//for (int i = 0; i < 10; ++i) {
-		//}
+		for (int i = 0; i < 10; ++i) {
+			Character *magicChar = _vm->database()->getMagicChar(i);
+			Spell *spell = &_spells[i];
+			if (magicChar->_id != -1 && spell->targetId == 0) {
+				if (spell->duration >= 10)
+					spell->duration = 10;
+			}
+		}
 	}
 
 	chr->_lastLocation = loc;
@@ -3074,14 +3266,13 @@ void Game::doFight(int enemyId, int weaponId) {
 			enemy->unsetSpell();
 			enemy->_hitPoints = 0;
 			enemy->_isAlive = false;
-			if (enemy->_spellMode != 0) {
-				// TODO: doActionUnsetSpell(enemyId, enemy->_spellMode);
-			}
+			if (enemy->_spellMode != 0)
+				doActionUnsetSpell(enemyId, enemy->_spellMode);
 			enemy->_mode = 0;
 			enemy->_modeCount = 0;
 			enemy->_spellMode = 0;
 			enemy->_spellDuration = 0;
-			// TODO: doActionSetSpell(enemyId, 0);
+			_vm->game()->doActionSetSpell(enemyId, 0);
 		}
 	}
 
@@ -3141,14 +3332,219 @@ void Game::doNPCFight(int attackerId, int defenderId) {
 		defender->unsetSpell();
 		defender->_hitPoints = 0;
 		defender->_isAlive = false;
-		if (defender->_spellMode != 0) {
-			// TODO: doActionUnsetSpell(defenderId, defender->_spellMode);
-		}
+		if (defender->_spellMode != 0)
+			doActionUnsetSpell(defenderId, defender->_spellMode);
 		defender->_mode = 0;
 		defender->_modeCount = 0;
 		defender->_spellMode = 0;
 		defender->_spellDuration = 0;
-		// TODO: doActionSetSpell(defenderId, 0);
+		_vm->game()->doActionSetSpell(defenderId, 0);
+	}
+}
+
+bool Game::castSpell(int16 charId, int16 spellId, int16 target) {
+	Character *magicChar = NULL;
+	Spell *spell = NULL;
+
+	// Find unused magic actor
+	for (int i = 0; i < 10; i++) {
+		magicChar = _vm->database()->getMagicChar(i);
+		if (magicChar->_id == -1) {
+			spell = &_spells[i];
+			break;
+		}
+	}
+	if (magicChar->_id != -1)
+		return false;
+
+	Character *targetChar = _vm->database()->getChar(target);
+
+	// Dark lord spell
+	if (charId == -1) {
+
+		// Target at dark tower, or reachable from there
+		if (targetChar->_lastLocation == 83 || _vm->database()->loc2loc(83, targetChar->_lastLocation) != -1) {
+			magicChar->_lastLocation = 83;
+			magicChar->_lastBox = 0;
+		} else {
+			magicChar->_lastLocation = 73;
+			magicChar->_lastBox = 10;
+		}
+		magicChar->_screenX = _vm->database()->getMidX(magicChar->_lastLocation, magicChar->_lastBox);
+		magicChar->_screenY = _vm->database()->getMidY(magicChar->_lastLocation, magicChar->_lastBox);
+		magicChar->_start3 = magicChar->_screenX * 256;
+		magicChar->_start4 = magicChar->_screenY * 256;
+		magicChar->_start5 = _vm->database()->getZValue(magicChar->_lastLocation, magicChar->_lastBox, magicChar->_start4);
+		magicChar->_id = 9999;
+		magicChar->_walkSpeed = 1800;
+		spell->holdDuration = 0;
+		spell->doneHold = true;
+		spell->duration = 2400;
+
+	// Regular caster
+	} else {
+		Character *casterChar = _vm->database()->getChar(charId);
+
+		magicChar->_lastBox = casterChar->_lastBox;
+		magicChar->_lastLocation = casterChar->_lastLocation;
+		magicChar->_start3 = casterChar->_start3;
+		magicChar->_screenX = casterChar->_start3 / 256;
+		magicChar->_start4 = casterChar->_start4;
+		magicChar->_screenY = casterChar->_start4 / 256;
+		magicChar->_start5 = casterChar->_start5;
+		magicChar->_id = charId;
+		magicChar->_walkSpeed = 2000;
+		spell->holdDuration = 16;
+		spell->doneHold = false;
+		spell->duration = 160;
+	}
+
+	magicChar->_relativeSpeed = 1024;
+	magicChar->_stopped = false;
+	magicChar->_screenH = -0x3C0000;
+	magicChar->_height = -0x5A0000;
+	magicChar->_screenHDelta = -0x90000;
+	spell->spellId = spellId;
+	spell->targetId = target;
+
+	if (charId <= 0) {
+		if (_player.selectedChar == 0)
+			magicChar->_walkSpeed = 2700;
+		else
+			magicChar->_walkSpeed = 3000;
+	} else if (charId == 72) { // Master Ringwraith
+		magicChar->_walkSpeed = 2700;
+	}
+	return true;
+}
+
+void Game::doSpellAttack(int16 target, int16 spellId) {
+	Object *spellObj = _vm->database()->getObj(spellId);
+	if (spellObj->type != 3)
+		return;
+
+	Character *targetChar = _vm->database()->getChar(target);
+	if (!targetChar->_isMortal)
+		return;
+
+	int damageRange = MAX(spellObj->maxDamage - spellObj->minDamage, 1);
+	int damage = _vm->rnd()->getRandomNumber(damageRange - 1) + spellObj->minDamage + 1;
+
+	targetChar->_hitPoints -= damage;
+	if (targetChar->_hitPoints <= 0) {
+		targetChar->unsetSpell();
+		targetChar->_hitPoints = 0;
+		targetChar->_isAlive = false;
+	}
+}
+
+void Game::doActionSetSpell(int16 target, int16 spellType) {
+	Character *targetChar = _vm->database()->getChar(target);
+	targetChar->_spellMode = spellType;
+
+	switch (spellType) {
+	case 0:
+	case 6: // Invisibility
+	case 7: // Incontinence
+	case 8: // Left the gas on
+	case 12: // Teleport
+		break;
+	case 1: // Cabbage
+		targetChar->_screenH = -0x5A0000;
+		targetChar->_screenHDelta = -0xA0000;
+		targetChar->_height = 0;
+		if (target != 0) {
+			declareNewEnemy(target);
+			_player.enemyFightBarTimer = 110;
+		}
+		targetChar->setScope(102);
+		break;
+	case 2: // Slow motion
+		targetChar->_walkSpeed /= 2;
+		targetChar->_animSpeed *= 2;
+		targetChar->_scopeInUse = -666;
+		break;
+	case 3: // Dwarf
+		targetChar->_offset14 = 0x30000;
+		targetChar->_offset1c = 0x2BC00;
+		targetChar->_offset20 = 0x20000;
+		targetChar->_offset28 = 0x25800;
+		if (target != 0) {
+			declareNewEnemy(target);
+			_player.enemyFightBarTimer = 110;
+		}
+		break;
+	case 4: // Floater
+		targetChar->_screenH = -0x3C0000;
+		targetChar->_height = -0x5A0000;
+		break;
+	case 5: // Shield
+		warning("TODO: pulseFade");
+		_player.colgateTimer = 20;
+		break;
+	case 9: // Airstrike
+	case 10: // WizBang
+	case 11: // Kick in the shins
+		if (target != 0) {
+			declareNewEnemy(target);
+			_player.enemyFightBarTimer = 110;
+		}
+		break;
+	default:
+		error("Invalid spell type in doActionSetSpell");
+	}
+}
+
+void Game::doActionUnsetSpell(int16 target, int16 spellType) {
+	Character *targetChar = _vm->database()->getChar(target);
+	targetChar->_spellMode = spellType;
+
+	switch (spellType) {
+	case 0:
+	case 6: // Invisibility
+	case 7: // Incontinence
+	case 8: // Left the gas on
+	case 9: // Airstrike
+	case 10: // WizBang
+	case 11: // Kick in the shins
+	case 12: // Teleport
+		break;
+	case 1: // Cabbage
+		targetChar->_scopeInUse = -666;
+		targetChar->_offset20 = 0x40000;
+		targetChar->_ratioY = 0x10000;
+		targetChar->_offset28 = -0x25800;
+		break;
+	case 2: // Slow motion
+		targetChar->_walkSpeed *= 2;
+		targetChar->_animSpeed /= 2;
+		targetChar->_scopeInUse = -666;
+		break;
+	case 3: // Dwarf
+		targetChar->_offset14 = 0x40000;
+		targetChar->_offset20 = 0x40000;
+		if (_cb.talkInitialized) {
+			targetChar->_offset1c = 0;
+			targetChar->_offset28 = 0;
+		} else {
+			targetChar->_offset1c = -0x25800;
+			targetChar->_offset28 = -0x25800;
+		}
+		if (target != 0) {
+			declareNewEnemy(target);
+			_player.enemyFightBarTimer = 110;
+		}
+		break;
+	case 4: // Floater
+		targetChar->_screenHDelta = 0;
+		targetChar->_height = 0;
+		break;
+	case 5: // Shield
+		_vm->sound()->playSampleSFX(_vm->_colgateOffSample, false);
+		_player.colgateTimer = 15;
+		break;
+	default:
+		error("Invalid spell type in doActionUnsetSpell");
 	}
 }
 
@@ -3276,7 +3672,54 @@ void Game::exeFight() {
 }
 
 void Game::exeMagic() {
-	warning("TODO: exeMagic");
+	switch (_player.commandState) {
+	case 1: {
+		Character *playerChar = _vm->database()->getChar(0);
+
+		// Not enough spell points
+		if (playerChar->_spellPoints < _vm->database()->getObj(_settings.objectNum)->spellCost) {
+			doActionSpriteScene("", 0, -1, -1);
+			playerChar->_spriteType = 4;
+			playerChar->_lastDirection = 4;
+			_player.commandState = 2;
+			_vm->sound()->playSampleSFX(_vm->_fluffSample, false);
+
+		// Spell succeeded
+		} else if (castSpell(0, _settings.objectNum, _player.collideNum)) {
+			playerChar->_spellPoints -= _vm->database()->getObj(_settings.objectNum)->spellCost;
+			doActionSpriteScene("", 0, -1, -1);
+			playerChar->_spriteType = 4;
+			playerChar->_lastDirection = 4;
+			_player.commandState = 2;
+			_vm->sound()->playSampleSFX(_vm->_magicSample, false);
+
+		// Spell failed
+		} else {
+			_player.command = CMD_WALK;
+			_player.commandState = 0;
+			_player.collideType = COLLIDE_NONE;
+			_player.collideNum = -1;
+			_vm->database()->getChar(0)->_isBusy = false;
+			_vm->sound()->playSampleSFX(_vm->_fluffSample, false);
+		}
+		break;
+	}
+	case 2:
+		_player.commandState = 3;
+		break;
+	case 3:
+		_settings.objectNum = -1;
+		_settings.object2Num = -1;
+		_player.command = CMD_WALK;
+		_player.commandState = 0;
+		_player.collideType = COLLIDE_NONE;
+		_player.collideNum = -1;
+		_vm->database()->getChar(0)->_isBusy = false;
+		break;
+	default:
+		error("Invalid state in exeMagic");
+		break;
+	}
 }
 
 } // End of namespace Kom

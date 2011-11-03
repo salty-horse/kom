@@ -142,7 +142,7 @@ enum CommandType {
 
 /** Player settings */
 struct Player {
-	Player() : isNight(0), sleepTimer(0), collideType(COLLIDE_NONE), collideNum(0) {}
+	Player() : isNight(0), sleepTimer(0), colgateTimer(0), collideType(COLLIDE_NONE), collideNum(0) {}
 	CommandType command;
 	int16 commandState;
 	CollideType collideType;
@@ -168,6 +168,7 @@ struct Player {
 	SoundSample weaponSample;
 	int oldGold;
 	uint16 sleepTimer;
+	int16 colgateTimer;
 	bool spriteCutMoving;
 	int16 spriteCutX;
 	int16 spriteCutY;
@@ -209,13 +210,20 @@ struct Inventory {
 	int action;
 };
 
+struct Spell {
+	int16 spellId;
+	int16 holdDuration;
+	int16 duration;
+	int16 targetId;
+	bool doneHold;
+};
+
 class Game {
 public:
 	Game(KomEngine *vm, OSystem *system);
 	~Game();
 
 	void enterLocation(uint16 locId);
-	void hitExit(uint16 charId, bool checkHousing);
 	void processTime();
 	bool doStat(const Command *cmd);
 	void doCommand(int command, int type, int id, int type2, int id2);
@@ -223,6 +231,7 @@ public:
 	void loopMove();
 	void loopCollide();
 	void loopSpriteCut();
+	void loopSpells();
 	void loopTimeouts();
 	void loopInterfaceCollide();
 
@@ -256,6 +265,11 @@ public:
 	void doFight(int enemyId, int weaponId);
 	void doNPCFight(int attacker, int defender);
 
+	bool castSpell(int16 charId, int16 spellId, int16 target);
+	void doSpellAttack(int16 target, int16 spellId);
+	void doActionSetSpell(int16 target, int16 spellType);
+	void doActionUnsetSpell(int16 target, int16 spellType);
+
 	void exeUse();
 	void exeTalk();
 	void exePickup();
@@ -265,6 +279,7 @@ public:
 
 	Common::Array<RoomObject> *getObjects() { return &_roomObjects; }
 	Common::Array<RoomDoor> *getDoors() { return &_roomDoors; }
+	Spell *getSpell(int i) { return &_spells[i]; }
 
 private:
 
@@ -273,6 +288,7 @@ private:
 
 	Common::Array<RoomObject> _roomObjects;
 	Common::Array<RoomDoor> _roomDoors;
+	Spell _spells[10];
 
     // Settings
     Settings _settings;
@@ -295,8 +311,6 @@ private:
 	void moveCharOther(uint16 charId);
 
 	int getDonutSegment(int xPos, int yPos);
-
-	void housingProblem(uint16 charId);
 };
 
 } // End of namespace Kom

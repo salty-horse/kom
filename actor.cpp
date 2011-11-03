@@ -29,6 +29,7 @@
 #include "kom/kom.h"
 #include "kom/actor.h"
 #include "kom/screen.h"
+#include "kom/database.h"
 
 using Common::File;
 using Common::MemoryReadStream;
@@ -140,6 +141,21 @@ void ActorManager::loadExtras() {
 		act->enable(0);
 		act->defineScope(0, 0, 3, 0);
 		act->setScope(0, 2);
+	}
+
+	for (int i = 0; i < 10; i++) {
+		Character *magicChar = _vm->database()->getMagicChar(i);
+		magicChar->_actorId = load("kom/oneoffs/magic.act");
+		act = get(magicChar->_actorId);
+		act->enable(0);
+		act->defineScope(0, 0, act->_framesNum - 1, 0);
+		act->setScope(0, 1);
+
+		_magicDarkLord[i] = load("kom/oneoffs/magic2.act");
+		act = get(_magicDarkLord[i]);
+		act->enable(0);
+		act->defineScope(0, 0, act->_framesNum - 1, 0);
+		act->setScope(0, 1);
 	}
 }
 

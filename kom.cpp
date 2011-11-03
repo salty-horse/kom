@@ -132,6 +132,10 @@ Common::Error KomEngine::run() {
 	_swipeSample.loadFile(samplesDir + "swipe.raw");
 	_cashSample.loadFile(samplesDir + "cash.raw");
 	_loseItemSample.loadFile(samplesDir + "loseitem.raw");
+	_magicSample.loadFile(samplesDir + "magic.raw");
+	_fluffSample.loadFile(samplesDir + "fluff.raw");
+	_colgateSample.loadFile(samplesDir + "colgate.raw");
+	_colgateOffSample.loadFile(samplesDir + "colgateof.raw");
 	_fightSample.loadFile(samplesDir + "fight.raw");
 
 	_game->player()->weaponSoundEffect = 8;
@@ -292,7 +296,7 @@ void KomEngine::gameLoop() {
 		}
 
 		_game->loopSpriteCut();
-		// loopSpells
+		_game->loopSpells();
 		_game->loopTimeouts();
 
 		// Draw lost/received gold

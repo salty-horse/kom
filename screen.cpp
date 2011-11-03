@@ -463,8 +463,8 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 				settings->fightEffectChar._lastLocation = playerChar->_lastLocation;
 				settings->fightEffectChar._lastBox = playerChar->_lastBox;
 				settings->fightEffectChar._height = 0;
-				settings->fightEffectChar._screenH = -2621440;
-				settings->fightEffectChar._screenHDelta = -983040;
+				settings->fightEffectChar._screenH = -0x280000;
+				settings->fightEffectChar._screenHDelta = -0xF0000;
 				settings->fightEffectChar._walkSpeed = 1536;
 				settings->fightEffectChar._relativeSpeed = 1024;
 				settings->fightEffectChar._gotoLoc = playerChar->_lastLocation;
@@ -516,7 +516,56 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 		}
 	}
 
-	// TODO - handle magic actors
+	if (mode > 0) {
+		// Handle magic characters
+		for (int i = 0; i < 10; i++) {
+			Character *magicChar = _vm->database()->getMagicChar(i);
+
+			if (magicChar->_id == -1)
+				break;
+
+			// Disable actors in other rooms
+			if (magicChar->_lastLocation != playerChar->_lastLocation) {
+				_vm->actorMan()->get(magicChar->_actorId)->enable(0);
+				_vm->actorMan()->getMagicDarkLord(i)->enable(0);
+				continue;
+			}
+
+			int scale;
+			if (_vm->database()->getBox(magicChar->_lastLocation, magicChar->_lastBox)->attrib == 8) {
+				scale = magicChar->_start5Prev * 88 / 60;
+			} else {
+				magicChar->_start5PrevPrev = magicChar->_start5Prev;
+				magicChar->_start5Prev = magicChar->_start5;
+				scale = magicChar->_start5Prev * 88 / 60;
+			}
+
+			int scale2;
+			if (magicChar->_id == 9999)
+				scale2 = 2048;
+			else
+				scale2 = 1024;
+
+			Spell *spell = _vm->game()->getSpell(i);
+
+			// Resize when spell dies out
+			if (spell->duration <= 8) {
+				// TODO: modify scale2
+				//scale2 = arrayLookup[spell->duration] * scale2;
+			}
+
+			Actor *act;
+			if (magicChar->_id == 9999)
+				act = _vm->actorMan()->getMagicDarkLord(i);
+			else
+				act = _vm->actorMan()->get(magicChar->_actorId);
+
+			act->enable(1);
+			act->setPos(magicChar->_screenX / 2, (magicChar->_start4 + magicChar->_screenH / scale) / 256 / 2);
+			act->setRatio(scale2 * 256 / scale, scale2 * 256 / scale);
+			act->setMaskDepth(magicChar->_priority, magicChar->_start5);
+		}
+	}
 
 	if (mode > 0) {
 		pauseBackground(false);

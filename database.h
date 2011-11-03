@@ -42,7 +42,7 @@ struct EventLink {
 };
 
 struct Object {
-	Object() : data1(0), type(0), data2(0), proc(0),
+	Object() : data1(0), type(0), spellType(0), proc(0),
 	           data4(0), isCarryable(0), isContainer(0), isVisible(0), isSprite(0), isUseImmediate(0),
 	           isPickable(0), isUsable(0), price(0), data11(0), spellCost(0), minDamage(0),
 	           maxDamage(0), ownerType(0), ownerId(0), box(0), data16(0), data17(0),
@@ -52,7 +52,7 @@ struct Object {
 	int data1;
 	char desc[50];
 	int type;
-	int data2;
+	int spellType;
 	int proc;
 	int data4;
 	int isCarryable;
@@ -168,6 +168,7 @@ public:
 
 	Process *getProc(uint16 procIndex) const { return procIndex < _procsNum ? &(_processes[procIndex]) : NULL; }
 	Character *getChar(uint16 charIndex) const { return charIndex < _charactersNum ? &(_characters[charIndex]) : NULL; }
+	Character *getMagicChar(uint16 charIndex) { return charIndex < sizeof(_magicCharacters) ? &(_magicCharacters[charIndex]) : NULL; }
 	Object *getObj(uint16 objIndex) const { return objIndex < _objectsNum ? &(_objects[objIndex]) : NULL; }
 	Location *getLoc(uint16 locIndex) const { return locIndex < _locationsNum ? &(_locations[locIndex]) : NULL; }
 
@@ -205,6 +206,8 @@ private:
 
 	Character *_characters;
 	int _charactersNum;
+
+	Character _magicCharacters[10];
 
 	Object *_objects;
 	int _objectsNum;

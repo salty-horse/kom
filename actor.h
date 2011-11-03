@@ -135,6 +135,7 @@ public:
 	Actor *getCloudEffectActor() { return get(_cloudEffectActorId); }
 	Actor *getCloudWordActor() { return get(_cloudWordActorId); }
 	Actor *getNPCCloudActor(int i) { return get(_cloudNPC[i]); }
+	Actor *getMagicDarkLord(int i) { return get(_magicDarkLord[i]); }
 	void unload(int idx) { if (idx >= 0) { delete _actors[idx]; _actors[idx] = 0; } }
 	void unloadAll() { for (uint i = 0; i < _actors.size(); i++) unload(i); }
 	void displayAll();
@@ -155,6 +156,7 @@ private:
 	int _cloudEffectActorId;
 	int _cloudWordActorId;
 	int _cloudNPC[4];
+	int _magicDarkLord[10];
 
 	Actor *getFarthestActor();
 };
