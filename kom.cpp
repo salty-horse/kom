@@ -135,7 +135,7 @@ Common::Error KomEngine::run() {
 	_magicSample.loadFile(samplesDir + "magic.raw");
 	_fluffSample.loadFile(samplesDir + "fluff.raw");
 	_colgateSample.loadFile(samplesDir + "colgate.raw");
-	_colgateOffSample.loadFile(samplesDir + "colgateof.raw");
+	_colgateOffSample.loadFile(samplesDir + "colgatof.raw");
 	_fightSample.loadFile(samplesDir + "fight.raw");
 
 	_game->player()->weaponSoundEffect = 8;
