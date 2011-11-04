@@ -44,7 +44,8 @@ public:
 		_stopped(true), _stoppedTime(0), _spriteName(0),
 		_scopeInUse(-1), _scopeWanted(8), _loadedScopeXtend(-1), _priority(0), _fightPartner(-1),
 		_spriteCutState(0), _spriteScope(0), _spriteTimer(0), _spriteBox(0), _somethingX(0),
-		_somethingY(0) {}
+		_somethingY(0), _start3(0), _start3Prev(0), _start3PrevPrev(0), _start4(0),
+		_start4Prev(0), _start4PrevPrev(0), _start5(0), _start5Prev(0), _start5PrevPrev(0) {}
 
 	int _id;
 
