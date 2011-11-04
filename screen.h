@@ -78,6 +78,8 @@ public:
 	void clearScreen();
 	void drawActorFrame0(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth);
+	void drawActorFrame2(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
+			int16 xEnd, int16 yEnd, int maskDepth);
 	void drawActorFrame4(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart);
 	void drawMouseFrame(const int8 *data, uint16 width, uint16 height, int16 xOffset, int16 yOffset);
 

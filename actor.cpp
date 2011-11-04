@@ -386,10 +386,15 @@ void Actor::display() {
 					width, height, xStart, yStart);
 				break;
 			case 0:
-			default:
 				_vm->screen()->drawActorFrame0((int8 *)(_framesData + frameStream.pos()),
 					width, height, xStart, yStart, xStart + scaledWidth - 1, yStart + scaledHeight - 1, _maskDepth);
 				break;
+			case 2:
+				_vm->screen()->drawActorFrame2((int8 *)(_framesData + frameStream.pos()),
+					width, height, xStart, yStart, xStart + scaledWidth - 1, yStart + scaledHeight - 1, _maskDepth);
+				break;
+			default:
+				warning("Unhandled effect %d", _effect);
 			}
 		}
 	}

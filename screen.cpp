@@ -785,7 +785,7 @@ void Screen::drawActorFrame0(const int8 *data, uint16 width, uint16 height, int1
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
 			    && (targetLine >= SCREEN_H - PANEL_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
-					_screenBuf[targetPixel] = lineBuffer[sourcePixel];
+				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
 			}
 
 			sourcePixel += widthRatio.quot;
@@ -811,6 +811,135 @@ void Screen::drawActorFrame0(const int8 *data, uint16 width, uint16 height, int1
 	}
 
 	_dirtyRects->push_back(Rect(xStart, yStart, xStart + visibleWidth, yStart + visibleHeight));
+}
+
+void Screen::drawActorFrame2(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
+                            int16 xEnd, int16 yEnd, int maskDepth) {
+
+	uint16 startLine = 0;
+	uint16 startCol = 0;
+	int32 colSkip = 0;
+	int32 rowSkip = 0;
+	div_t d;
+
+	memset(lineBuffer, 0, sizeof(lineBuffer));
+
+	if (xStart > xEnd)
+		SWAP(xStart, xEnd);
+
+	if (yStart > yEnd)
+		SWAP(yStart, yEnd);
+
+	int16 visibleWidth = xEnd - xStart;
+	int16 scaledWidth = visibleWidth;
+	int16 visibleHeight = yEnd - yStart;
+	int16 scaledHeight = visibleHeight;
+
+	if (visibleWidth == 0 || visibleHeight == 0) return;
+
+	div_t widthRatio = div(width, scaledWidth);
+	div_t heightRatio = div(height, scaledHeight);
+
+	if (xStart < 0) {
+		// frame is entirely off-screen
+		if ((visibleWidth += xStart) <= 0)
+			return;
+
+		d = div(-xStart * width, scaledWidth);
+		startCol = d.quot;
+		colSkip = d.rem;
+
+		xStart = 0;
+	}
+
+	// frame is entirely off-screen
+	if (xStart >= SCREEN_W) return;
+
+	// check if frame spills over the edge
+	if (visibleWidth + xStart >= SCREEN_W)
+		if ((visibleWidth -= visibleWidth + xStart - SCREEN_W) <= 0)
+			return;
+
+	if (yStart < 0) {
+		// frame is entirely off-screen
+		if ((visibleHeight += yStart) <= 0)
+			return;
+
+		d = div(-yStart * height, scaledHeight);
+		startLine = d.quot;
+		rowSkip = d.rem;
+		//debug("startLine: %hu, rowSkip: %d", startLine, rowSkip);
+
+		yStart = 0;
+	}
+
+	// frame is entirely off-screen
+	if (yStart >= SCREEN_H) return;
+
+	// check if frame spills over the edge
+	if (visibleHeight + yStart >= SCREEN_H)
+		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H + 1) <= 0)
+			return;
+
+	uint8 sourceLine = startLine;
+	uint8 targetLine = yStart;
+	int16 rowThing = scaledHeight - rowSkip;
+
+	for (int i = 0; i < visibleHeight; i += 1) {
+		uint16 lineOffset = READ_LE_UINT16(data + sourceLine * 2);
+
+		bool startOfLine = (xStart == 0);
+		uint16 targetPixel = targetLine * SCREEN_W + xStart;
+		drawActorFrameLine(lineBuffer, data + lineOffset, width);
+
+		// Copy line to screen
+		int skipped = 0;
+		uint8 sourcePixel = startCol;
+		int16 colThing = scaledWidth - colSkip;
+
+		for (int j = 0; j < visibleWidth; ++j) {
+			if (lineBuffer[sourcePixel] != 0
+			    && (targetLine >= SCREEN_H - PANEL_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
+
+				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
+
+				// Draw border to the left and right
+				if (!startOfLine) {
+					if (lineBuffer[sourcePixel - widthRatio.quot - skipped] == 0)
+						_screenBuf[targetPixel-1] = 14;
+				}
+				if (xStart + visibleWidth < SCREEN_W) {
+					if (lineBuffer[sourcePixel + widthRatio.quot + (colThing <= widthRatio.rem) ? 1 : 0] == 0)
+						_screenBuf[targetPixel+1] = 14;
+				}
+			}
+
+			skipped = 0;
+			sourcePixel += widthRatio.quot;
+			colThing -= widthRatio.rem;
+
+			if (colThing < 0) {
+				sourcePixel++;
+				colThing += scaledWidth;
+				skipped = 1;
+			}
+
+			targetPixel++;
+			startOfLine = false;
+		}
+
+		sourceLine += heightRatio.quot;
+		rowThing -= heightRatio.rem;
+
+		if (rowThing < 0) {
+			sourceLine++;
+			rowThing += scaledHeight;
+		}
+
+		targetLine++;
+	}
+
+	_dirtyRects->push_back(Rect(MAX(0, xStart - 1), yStart, MIN((int)SCREEN_W, xStart + visibleWidth + 1), yStart + visibleHeight));
 }
 
 void Screen::drawActorFrame4(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart) {
