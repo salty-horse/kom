@@ -22,6 +22,7 @@
 
 #include "common/file.h"
 #include "common/str.h"
+#include "common/memstream.h"
 
 #include "kom/kom.h"
 #include "kom/sound.h"
@@ -29,8 +30,10 @@
 #include "audio/mixer.h"
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
+#include "audio/decoders/adpcm.h"
 
 using Common::File;
+using Common::String;
 
 namespace Kom {
 
@@ -40,23 +43,100 @@ bool SoundSample::loadFile(Common::String filename) {
 
 	unload();
 
-	if (!f.open(filename))
-		return false;
+	// Check for archive file
+	String entry = lastPathComponent(filename, '/');
+	if ('1' <= entry[0] && entry[0] <= '9') {
+		entry.toUppercase();
 
-	_size = f.size();
-	data = (byte *)malloc(_size);
-	f.read(data, f.size());
-	f.close();
+		// Construct new filename
+		String newName = filename;
+		while (newName.lastChar() != '/')
+			newName.deleteLastChar();
+		newName += "convall.dat";
 
-	_stream = Audio::makeRawStream(data, _size,
-			11025, Audio::FLAG_UNSIGNED);
+		if (!f.open(newName))
+			return false;
 
-	return true;
+		int16 count = f.readSint16LE();
+
+		char *contents = new char[22 * count];
+		f.read(contents, 22 * count);
+
+		bool found = false;
+		int i;
+		for (i = 0; i < count; i++) {
+			if (entry == (char*)contents + i*22) {
+				found = true;
+				break;
+			}
+		}
+
+		if (!found) {
+			warning("Could not find %s in %s", newName.c_str(), entry.c_str());
+			delete[] contents;
+			return false;
+		}
+
+		int offset = READ_LE_UINT32(contents + i*22 + 14);
+		int size = READ_LE_UINT32(contents + i*22 + 18);
+		warning("file %s, entry %s, offset %d, size %d", newName.c_str(), entry.c_str(), offset, size);
+		delete[] contents;
+
+		data = (byte *)malloc(size);
+		f.seek(offset);
+		f.read(data, size);
+		loadCompressed(f, offset, size);
+		f.close();
+
+		return true;
+
+	// Load file as-is
+	} else if (f.open(filename)) {
+		loadCompressed(f, 0, f.size());
+		f.close();
+
+		return true;
+	}
+
+	return false;
 }
 
 void SoundSample::unload() {
 	delete _stream;
 	_stream = 0;
+}
+
+void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
+
+	char header[9] = {0};
+
+	f.seek(offset + 16);
+	f.read(header, sizeof(header) - 1);
+
+	// Not compressed
+	if (strcmp(header, "HMIADPCM") != 0) {
+		byte *data = (byte *)malloc(size);
+		f.seek(offset);
+		f.read(data, size);
+		_stream = Audio::makeRawStream(data, size,
+				11025, Audio::FLAG_UNSIGNED);
+
+	// Compressed
+	} else {
+		size -= 32;
+		byte *data = (byte *)malloc(size);
+		f.seek(offset + 32);
+		f.read(data, size);
+
+		_stream = Audio::makeADPCMStream(
+				new Common::MemoryReadStream(data, size, DisposeAfterUse::YES),
+				DisposeAfterUse::YES,
+				size,
+				Audio::kADPCMMSIma,
+				11025,
+				1,
+				0x2000);
+	}
 }
 
 Sound::Sound(KomEngine *vm, Audio::Mixer *mixer)

@@ -25,6 +25,7 @@
 
 #include "common/scummsys.h"
 #include "common/str.h"
+#include "common/file.h"
 
 #include "audio/mixer.h"
 #include "audio/audiostream.h"
@@ -49,8 +50,9 @@ public:
 
 private:
 	Audio::SoundHandle _handle;
-	uint32 _size;
-	Audio::SeekableAudioStream *_stream;
+	Audio::RewindableAudioStream *_stream;
+
+	void loadCompressed(Common::File &f, int offset, int size);
 };
 
 class Sound {
