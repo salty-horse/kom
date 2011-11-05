@@ -112,6 +112,8 @@ public:
 	// music
 	int16 _playingMusicId, _playingMusicVolume;
 
+	static const byte _distanceVolumeTable[];
+
 private:
 	void gameLoop();
 

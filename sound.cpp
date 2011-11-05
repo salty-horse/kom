@@ -216,4 +216,10 @@ void Sound::pauseSample(SoundSample &sample, bool paused) {
 	}
 }
 
+void Sound::setSampleVolume(SoundSample &sample, byte volume) {
+	if (_mixer->isSoundHandleActive(sample._handle)) {
+		_mixer->setChannelVolume(sample._handle, volume);
+	}
+}
+
 } // end of namespace Kom

@@ -468,5 +468,6 @@ void KomEngine::loadWeaponSample(int id) {
 	_weaponSample.loadFile(String("kom/samples/") + weaponsTable[id] + ".raw");
 }
 
+const byte KomEngine::_distanceVolumeTable[] = { 255, 115, 50, 20, 10, 0 };
 
 } // End of namespace Kom

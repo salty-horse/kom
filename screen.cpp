@@ -168,20 +168,18 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 		Character *fighter = _vm->database()->getChar(settings->fightNPCCloud[i].charId);
 
 		// Figure out fight distance from player
-		static const int fightDistanceVolume[] = { 256, 115, 50, 20, 10, 0 };
 		int distance = 0;
 		if (playerChar->_lastLocation != fighter->_lastLocation) {
 			int fightLoc = fighter->_lastLocation;
 			int newLoc = playerChar->_lastLocation;
-			for (distance = 1; distance < (int)sizeof(fightDistanceVolume) - 1; distance++) {
+			for (distance = 1; distance < 6; distance++) {
 				newLoc = _vm->database()->loc2loc(newLoc, fightLoc);
 				if (newLoc == -1)
 					break;
 			}
 		}
 
-		// TODO - decrease volume
-		// int volume = fightDistanceVolume[distance];
+		_vm->sound()->setSampleVolume(_vm->_weaponSample, _vm->_distanceVolumeTable[distance]);
 
 		// Draw cloud
 		if (playerChar->_lastLocation == fighter->_lastLocation) {

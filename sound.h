@@ -72,6 +72,7 @@ public:
 	void stopHandle(SoundHandle handle);
 	void stopSample(SoundSample &sample);
 	void pauseSample(SoundSample &sample, bool paused);
+	void setSampleVolume(SoundSample &sample, byte volume);
 	bool isPlaying(SoundSample &sample) { return _mixer->isSoundHandleActive(sample._handle); }
 
 private:
