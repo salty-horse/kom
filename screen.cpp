@@ -907,7 +907,7 @@ void Screen::drawActorFrame2(const int8 *data, uint16 width, uint16 height, int1
 						_screenBuf[targetPixel-1] = 14;
 				}
 				if (xStart + visibleWidth < SCREEN_W) {
-					if (lineBuffer[sourcePixel + widthRatio.quot + (colThing <= widthRatio.rem) ? 1 : 0] == 0)
+					if (lineBuffer[sourcePixel + widthRatio.quot + ((colThing <= widthRatio.rem) ? 1 : 0)] == 0)
 						_screenBuf[targetPixel+1] = 14;
 				}
 			}
