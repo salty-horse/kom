@@ -1,34 +1,20 @@
-diff --git a/base/plugins.cpp b/base/plugins.cpp
-index 4fa1a96..47f0264 100644
---- a/base/plugins.cpp
-+++ b/base/plugins.cpp
-@@ -121,6 +121,9 @@ public:
- 		#if PLUGIN_ENABLED_STATIC(HUGO)
- 		LINK_PLUGIN(HUGO)
- 		#endif
-+		#if PLUGIN_ENABLED_STATIC(KOM)
-+		LINK_PLUGIN(KOM)
-+		#endif
- 		#if PLUGIN_ENABLED_STATIC(KYRA)
- 		LINK_PLUGIN(KYRA)
- 		#endif
-diff --git a/configure b/configure
-index 278b917..9344038 100755
---- a/configure
-+++ b/configure
-@@ -93,6 +93,7 @@ add_engine gob "Gobli*ns" yes
+diff --git a/engines/configure.engines b/engines/configure.engines
+index 6e8db01..4c0de2e 100644
+--- a/engines/configure.engines
++++ b/engines/configure.engines
+@@ -16,6 +16,7 @@ add_engine gob "Gobli*ns" yes
  add_engine groovie "Groovie" yes "groovie2"
  add_engine groovie2 "Groovie 2 games" no
  add_engine hugo "Hugo Trilogy" yes
 +add_engine kom "Kingdom O' Magic" no
- add_engine kyra "Legend of Kyrandia" yes "lol"
+ add_engine kyra "Legend of Kyrandia" yes "lol eob"
  add_engine lol "Lands of Lore" yes
- add_engine lastexpress "The Last Express" no
+ add_engine eob "Eye of the Beholder" no
 diff --git a/engines/engines.mk b/engines/engines.mk
-index 063ed75..ab966a6 100644
+index 9939506..4faca23 100644
 --- a/engines/engines.mk
 +++ b/engines/engines.mk
-@@ -75,6 +75,11 @@ DEFINES += -DENABLE_HUGO=$(ENABLE_HUGO)
+@@ -80,6 +80,11 @@ DEFINES += -DENABLE_HUGO=$(ENABLE_HUGO)
  MODULES += engines/hugo
  endif
  
@@ -40,3 +26,17 @@ index 063ed75..ab966a6 100644
  ifdef ENABLE_KYRA
  DEFINES += -DENABLE_KYRA=$(ENABLE_KYRA)
  MODULES += engines/kyra
+diff --git a/engines/plugins_table.h b/engines/plugins_table.h
+index fac9567..0ceeb5d 100644
+--- a/engines/plugins_table.h
++++ b/engines/plugins_table.h
+@@ -38,6 +38,9 @@ LINK_PLUGIN(GROOVIE)
+ #if PLUGIN_ENABLED_STATIC(HUGO)
+ LINK_PLUGIN(HUGO)
+ #endif
++#if PLUGIN_ENABLED_STATIC(KOM)
++LINK_PLUGIN(KOM)
++#endif
+ #if PLUGIN_ENABLED_STATIC(KYRA)
+ LINK_PLUGIN(KYRA)
+ #endif
