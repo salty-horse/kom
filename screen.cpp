@@ -172,7 +172,7 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 		if (playerChar->_lastLocation != fighter->_lastLocation) {
 			int fightLoc = fighter->_lastLocation;
 			int newLoc = playerChar->_lastLocation;
-			for (distance = 1; distance < 6; distance++) {
+			for (distance = 1; distance < 5; distance++) {
 				newLoc = _vm->database()->loc2loc(newLoc, fightLoc);
 				if (newLoc == -1)
 					break;
