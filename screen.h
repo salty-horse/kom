@@ -77,7 +77,7 @@ public:
 	void gfxUpdate();
 	void clearScreen();
 	void drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
-			int16 xEnd, int16 yEnd, int maskDepth);
+			int16 xEnd, int16 yEnd, int maskDepth, bool invisible = false);
 	void drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth);
 	void drawActorFrame(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart);

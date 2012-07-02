@@ -393,6 +393,10 @@ void Actor::display() {
 				_vm->screen()->drawActorFrameScaledAura((int8 *)(_framesData + frameStream.pos()),
 					width, height, xStart, yStart, xStart + scaledWidth - 1, yStart + scaledHeight - 1, _maskDepth);
 				break;
+			case 3:
+				_vm->screen()->drawActorFrameScaled((int8 *)(_framesData + frameStream.pos()),
+					width, height, xStart, yStart, xStart + scaledWidth - 1, yStart + scaledHeight - 1, _maskDepth, /*invisible=*/true);
+				break;
 			default:
 				warning("Unhandled effect %d", _effect);
 			}

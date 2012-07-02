@@ -698,7 +698,7 @@ void Screen::clearScreen() {
 static byte lineBuffer[SCREEN_W];
 
 void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
-                            int16 xEnd, int16 yEnd, int maskDepth) {
+                            int16 xEnd, int16 yEnd, int maskDepth, bool invisible) {
 
 	uint16 startLine = 0;
 	uint16 startCol = 0;
@@ -783,7 +783,10 @@ void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height,
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
 			    && (targetLine >= SCREEN_H - PANEL_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
-				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
+				if (invisible)
+					_screenBuf[targetPixel] = _screenBuf[targetPixel + 8];
+				else
+					_screenBuf[targetPixel] = lineBuffer[sourcePixel];
 			}
 
 			sourcePixel += widthRatio.quot;
