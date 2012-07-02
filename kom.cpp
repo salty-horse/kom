@@ -319,12 +319,51 @@ void KomEngine::gameLoop() {
 
 		if (_game->player()->narratorTalking &&
 		    !_game->isNarratorPlaying())
-			_game->narratorStop();
-		// stop narrator if needed
-		// handle angry mob
-		// handle greetings
-		//
-		// TODO
+			_game->stopNarrator();
+		// TODO - stop narrator if needed
+		// TODO - handle angry mob
+
+		// Handle greeting
+		if (_game->player()->spriteSample.isLoaded()) {
+			if (!_game->isSamplePlaying()) {
+
+				// No greeting, or a reply (negative location value)
+				if (_game->player()->greetingLoc <= 0) {
+					_game->stopGreeting();
+				} else {
+					// Find a responder
+					int i = 1;
+					bool responderFound = false;
+					for (; i < _database->charactersNum(); ++i) {
+						Character *chr = _database->getChar(i);
+						if (chr->_isAlive && chr->_isVisible &&
+							i != _game->player()->greetingChar &&
+							chr->_lastLocation == _game->player()->greetingLoc) {
+							responderFound = true;
+							break;
+						}
+					}
+					_game->stopGreeting();
+					_game->player()->greetingLoc = 0;
+					if (responderFound) {
+						_game->doCommand(10, 2, i, -1, -1);
+					}
+				}
+			}
+
+			// Adjust volume based on distance
+			int loc = ABS(_game->player()->greetingLoc);
+			int distance = 0;
+			if (loc != 0 && _database->getChar(0)->_lastLocation != loc) {
+				int newLoc = loc;
+				for (distance = 1; distance < 5; distance++) {
+					newLoc = _database->loc2loc(newLoc, loc);
+					if (newLoc == -1)
+						break;
+				}
+			}
+			_sound->setSampleVolume(_game->player()->spriteSample, _distanceVolumeTable[distance]);
+		}
 
 		// TODO - handle other graphics modes
 		if (_game->player()->sleepTimer != 0)
@@ -357,7 +396,7 @@ void KomEngine::gameLoop() {
 		}
 	}
 
-	// narratorStop()
+	// stopNarrator()
 	// stopGreeting()
 	ambientStop();
 	if (_gameLoopState == GAMELOOP_DEATH) {

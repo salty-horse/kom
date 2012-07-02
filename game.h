@@ -142,7 +142,8 @@ enum CommandType {
 
 /** Player settings */
 struct Player {
-	Player() : isNight(0), sleepTimer(0), colgateTimer(0), collideType(COLLIDE_NONE), collideNum(0) {}
+	Player() : isNight(0), sleepTimer(0), colgateTimer(0), collideType(COLLIDE_NONE), collideNum(0),
+		greetingChar(-1), greetingLoc(0) {}
 	CommandType command;
 	int16 commandState;
 	CollideType collideType;
@@ -150,6 +151,8 @@ struct Player {
 	bool narratorTalking;
 	SoundSample spriteSample;
 	SoundSample narratorSample; // Original doesn't store this here
+	int16 greetingChar;
+	int16 greetingLoc;
 	int16 fightEnemy;
 	int16 fightWeapon;
 	int16 fightBarTimer;
@@ -248,10 +251,13 @@ public:
 
 	void doActionPlaySample(const char *name);
 	void narratorStart(const char *filename, const char *codename);
-	void narratorStop();
+	void stopNarrator();
 	bool isNarratorPlaying();
-
-	void doGreet(int charId, int response);
+	void doGreeting(int charId, int response);
+	void stopGreeting();
+	bool isSamplePlaying();
+	void doReply(int charId, int reply);
+	void doReply(int charId, const char *reply);
 
 	int8 doDonut(int type, Inventory *inv);
 	void doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 num);

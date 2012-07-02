@@ -207,7 +207,8 @@ void Sound::stopHandle(SoundHandle handle) {
 }
 
 void Sound::stopSample(SoundSample &sample) {
-	stopHandle(sample._handle);
+	if (sample.isLoaded())
+		stopHandle(sample._handle);
 }
 
 void Sound::pauseSample(SoundSample &sample, bool paused) {

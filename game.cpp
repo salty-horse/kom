@@ -48,9 +48,9 @@ Game::~Game() {
 	delete _videoPlayer;
 }
 
-void Game::enterLocation(uint16 locId) {
-	char filename[100];
+static char filenameBuf[100];
 
+void Game::enterLocation(uint16 locId) {
 	_vm->panel()->showLoading(true);
 
 	// Don't draw fight bars
@@ -96,16 +96,16 @@ void Game::enterLocation(uint16 locId) {
 	if (_vm->gameLoopTimer() > 1)
 		_vm->ambientStart(locId);
 
-	sprintf(filename, "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
-	_vm->screen()->loadBackground(locDir + filename);
+	sprintf(filenameBuf, "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
+	_vm->screen()->loadBackground(locDir + filenameBuf);
 
 	// TODO - init some other flic var
 	_vm->_flicLoaded = 2;
 
-	filename[strlen(filename) - 6] = '0';
-	filename[strlen(filename) - 5] = 'm';
+	filenameBuf[strlen(filenameBuf) - 6] = '0';
+	filenameBuf[strlen(filenameBuf) - 5] = 'm';
 	Video::FlicDecoder mask;
-	_vm->screen()->loadMask(locDir + filename);
+	_vm->screen()->loadMask(locDir + filenameBuf);
 
 	Database *db = _vm->database();
 
@@ -119,8 +119,8 @@ void Game::enterLocation(uint16 locId) {
 		roomObj.objectId = *objId;
 
 		if (obj->isSprite) {
-			sprintf(filename, "%s%s%d.act", locDir.c_str(), obj->name, _player.isNight);
-			roomObj.actorId = _vm->actorMan()->load(filename);
+			sprintf(filenameBuf, "%s%s%d.act", locDir.c_str(), obj->name, _player.isNight);
+			roomObj.actorId = _vm->actorMan()->load(filenameBuf);
 			roomObj.priority = db->getBox(locId, obj->box)->priority;
 			Actor *act = _vm->actorMan()->get(roomObj.actorId);
 			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
@@ -142,15 +142,15 @@ void Game::enterLocation(uint16 locId) {
 			String exitName(db->getLoc(exits[i].exitLoc)->name);
 			exitName.toLowercase();
 
-			sprintf(filename, "%s%s%dd.act", locDir.c_str(), exitName.c_str(),
+			sprintf(filenameBuf, "%s%s%dd.act", locDir.c_str(), exitName.c_str(),
 					loc->xtend + _player.isNight);
 
 			// The exit can have no door
-			if (!Common::File::exists(filename))
+			if (!Common::File::exists(filenameBuf))
 				continue;
 
 			RoomDoor roomDoor;
-			roomDoor.actorId = _vm->actorMan()->load(filename);
+			roomDoor.actorId = _vm->actorMan()->load(filenameBuf);
 			Actor *act = _vm->actorMan()->get(roomDoor.actorId);
 			act->enable(1);
 			act->setEffect(4);
@@ -345,6 +345,7 @@ bool Game::doProc(int command, int type, int id, int type2, int id2) {
 			case 315: // Pick up
 			case 318: // Enter room
 			case 323: // Collide
+			case 324: // Reply
 				if(doStat(&(*i)))
 					return true;
 				break;
@@ -838,7 +839,13 @@ bool Game::doStat(const Command *cmd) {
 			delete conv;
 			break;
 		case 481:
-			doGreet(j->arg2, j->arg3);
+			doGreeting(j->arg2, db->getVar(j->arg3));
+			break;
+		case 482:
+			doReply(j->arg2, j->arg3);
+			break;
+		case 483:
+			doReply(j->arg2, db->getVar(j->arg3));
 			break;
 		case 484:
 			_player.fightEnemy = j->arg2;
@@ -1090,6 +1097,7 @@ void Game::doCommand(int command, int type, int id, int type2, int id2) {
 		doProc(323, 2, id, -1, -1);
 		break;
 
+	// Reply
 	case 10:
 		doProc(324, 2, id, -1, -1);
 		break;
@@ -1210,7 +1218,8 @@ void Game::loopMove() {
 				chr->_lastDirection = 4;
 			}
 
-			// TODO - greet-related thing
+			if (chr->_id == _player.greetingChar)
+				chr->stopChar();
 
 			if (chr->_mode == 1)
 				chr->stopChar();
@@ -1904,7 +1913,6 @@ void Game::doActionSpriteScene(const char *name, int charId, int loc, int box) {
 
 void Game::doActionPlayVideo(const char *name) {
 	const char *dir = "";
-	char filename[100];
 	bool pauseAmbient = true;
 	bool noModifier = false;
 	char prefix[5] = "";
@@ -1922,13 +1930,8 @@ void Game::doActionPlayVideo(const char *name) {
 		"wig"
 	};
 
-	narratorStop();
-
-	if (_player.spriteSample.isLoaded()) {
-		_vm->sound()->stopSample(_player.spriteSample);
-		_player.spriteSample.unload();
-		// TODO: another initialization
-	}
+	stopNarrator();
+	stopGreeting();
 
 	String videoName(name);
 	videoName.toLowercase();
@@ -1984,25 +1987,25 @@ void Game::doActionPlayVideo(const char *name) {
 	}
 
 	if (noModifier)
-		sprintf(filename, "kom/%s/%s%s%s.smk",
+		sprintf(filenameBuf, "kom/%s/%s%s%s.smk",
 			dir, prefix, prefix[0] ? "/" : "", videoName.c_str());
 	else {
-		int len = sprintf(filename, "kom/%s/%s%s%s%d.smk",
+		int len = sprintf(filenameBuf, "kom/%s/%s%s%s%d.smk",
 			dir, prefix, prefix[0] ? "/" : "", videoName.c_str(),
 			_vm->game()->player()->isNight);
 
 		// If the file isn't found, try the other day mode
-		if (!Common::File::exists(filename)) {
+		if (!Common::File::exists(filenameBuf)) {
 
-			filename[len-5] = '0' + '1' - filename[len-5];
+			filenameBuf[len-5] = '0' + '1' - filenameBuf[len-5];
 
-			if (!Common::File::exists(filename)) {
+			if (!Common::File::exists(filenameBuf)) {
 
 				// Still not found. Try flc extension
-				filename[len-5] = '0';
-				filename[len-3] = 'f';
-				filename[len-2] = 'l';
-				filename[len-1] = 'c';
+				filenameBuf[len-5] = '0';
+				filenameBuf[len-3] = 'f';
+				filenameBuf[len-2] = 'l';
+				filenameBuf[len-1] = 'c';
 			}
 		}
 	}
@@ -2010,7 +2013,7 @@ void Game::doActionPlayVideo(const char *name) {
 	// Fail silently when a video isn't found.
 	// For example, when talking to the disco king, DIS00T is
 	// supposed to play, but it doesn't exist
-	if (!Common::File::exists(filename)) {
+	if (!Common::File::exists(filenameBuf)) {
 		return;
 	}
 
@@ -2021,7 +2024,7 @@ void Game::doActionPlayVideo(const char *name) {
 
 	_vm->panel()->suppressLoading();
 	_vm->screen()->showMouseCursor(false);
-	_videoPlayer->playVideo(filename);
+	_videoPlayer->playVideo(filenameBuf);
 	_vm->screen()->showMouseCursor(true);
 
 	if (pauseAmbient)
@@ -2030,18 +2033,17 @@ void Game::doActionPlayVideo(const char *name) {
 
 void Game::doActionPlaySample(const char *name) {
 	String sampleName(name);
-	char filename[100];
 	char prefix[10];
 	int mode = 0;
 
 	warning("TODO: doActionPlaySample(%s)", name);
 
-	narratorStop();
+	stopNarrator();
 
 	if (_player.spriteSample.isLoaded()) {
 		_vm->sound()->stopSample(_player.spriteSample);
 		_player.spriteSample.unload();
-		// TODO: another greeting initialization
+		_player.greetingChar = -1;
 	}
 
 	sampleName.toLowercase();
@@ -2060,18 +2062,18 @@ void Game::doActionPlaySample(const char *name) {
 	}
 
 	if (sampleName.hasPrefix("nmess")) {
-		sprintf(filename, "kom/nar/%s.raw", sampleName.c_str());
+		sprintf(filenameBuf, "kom/nar/%s.raw", sampleName.c_str());
 
 	} else if (sampleName.lastChar() == 'l' || sampleName.lastChar() == 'u' ||
 	           sampleName.lastChar() == 'g') {
 
 		strncpy(prefix, sampleName.c_str(), sampleName.size()-2);
 		prefix[sampleName.size()-2] = '\0';
-		sprintf(filename, "kom/locs/%c%c/%s/%s.raw",
+		sprintf(filenameBuf, "kom/locs/%c%c/%s/%s.raw",
 				sampleName[0], sampleName[1], prefix, sampleName.c_str());
 
 	} else {
-		sprintf(filename, "kom/obj/%s.raw", sampleName.c_str());
+		sprintf(filenameBuf, "kom/obj/%s.raw", sampleName.c_str());
 	}
 
 	if ((mode & 4) == 0)
@@ -2082,7 +2084,7 @@ void Game::doActionPlaySample(const char *name) {
 	// Load sample
 	// TODO - support pitch-altering cheat code?
 	sampleName.toUppercase();
-	narratorStart(filename, sampleName.c_str());
+	narratorStart(filenameBuf, sampleName.c_str());
 	_vm->database()->getChar(0)->_isBusy = true;
 
 	if ((mode & 4) == 0)
@@ -2104,7 +2106,7 @@ void Game::doActionPlaySample(const char *name) {
 			break;
 	}
 
-	narratorStop();
+	stopNarrator();
 	_vm->database()->getChar(0)->_isBusy = false;
 	_vm->actorMan()->pauseAnimAll(false);
 }
@@ -2128,9 +2130,9 @@ void Game::narratorStart(const char *filename, const char *codename) {
 	_vm->sound()->playSampleSpeech(_player.narratorSample);
 }
 
-void Game::narratorStop() {
+void Game::stopNarrator() {
 	if (_player.narratorTalking) {
-		warning("TODO: narratorStop");
+		warning("TODO: stopNarrator");
 		_vm->sound()->stopSample(_player.narratorSample);
 		_vm->screen()->narratorScrollDelete();
 		_vm->database()->getChar(0)->_isBusy = false;
@@ -2142,8 +2144,63 @@ bool Game::isNarratorPlaying() {
 	return _vm->sound()->isPlaying(_player.narratorSample);
 }
 
-void Game::doGreet(int charId, int greeting) {
-	warning("TODO: doGreet(%d, %d)", charId, greeting);
+void Game::doGreeting(int charId, int greeting) {
+	if (_vm->rnd()->getRandomNumber(4) == 0)
+		return;
+
+	if (isNarratorPlaying())
+		return;
+
+	if (_player.spriteSample.isLoaded())
+		return;
+
+	String charName(_vm->database()->getChar(charId)->_name);
+	charName.toLowercase();
+	sprintf(filenameBuf, "kom/conv/%s/response/%d.raw", charName.c_str(), greeting);
+
+	_vm->panel()->showLoading(true);
+		stopGreeting();
+		_player.greetingChar = charId;
+		_player.greetingLoc = _vm->database()->getChar(charId)->_lastLocation;
+		_player.spriteSample.loadFile(filenameBuf);
+		_vm->sound()->playSampleSFX(_player.spriteSample, false);
+	_vm->panel()->showLoading(false);
+}
+
+void Game::doReply(int charId, int reply) {
+	char buf[10];
+	sprintf(buf, "%d", reply);
+	doReply(charId, buf);
+}
+
+void Game::doReply(int charId, const char *reply) {
+	if (isNarratorPlaying())
+		return;
+
+	String charName(_vm->database()->getChar(charId)->_name);
+	charName.toLowercase();
+	sprintf(filenameBuf, "kom/conv/%s/response/%s.raw", charName.c_str(), reply);
+
+	_vm->panel()->showLoading(true);
+		stopGreeting();
+		_player.greetingChar = charId;
+		// The location is stored as a negative value, signifying it's a reply
+		_player.greetingLoc = -_vm->database()->getChar(charId)->_lastLocation;
+		_player.spriteSample.loadFile(filenameBuf);
+		_vm->sound()->playSampleSFX(_player.spriteSample, false);
+	_vm->panel()->showLoading(false);
+}
+
+void Game::stopGreeting() {
+	if (_player.spriteSample.isLoaded()) {
+		_vm->sound()->stopSample(_player.spriteSample);
+		_player.spriteSample.unload();
+		_player.greetingChar = -1;
+	}
+}
+
+bool Game::isSamplePlaying() {
+	return _vm->sound()->isPlaying(_player.spriteSample);
 }
 
 /**
@@ -2720,7 +2777,7 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 		}
 
 		if (*objectNum >= 0 && inInventory) {
-			narratorStop();
+			stopNarrator();
 			// Look at
 			doCommand(5, 1, *objectNum, -1, -1);
 			*objectType = OBJECT_NONE;
@@ -2729,7 +2786,7 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 
 	} while (inInventory);
 
-	narratorStop();
+	stopNarrator();
 }
 
 void Game::doActionGotObject(uint16 obj) {
@@ -2858,7 +2915,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 	if (chr->_lastLocation != _vm->database()->getChar(0)->_lastLocation)
 		return;
 
-	narratorStop();
+	stopNarrator();
 	// TODO: stop greeting
 	_vm->screen()->pauseBackground(true);
 	_vm->screen()->showMouseCursor(false);

@@ -73,7 +73,7 @@ public:
 	void stopSample(SoundSample &sample);
 	void pauseSample(SoundSample &sample, bool paused);
 	void setSampleVolume(SoundSample &sample, byte volume);
-	bool isPlaying(SoundSample &sample) { return _mixer->isSoundHandleActive(sample._handle); }
+	bool isPlaying(SoundSample &sample) { return sample.isLoaded() ? _mixer->isSoundHandleActive(sample._handle) : false; }
 
 private:
 
