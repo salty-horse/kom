@@ -1316,7 +1316,7 @@ void Game::loopCollide() {
 		if (magicChar->_id == -1)
 			continue;
 		if ((_vm->database()->getBox(magicChar->_lastLocation, magicChar->_lastBox)->attrib & 1) != 0) {
-			magicChar->hitExit(true);
+			magicChar->hitExit(false);
 		}
 	}
 
