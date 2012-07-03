@@ -131,7 +131,7 @@ struct LocRoute {
 
 class Database {
 public:
-	Database(KomEngine *vm, OSystem *system);
+	Database(KomEngine *vm);
 	~Database();
 
 	void init(Common::String databasePrefix);
@@ -195,7 +195,6 @@ private:
 	void initRoutes();
 	void initScopes();
 
-	OSystem *_system;
 	KomEngine *_vm;
 
 	Common::String _databasePrefix;

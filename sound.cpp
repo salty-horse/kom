@@ -138,8 +138,8 @@ void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
 	}
 }
 
-Sound::Sound(KomEngine *vm, Audio::Mixer *mixer)
-	: _vm(vm), _mixer(mixer), _musicEnabled(true),
+Sound::Sound(Audio::Mixer *mixer)
+	: _mixer(mixer), _musicEnabled(true),
 	_sfxEnabled(true) {
 }
 

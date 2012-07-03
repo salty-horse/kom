@@ -44,8 +44,8 @@ namespace Kom {
 
 const int Database::_locRoutesSize = 111;
 
-Database::Database(KomEngine *vm, OSystem *system)
-	: _system(system), _vm(vm) {
+Database::Database(KomEngine *vm)
+	: _vm(vm) {
 	_locations = 0;
 	_characters = 0;
 	_objects = 0;

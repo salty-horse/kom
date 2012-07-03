@@ -57,7 +57,7 @@ private:
 
 class Sound {
 public:
-	Sound(KomEngine *vm, Audio::Mixer *mixer);
+	Sound(Audio::Mixer *mixer);
 	~Sound();
 
 	bool _musicEnabled;
@@ -80,7 +80,6 @@ private:
 	bool playFile(Common::String filename, SoundHandle *handle, Audio::Mixer::SoundType type, byte volume);
 	void playSample(SoundSample &sample, bool loop, Audio::Mixer::SoundType type, byte volume);
 
-	KomEngine *_vm;
 	Audio::Mixer *_mixer;
 };
 

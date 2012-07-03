@@ -125,7 +125,6 @@ private:
 	Panel *_panel;
 	Debugger *_debugger;
 	Game *_game;
-	Font *_font;
 
 	GameLoopState _gameLoopState;
 	int _gameLoopTimer;

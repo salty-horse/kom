@@ -93,9 +93,9 @@ Common::Error KomEngine::run() {
 	if (!_screen->init())
 		error("_screen->init() failed");
 
-	_database = new Database(this, _system);
+	_database = new Database(this);
 	_input = new Input(this, _system);
-	_sound = new Sound(this, _mixer);
+	_sound = new Sound(_mixer);
 	_debugger = new Debugger(this);
 	_panel = new Panel(this, "kom/oneoffs/pan1.img");
 	_game = new Game(this, _system);

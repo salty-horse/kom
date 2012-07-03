@@ -146,7 +146,6 @@ private:
 	KomEngine *_vm;
 
 	uint8 *_screenBuf;
-	uint8 *_panelBuf;
 	uint8 *_mouseBuf;
 	FlicDecoder _roomBackgroundFlic;
 	FlicDecoder _roomMaskFlic;
