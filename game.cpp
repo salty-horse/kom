@@ -1833,11 +1833,11 @@ void Game::doActionMoveChar(uint16 charId, int16 loc, int16 box) {
 		// TODO: flicUpdateBG()
 	}
 
-	if (_vm->database()->loc2loc(loc, chr->_lastLocation) == -1) {
+	if (_vm->database()->loc2loc(chr->_lastLocation, loc) == -1) {
 		for (int i = 0; i < 10; ++i) {
 			Character *magicChar = _vm->database()->getMagicChar(i);
 			Spell *spell = &_spells[i];
-			if (magicChar->_id != -1 && spell->targetId == 0) {
+			if (magicChar->_id != -1 && spell->targetId == charId) {
 				if (spell->duration >= 10)
 					spell->duration = 10;
 			}
