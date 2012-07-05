@@ -15,6 +15,31 @@ BUGS
 * narrator subtitles disappear when the audio stops, even before they finish scrolling.
 * room 34 -- "look at" and "use" on the arcade machine doesn't play the "rupert" audio
 * kom/cutsconv/bst/bst01g0.smk seems corrupt - check if original game falls back to playing the .flc
+* Crash while standing in place in room 63, and an orc attacks you:
+		(gdb) bt
+		#2  0x00007f741884010e in __assert_fail_base (fmt=<optimized out>, assertion=0x7f7410fea616 "targetBox != -1", file=0x7f7410fea626 "engines/kom/character.cpp", line=<optimized out>, function=<optimized out>) at assert.c:94
+		#3  0x00007f74188401b2 in __GI___assert_fail (assertion=0x7f7410fea616 "targetBox != -1", file=0x7f7410fea626 "engines/kom/character.cpp", line=82, function=0x7f7410fea640 "void Kom::Character::moveChar(bool)") at assert.c:103
+		#4  0x00007f7410fc2129 in Kom::Character::moveChar (this=0x2980c08, param=true) at engines/kom/character.cpp:79
+		#5  0x00007f7410fdc006 in Kom::Game::loopMove (this=0x28b48c0) at engines/kom/game.cpp:1147
+		#6  0x00007f7410fb6bbd in Kom::KomEngine::gameLoop (this=0x1f06ee0) at engines/kom/kom.cpp:244
+		#7  0x00007f7410fb65a0 in Kom::KomEngine::run (this=0x1f06ee0) at engines/kom/kom.cpp:154
+		#8  0x00000000004d2180 in runGame (plugin=0x1f04750, system=..., edebuglevels=...) at base/main.cpp:225
+		#9  0x00000000004d0e0c in scummvm_main (argc=2, argv=0x7ffff3d3a7d8) at base/main.cpp:451
+		#10 0x00000000004cfa5c in main (argc=2, argv=0x7ffff3d3a7d8) at backends/platform/sdl/posix/posix-main.cpp:45
+		(gdb) frame 4
+		#4  0x00007f7410fc2129 in Kom::Character::moveChar (this=0x2980c08, param=true) at engines/kom/character.cpp:79
+		79			targetBox = _vm->database()->whatBox(_lastLocation, _gotoX, _gotoY);
+		(gdb) print _id
+		$1 = 0
+		(gdb) print _lastLocation
+		$2 = 63
+		(gdb) print _gotoX
+		$3 = 427
+		(gdb) print _gotoY
+		$4 = 176
+		(gdb) p targetBox
+		$5 = -1
+
 
 MISSING FEATURES
 ================
