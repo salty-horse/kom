@@ -1187,8 +1187,8 @@ void Game::loopMove() {
 				// Special movement types
 				if (chr->_destBox <= -2)  {
 					switch (chr->_destBox) {
-					case -5: // stand in place
-						chr->_gotoLoc = chr->_lastLocation;
+					case -5: // Run away
+						chr->_gotoLoc = chr->_runawayLocation;
 						chr->_gotoX = chr->_screenX;
 						chr->_gotoY = chr->_screenY;
 						break;
@@ -1200,7 +1200,7 @@ void Game::loopMove() {
 						chr->_gotoX = _vm->database()->getMidX(chr->_gotoLoc, playerChar->_gotoBox);
 						chr->_gotoY = _vm->database()->getMidY(chr->_gotoLoc, playerChar->_gotoBox);
 						break;
-					case -2:
+					case -2: // Go to player's position on screen
 						chr->_gotoLoc = playerChar->_lastLocation;
 						chr->_gotoX = playerChar->_screenX;
 						chr->_gotoY = playerChar->_screenY;
@@ -1780,6 +1780,20 @@ int16 Game::doExternalAction(const char *action) {
 
 	} else if (strcmp(action, "stats") == 0) {
 		doLookAt(0, 192, true);
+
+	} else if (strcmp(action, "crowdon") == 0) {
+		warning("TODO: crowdon");
+		Character *playerChar = _vm->database()->getChar(0);
+		Character *mobChar = _vm->database()->getChar(15);
+		if (playerChar->_lastLocation != mobChar->_lastLocation) {
+			int exitBox = _vm->database()->findFarthestExit(playerChar->_lastLocation, playerChar->_lastBox);
+			int nextBox = _vm->database()->box2box(playerChar->_lastLocation, exitBox, playerChar->_lastBox);
+			doActionMoveChar(15, playerChar->_lastLocation, nextBox);
+			_vm->database()->getExitInfo(mobChar->_lastLocation, exitBox, &mobChar->_runawayLocation, &exitBox);
+		}
+
+	} else if (strcmp(action, "crowdOFF") == 0) {
+		// Do nothing
 
 	} else {
 		warning("TODO: Unknown external action: %s", action);

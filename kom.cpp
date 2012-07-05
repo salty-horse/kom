@@ -321,7 +321,20 @@ void KomEngine::gameLoop() {
 		    !_game->isNarratorPlaying())
 			_game->stopNarrator();
 		// TODO - stop narrator if needed
-		// TODO - handle angry mob
+
+		// Handle angry mob greetings
+		Character *mob = _database->getChar(15);
+		if (_database->getChar(0)->_lastLocation == mob->_lastLocation) {
+			if (mob->_destBox == -2) {
+				if (!_game->player()->spriteSample.isLoaded())
+					_game->doReply(15, "crowd1"); // Attack
+				_game->player()->greetingChar = -1;
+			} else if (mob->_destBox == -5) {
+				if (!_game->player()->spriteSample.isLoaded())
+					_game->doReply(15, "crowd2"); // "Where did he go?"
+				_game->player()->greetingChar = -1;
+			}
+		}
 
 		// Handle greeting
 		if (_game->player()->spriteSample.isLoaded()) {

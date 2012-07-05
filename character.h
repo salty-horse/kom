@@ -106,6 +106,7 @@ public:
 	int32 _ratioY;
 	int16 _priority;
 	int32 _lastLocation;
+	int32 _runawayLocation;
 	int32 _lastBox;
 	int32 _gotoBox;
 	int16 _gotoX;

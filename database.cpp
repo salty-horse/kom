@@ -1033,6 +1033,31 @@ bool Database::getExitInfo(int loc, int box, int *exitLoc, int *exitBox) {
 	return false;
 }
 
+int Database::findFarthestExit(int loc, int box) {
+	int resBox = -1;
+	int farthestDistance = 0;
+	for (int i = 0; i < 32; ++i) {
+		Box *boxPtr = getBox(loc, i);
+		// Exit box?
+		if (!boxPtr->enabled || boxPtr->attrib != 1)
+			continue;
+
+		int currBox = i;
+		int distance = 0;
+		while (1) {
+			currBox = box2box(loc, currBox, box);
+			if (currBox == -1)
+				break;
+			distance++;
+		}
+		if (distance >= farthestDistance) {
+			farthestDistance = distance;
+			resBox = i;
+		}
+	}
+	return resBox;
+}
+
 bool Database::isInLine(int loc, int box, int x, int y) {
 	Box *b = (&_locRoutes[loc].boxes[box]);
 

@@ -431,6 +431,7 @@ void Character::hitExit(bool checkHousing) {
 		housingProblem();
 	}
 
+	_runawayLocation = _lastLocation;
 	_gotoBox = -1;
 	_lastLocation = exitLoc;
 	_lastBox = exitBox;
