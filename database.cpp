@@ -1020,17 +1020,15 @@ int8 Database::getFirstLink(int loc, int box) {
 	return linkBox;
 }
 
-bool Database::getExitInfo(int loc, int box, int *exitLoc, int *exitBox) {
+void Database::getExitInfo(int loc, int box, int *exitLoc, int *exitBox) {
 	for (int i = 0; i < 6; ++i)
 		if (_locRoutes[loc].exits[i].exit == box) {
 			*exitLoc = _locRoutes[loc].exits[i].exitLoc;
 			*exitBox = _locRoutes[loc].exits[i].exitBox;
-
-			return true;
+			return;
 		}
 
 	error("no exit info. loc %d, box %d", loc, box);
-	return false;
 }
 
 int Database::findFarthestExit(int loc, int box) {

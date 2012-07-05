@@ -157,7 +157,7 @@ public:
 	uint16 getExitBox(int currLoc, int nextLoc);
 	int8 getBoxLink(int loc, int box, int join);
 	int8 getFirstLink(int loc, int box);
-	bool getExitInfo(int loc, int box, int *exitLoc, int *exitBox);
+	void getExitInfo(int loc, int box, int *exitLoc, int *exitBox);
 	int findFarthestExit(int loc, int box);
 	bool isInLine(int loc, int box, int x, int y);
 	void getClosestBox(int loc, uint16 mouseX, uint16 mouseY,
