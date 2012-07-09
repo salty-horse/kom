@@ -466,8 +466,7 @@ int Conv::doStat(int selection) {
 			break;
 
 		case 419:
-			// i->val
-			warning("TODO talk: unset spell");
+			_vm->database()->getChar(i->val)->unsetSpell();
 			break;
 
 		case 467:
