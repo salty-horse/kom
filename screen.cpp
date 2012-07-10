@@ -782,7 +782,7 @@ void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height,
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= SCREEN_H - PANEL_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
 				if (invisible)
 					_screenBuf[targetPixel] = _screenBuf[targetPixel + 8];
 				else
@@ -900,7 +900,7 @@ void Screen::drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 hei
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= SCREEN_H - PANEL_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
 
 				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
 
@@ -1083,7 +1083,7 @@ void Screen::setPaletteBrightness() {
 }
 
 void Screen::createSepia(bool shop) {
-	_sepiaScreen = new byte[SCREEN_W * (SCREEN_H - PANEL_H)];
+	_sepiaScreen = new byte[SCREEN_W * ROOM_H];
 	ColorSet *cs = shop ? _greenColorSet : _orangeColorSet;
 
 	_backgroundRedraw = true;
@@ -1094,7 +1094,7 @@ void Screen::createSepia(bool shop) {
 
 	_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
 
-	for (uint y = 0; y < SCREEN_H - PANEL_H; ++y) {
+	for (uint y = 0; y < ROOM_H; ++y) {
 		for (uint x = 0; x < SCREEN_W; ++x) {
 			byte *color = &_backupPalette[((uint8*)screen->pixels)[y * SCREEN_W + x] * 3];
 
@@ -1124,7 +1124,7 @@ void Screen::copySepia() {
 	if (!_sepiaScreen)
 		return;
 
-	memcpy(_screenBuf, _sepiaScreen, SCREEN_W * (SCREEN_H - PANEL_H));
+	memcpy(_screenBuf, _sepiaScreen, SCREEN_W * ROOM_H);
 	_dirtyRects->push_back(Rect(0, 0, SCREEN_W, SCREEN_H));
 }
 
@@ -1332,8 +1332,8 @@ void Screen::updateActionStrings() {
 }
 
 void Screen::drawPanel(const byte *panelData) {
-	memcpy(_screenBuf + SCREEN_W * (SCREEN_H - PANEL_H), panelData, SCREEN_W * PANEL_H);
-	_dirtyRects->push_back(Rect(0, SCREEN_H - PANEL_H, SCREEN_W, SCREEN_H));
+	memcpy(_screenBuf + SCREEN_W * ROOM_H, panelData, SCREEN_W * PANEL_H);
+	_dirtyRects->push_back(Rect(0, ROOM_H, SCREEN_W, SCREEN_H));
 }
 
 void Screen::updatePanelOnScreen() {
@@ -1342,8 +1342,8 @@ void Screen::updatePanelOnScreen() {
 	if (_vm->game()->isNarratorPlaying())
 		return;
 
-	_system->copyRectToScreen(_screenBuf + SCREEN_W * (SCREEN_H - PANEL_H),
-		SCREEN_W, 0, SCREEN_H - PANEL_H, SCREEN_W, PANEL_H);
+	_system->copyRectToScreen(_screenBuf + SCREEN_W * ROOM_H,
+		SCREEN_W, 0, ROOM_H, SCREEN_W, PANEL_H);
 	_system->updateScreen();
 }
 
@@ -1986,7 +1986,7 @@ void Screen::writeText(byte *buf, const char *text, uint8 row, uint16 col, uint8
 	writeTextStyle(buf, text, row, col, color, false);
 
 	// Report dirty rect if above panel area
-	if (buf == _screenBuf && row < SCREEN_H - PANEL_H) {
+	if (buf == _screenBuf && row < ROOM_H) {
 		if (isEmbossed)
 			_dirtyRects->push_back(Rect(col - 1, row - 1, col + getTextWidth(text) + 1, row + 8 + 1));
 		else

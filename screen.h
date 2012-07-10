@@ -51,6 +51,7 @@ enum {
 	MOUSE_W = 40,
 	MOUSE_H = 40,
 	PANEL_H = 32,
+	ROOM_H = SCREEN_H - PANEL_H,
 	INVENTORY_OFFSET = 344
 };
 
