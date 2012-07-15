@@ -39,6 +39,7 @@ BUGS
 		$4 = 176
 		(gdb) p targetBox
 		$5 = -1
+* zoom buffer coords are wrong in conversations
 
 
 MISSING FEATURES

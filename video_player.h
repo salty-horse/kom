@@ -44,6 +44,9 @@ public:
 	~VideoPlayer() { }
 
 	bool playVideo(char *filename);
+
+	void loadTalkVideo(const char *filename, byte *background);
+	void drawTalkFrame(int frame);
 private:
 	void processFrame();
 	void processEvents();

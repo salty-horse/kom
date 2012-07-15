@@ -171,4 +171,36 @@ void VideoPlayer::processFrame() {
 	_vm->_system->delayMillis(_player->getTimeToNextFrame());
 }
 
+void VideoPlayer::loadTalkVideo(const char *filename, byte *background) {
+	if (!_flic.loadFile(filename))
+		error("Could not load video file: %s\n", filename);
+
+	_background = background;
+}
+
+void VideoPlayer::drawTalkFrame(int frame) {
+	warning("draw frame %d", frame);
+	const Graphics::Surface *surface = NULL;
+
+	if (surface == NULL) {
+		surface = _flic.decodeNextFrame();
+	}
+
+	// Seek to frame
+	while (_flic.getCurFrame() - 1 != frame) {
+		surface = _flic.decodeNextFrame();
+	}
+
+	byte *screen = _vm->screen()->screenBuf();
+
+	// Draw frame
+	memcpy(screen, _background, SCREEN_W * ROOM_H);
+	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
+		byte color = ((byte *)surface->pixels)[i];
+		if (color != 0)
+			screen[i] = color;
+	}
+	_vm->_system->updateScreen();
+}
+
 } // End of namespace Kom

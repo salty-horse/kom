@@ -43,9 +43,10 @@ using Common::File;
 
 namespace Kom {
 
-Face::Face(const Common::String &filename, byte *lipBuffer, byte *zoomSurface) :
-   _sentenceStatus(0) {
+Face::Face(KomEngine *vm, const Common::String &filename, byte *zoomSurface) :
+	_sentenceStatus(0), _flic(vm) {
 
+	_flic.loadTalkVideo(filename.c_str(), zoomSurface);
 }
 
 Face::~Face() {
@@ -112,7 +113,6 @@ void Face::assignLinks(const Common::String &filename) {
 }
 
 Lips::Lips(KomEngine *vm) : _vm(vm) {
-	_frontBuffer = NULL;
 	_playerFace = NULL;
 	_otherFace = NULL;
 	_otherZoomSurface = NULL;
@@ -122,10 +122,11 @@ Lips::~Lips() {
 	delete _multiColorSet;
 	delete _narrColorSet;
 	delete[] _otherZoomSurface;
-	delete[] _frontBuffer;
-	delete[] _otherFront;
 	delete _playerFace;
 	delete _otherFace;
+
+	// Clear screen. Yes, this shouldn't be in a destructor
+	_vm->screen()->clearScreen();
 }
 
 void Lips::init(Common::String playerCodename, Common::String otherCodename,
@@ -171,12 +172,11 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 
 		_narrColorSet = new ColorSet("kom/conv/nartalk.cl");
 		byte *zoomSurface = _vm->screen()->createZoomBlur(char1ZoomX, char1ZoomY);
-		_frontBuffer = new byte[SCREEN_W * (SCREEN_H - PANEL_H)];
 		Common::String filenamePrefix = Common::String("kom/conv/") + playerCodename;
 		Common::String flcFilename = filenamePrefix + ".flc";
 		Common::String clFilename = filenamePrefix + ".cl";
 		Common::String lnkFilename = filenamePrefix + ".lnk";
-		_playerFace = new Face(flcFilename, _frontBuffer, zoomSurface);
+		_playerFace = new Face(_vm, flcFilename, zoomSurface);
 		_playerColorSet = new ColorSet(clFilename.c_str());
 		_playerFace->assignLinks(lnkFilename);
 
@@ -200,7 +200,6 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 	if (!_narratorConv) {
 		_otherZoomSurface = _vm->screen()->createZoomBlur(char2ZoomX, char2ZoomY);
 	}
-	_otherFront = new byte[SCREEN_W * ROOM_H];
 
 	Common::String fnamePrefix;
 	if ( _narratorConv) {
@@ -221,7 +220,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 		//	flicplaywindow(convflicwindow, 0, 0, nonplayerlipfrontbuf, blurzoomsurface2);
 	} else {
 		_isBalrog = false;
-		_otherFace = new Face(fname, _otherFront, _narratorConv ? NULL : _otherZoomSurface);
+		_otherFace = new Face(_vm, fname, _narratorConv ? NULL : _otherZoomSurface);
 	}
 
 	fname = fnamePrefix + ".cl";
@@ -351,6 +350,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 		// palette dirty = true
 
 		while (1) {
+			if (charId == 0) warning("updateSentence player");
 			updateSentence(charId == 0 ? _playerFace: _otherFace);
 
 			if (_talkerSample != NULL && _vm->sound()->isPlaying(*_talkerSample) && !pitchSet) {
@@ -435,7 +435,7 @@ void Lips::convDialogue() {
 				if (width + _exchangeX >= SCREEN_W - 4) {
 					eol = true;
 				} else {
-					_vm->screen()->writeText(_textSurface, _exchangeToken, PANEL_H, _exchangeX, _exchangeColor, /*isEmbossed=*/false);
+					_vm->screen()->writeText(_textSurface, _exchangeToken, PANEL_H, _exchangeX, 100, /*isEmbossed=*/false);
 					_exchangeX += width;
 					_exchangeToken = strtok(NULL, " ");
 				}
@@ -486,10 +486,27 @@ void Lips::updateSentence(Face *face) {
 	if (face == NULL) return;
 
 	if (face->_sentenceStatus == 1) {
-		//int average = getAverage;
-		// TODO
+		int depth = 1;
+		int average = 0; //TODO = getAverage;
+		if (average < 80)
+			depth = 1;
+		else if (average < 90)
+			depth = 2;
+		else if (average < 100)
+			depth = 3;
+		else if (average < 105)
+			depth = 4;
+		else if (average < 110)
+			depth = 5;
+		else if (average < 115)
+			depth = 6;
+		else if (average < 120)
+			depth = 7;
+		else
+			depth = 8;
+		loopTo(face, 2);//depth);
+
 		if (_talkerSample == NULL || !_vm->sound()->isPlaying(*_talkerSample)) {
-			// TODO stuff
 			loopTo(face, 1);
 			face->_sentenceStatus = 4;
 		}
@@ -500,6 +517,9 @@ void Lips::updateSentence(Face *face) {
 
 void Lips::update(Face *face) {
 	if (face == NULL) return;
+
+	int16 frame = -1;
+
 	switch (face->_status) {
 	case 1: {
 		Loop *loop = face->_currState->currLoop;
@@ -511,12 +531,12 @@ void Lips::update(Face *face) {
 			face->_status |= 2;
 			loop->currFrame = loop->startFrame + loop->endFrame - loop->currFrame;
 		}
-		// TODO flicSetWindowFrame
+		frame = loop->currFrame;
 		break;
 	}
 	case 2: {
 		Loop *loop = face->_currState->currLoop;
-		// TODO flicSetWindowFrame
+		frame = loop->currFrame;
 		if (loop->currDepth != 1) {
 			loop->currDepth++;
 			loop->currFrame++;
@@ -534,7 +554,6 @@ void Lips::update(Face *face) {
 	}
 	case 4:
 		if (*face->_playLink->currFrame < 0) {
-			// TODO
 			face->_currState = face->_playLink->endState;
 			face->_status &= ~4;
 			if (face->_sentenceStatus == 2) {
@@ -543,16 +562,15 @@ void Lips::update(Face *face) {
 				_vm->sound()->playSampleSpeech(*_talkerSample);
 			}
 		} else {
-			// TODO flicSetWindowFrame
+			frame = *face->_playLink->currFrame;
 			face->_playLink->currFrame++;
 		}
 		break;
 	default:
-		// loc_41181
 		if (face->_sentenceStatus == 4) {
 			face->_sentenceStatus = 3;
 		}
-		// TODO flicSetWindowFrame
+		frame = face->_currState->currLoop->currFrame;
 		if (face->_sentenceStatus == 2) {
 			face->_sentenceStatus = 1;
 			_talkerSample = &face->_sample;
@@ -562,10 +580,15 @@ void Lips::update(Face *face) {
 		break;
 	}
 
-	// TODO: flic update window
+	if (frame != -1) {
+		face->_flic.drawTalkFrame(frame);
+	} else {
+		//TODO error("eep");
+	}
 }
 
 void Lips::loopTo(Face *face, int depth) {
+	warning("loop to %d", depth);
 	if (face == NULL) return;
 	if ((face->_status & 4) == 0) return;
 	if (face->_currState->loopCount == 0) return;

@@ -28,6 +28,7 @@
 #include "common/str.h"
 
 #include "sound.h"
+#include "video_player.h"
 
 namespace Kom {
 
@@ -81,10 +82,11 @@ struct Link {
 };
 
 struct Face {
-	Face(const Common::String &filename, byte *lipBuffer, byte *zoomSurface);
+	Face(KomEngine *vm, const Common::String &filename, byte *zoomSurface);
 	~Face();
 	void assignLinks(const Common::String &filename);
 
+	KomEngine *_vm;
 	State *_currState;
 	State *_states;
 	Link *_faceLinks;
@@ -94,6 +96,7 @@ struct Face {
 	byte _status;
 	byte _sentenceStatus;
 	SoundSample _sample;
+	VideoPlayer _flic;
 };
 
 class Lips {
@@ -121,6 +124,7 @@ private:
 	void rewindPlaySentence(Face *face);
 
 	byte *_otherZoomSurface;
+	byte *_frontBuffer;
 	byte *_otherFront;
 	ColorSet *_narrColorSet;
 	ColorSet *_playerColorSet;
@@ -130,7 +134,6 @@ private:
 	bool _multiFullPalette;
 	Common::String _convDir;
 	int _colorSetType;
-	byte *_frontBuffer;
 	bool _playerActive;
 	bool _narratorConv;
 	Face *_playerFace;
