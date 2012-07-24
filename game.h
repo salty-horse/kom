@@ -71,7 +71,8 @@ struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
 		mouseX(0), mouseY(0), mouseMode(0),
 		narratorPatience(0), lastItemUsed(-1), lastWeaponUsed(-1),
-		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0) {
+		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0),
+		objectType(OBJECT_NONE) {
 			for (int i = 0; i < 4; i++) fightNPCCloud[i].charId = -1;
 		}
 	uint16 mouseState;
