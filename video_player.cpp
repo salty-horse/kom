@@ -174,16 +174,15 @@ void VideoPlayer::processFrame() {
 void VideoPlayer::loadTalkVideo(const char *filename, byte *background) {
 	if (!_flic.loadFile(filename))
 		error("Could not load video file: %s\n", filename);
-
+	_flic.start();
 	_background = background;
 }
 
 void VideoPlayer::drawTalkFrame(int frame) {
-	warning("draw frame %d", frame);
 	const Graphics::Surface *surface = NULL;
 
-	if (surface == NULL) {
-		surface = _flic.decodeNextFrame();
+	if (_flic.getCurFrame() -1 >= frame) {
+		_flic.rewind();
 	}
 
 	// Seek to frame

@@ -64,8 +64,9 @@ void Face::assignLinks(const Common::String &filename) {
 
 	_stateCount = f.readSint16BE();
 	_states = new State[_stateCount];
-
+	debug("File %s", filename.c_str());
 	for (int i = 0; i < _stateCount; ++i) {
+		debug("\tState %d", i);
 		_states[i].id = i;
 		int16 loopCount = f.readSint16BE();
 		if (loopCount > 0)
@@ -82,6 +83,7 @@ void Face::assignLinks(const Common::String &filename) {
 			loop->currDepth = 1;
 			loop->currFrame = loop->startFrame;
 			loop->maxDepth = (loop->endFrame - loop->startFrame) * 2 + 1;
+			debug("\t\tLoop %d: %d %d %d", j, loop->startFrame, loop->endFrame, loop->maxDepth);
 		}
 	}
 
@@ -92,6 +94,7 @@ void Face::assignLinks(const Common::String &filename) {
 	Link *link = _faceLinks;
 	for (int i = 0; i < _stateCount; ++i) {
 		for (int j = 0; j < _stateCount; ++j) {
+			debugN("link %d,%d: ", i, j);
 			link->endState = &_states[j];
 			link->frameList = currFrame;
 
@@ -99,8 +102,10 @@ void Face::assignLinks(const Common::String &filename) {
 			do {
 				data = f.readSint16BE();
 				*currFrame = data;
+				debugN("%d ", *currFrame);
 				currFrame++;
 			} while (data >= 0);
+			debug("");
 			++link;
 		}
 	}
@@ -248,7 +253,6 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	Common::String sampleFilename = Common::String::format("%s/%s.raw", _convDir.c_str(), filename);
 
 	bool pitchSet = false;
-	int flicFrame = 0;
 	if (text == NULL) {
 		_exchangeString = NULL;
 	} else {
@@ -522,6 +526,7 @@ void Lips::update(Face *face) {
 
 	switch (face->_status) {
 	case 1: {
+		warning("face status is 1");
 		Loop *loop = face->_currState->currLoop;
 		if (loop->currDepth != loop->loopToDepth) {
 			loop->currDepth++;
@@ -535,6 +540,7 @@ void Lips::update(Face *face) {
 		break;
 	}
 	case 2: {
+		warning("face status is 2");
 		Loop *loop = face->_currState->currLoop;
 		frame = loop->currFrame;
 		if (loop->currDepth != 1) {
@@ -553,6 +559,7 @@ void Lips::update(Face *face) {
 		break;
 	}
 	case 4:
+		warning("face status is 4");
 		if (*face->_playLink->currFrame < 0) {
 			face->_currState = face->_playLink->endState;
 			face->_status &= ~4;
@@ -567,6 +574,7 @@ void Lips::update(Face *face) {
 		}
 		break;
 	default:
+		warning("face status is default");
 		if (face->_sentenceStatus == 4) {
 			face->_sentenceStatus = 3;
 		}
@@ -671,7 +679,7 @@ void Talk::init(uint16 charId, int16 convNum) {
 		playerChar->_name,
 		playerChar->_xtend);
 
-	// TODO: Handle pitch based on spell effect
+	// TODO: Handle height based on spell effect
 	playerHeight = 0x3C00;
 	charHeight = 0x3C00;
 
@@ -721,19 +729,14 @@ void Talk::init(uint16 charId, int16 convNum) {
 		break;
 	}
 
-	playerX = playerX * 2 + 25;
-	playerY = playerY * 2 - (playerHeight / (playerChar->_start5 + 108));
-	charX = charX * 2 + 25;
-	charY = charY * 2 - (charHeight / (otherChar->_start5 + 108));
-
-	//charHeight = ((signed __int16)v23 >> 1) - (*(_QWORD *)p2 >> 32) / (signed __int64)*(_DWORD *)(v21 + 108);
-
 	_vm->panel()->setActionDesc("");
 	_vm->panel()->setHotspotDesc("");
 	_vm->panel()->showLoading(true);
-	Lips::init(playerCodename, otherChar->_name, 
-		playerX, playerY,
-		charX, charY,
+	Lips::init(playerCodename, otherChar->_name,
+		playerX / 2 - 25,
+		playerY / 2 - (playerHeight / playerChar->_start5),
+		charX / 2 + 25,
+		charY / 2 - (charHeight / otherChar->_start5),
 		convNum);
 	_vm->panel()->showLoading(false);
 }
@@ -780,7 +783,7 @@ void Talk::doTalk(int charId, int emotion, const char *sampleFile, const char *s
 }
 
 Conv::Conv(KomEngine *vm, uint16 charId)
-	: _vm(vm), _convs(0), _text(0), _talk(0) {
+	: _vm(vm), _convs(0), _text(0) {
 	_charId = charId;
 	_codename = _vm->database()->getChar(charId)->_name;
 	_convData = _vm->database()->getConvData();
@@ -795,8 +798,6 @@ Conv::Conv(KomEngine *vm, uint16 charId)
 Conv::~Conv() {
 	delete[] _convs;
 	delete[] _text;
-
-	delete _talk;
 
 	// Restore the palette
 	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
@@ -930,11 +931,9 @@ bool Conv::doTalk(int16 convNum, int32 optNum) {
 	// Find conversation
 	for (Common::List<Conversation>::iterator c = _conversations.begin(); c != _conversations.end(); c++) {
 		if (_charId == c->charId && c->convNum == convNum) {
-			_talk = new Talk(_vm);
-			_talk->init(_charId, convNum);
-			bool result = doOptions(&(*c), optNum);
-			delete _talk;
-			_talk = 0;
+			Talk talk(_vm);
+			talk.init(_charId, convNum);
+			bool result = doOptions(talk, &(*c), optNum);
 			return result;
 		}
 	}
@@ -963,17 +962,16 @@ void Conv::doResponse(int responseNum) {
 		sscanf(lineBuffer.c_str(), "%d %d %d", &num, &emotion, &offset);
 	}
 
-	if (num == responseNum) {
-		sprintf(convName, "%d", responseNum);
-		_talk = new Talk(_vm);
-		_talk->init(_charId, 0);
-		_talk->doTalk(_charId, emotion, convName, _text + offset);
-	} else {
+	if (num != responseNum) {
 		error("Could not find response %d of %s", responseNum, _codename);
 	}
+	sprintf(convName, "%d", responseNum);
+	Talk talk(_vm);
+	talk.init(_charId, 0);
+	talk.doTalk(_charId, emotion, convName, _text + offset);
 }
 
-bool Conv::doOptions(Conversation *conv, int32 optNum) {
+bool Conv::doOptions(Talk &talk, Conversation *conv, int32 optNum) {
 	while (1) {
 		assert(conv);
 
@@ -996,7 +994,7 @@ bool Conv::doOptions(Conversation *conv, int32 optNum) {
 		int sel = -1;
 
 		while (sel == -1) {
-			sel = showOptions();
+			sel = talk.showOptions(_options);
 
 			if (_vm->shouldQuit()) {
 				return false;
@@ -1009,14 +1007,14 @@ bool Conv::doOptions(Conversation *conv, int32 optNum) {
 				return false;
 		}
 
-		optNum = doStat(sel);
+		optNum = doStat(talk, sel);
 
 		if (optNum == 0)
 			return true;
 	}
 }
 
-int Conv::showOptions() {
+int Lips::showOptions(OptionLine *options) {
 	static const byte active[] = {255, 255, 255};
 	static const byte inactive[] = {162, 130, 130};
 
@@ -1027,13 +1025,13 @@ int Conv::showOptions() {
 
 	// Add a bullet at the beginning
 	for (int i = 0; i < 3; i++) {
-		if (_options[i].offset == 0) {
-			_options[i].text = 0;
+		if (options[i].offset == 0) {
+			options[i].text = 0;
 		} else {
-			if (_options[i].offset) {
-				_options[i].text = new char[strlen(_options[i].offset) + 3];
-				strcpy(_options[i].text, "\x08 ");
-				strcat(_options[i].text, _options[i].offset);
+			if (options[i].offset) {
+				options[i].text = new char[strlen(options[i].offset) + 3];
+				strcpy(options[i].text, "\x08 ");
+				strcat(options[i].text, options[i].offset);
 			}
 
 			validOptions++;
@@ -1041,7 +1039,7 @@ int Conv::showOptions() {
 	}
 
 	if (validOptions == 1) {
-		freeOptions();
+		freeOptions(options);
 		return 0;
 	}
 
@@ -1051,12 +1049,12 @@ int Conv::showOptions() {
 		int line = 0;
 		char *word;
 
-		if (_options[i].offset == 0) {
-			_options[i].text = 0;
+		if (options[i].offset == 0) {
+			options[i].text = 0;
 			continue;
 		}
 
-		word = strtok(_options[i].text, " ");
+		word = strtok(options[i].text, " ");
 		while (word) {
 			int width = _vm->screen()->getTextWidth(word) + 4 + 1;
 
@@ -1068,8 +1066,8 @@ int Conv::showOptions() {
 				col = 18;
 			}
 
-			_options[i].lines[line] += word;
-			_options[i].lines[line] += " ";
+			options[i].lines[line] += word;
+			options[i].lines[line] += " ";
 
 			col += width;
 
@@ -1077,98 +1075,105 @@ int Conv::showOptions() {
 		}
 	}
 
-	_surfaceHeight = 0;
+	int surfaceHeight = 0;
 
 	// Calculate position of rows
 	for (int i = 0; i < 3; i++) {
 		if (i == 0)
-			_options[i].pixelTop = 0;
+			options[i].pixelTop = 0;
 		else
-			_options[i].pixelTop = _surfaceHeight;
+			options[i].pixelTop = surfaceHeight;
 
-		for (int j = 0; j < 24 && !_options[i].lines[j].empty(); j++)
-			_surfaceHeight += 8;
-		_surfaceHeight += 3;
-		_options[i].pixelBottom = _surfaceHeight;
+		for (int j = 0; j < 24 && !options[i].lines[j].empty(); j++)
+			surfaceHeight += 8;
+		surfaceHeight += 3;
+		options[i].pixelBottom = surfaceHeight;
 	}
 
-	_scrollPos = 0;
+	_vm->screen()->clearScreen();
+
+	// TODO balrog
+	updateSentence(_playerFace);
+	// TODO more stuff
+
+	_optionsScrollPos = 0;
 	_vm->input()->setMousePos(_vm->input()->getMouseX(), 0);
 
+	int selectedOption = 9999;
 	do {
-		_selectedOption = getOption();
-		displayMenuOptions();
+		selectedOption = getOption(options);
+		displayMenuOptions(options, selectedOption, surfaceHeight);
 		_vm->screen()->gfxUpdate();
 
-	} while ((!_vm->input()->getLeftClick() || _selectedOption == 9999) && !_vm->shouldQuit());
+	} while ((!_vm->input()->getLeftClick() || selectedOption == 9999) && !_vm->shouldQuit());
 
-	freeOptions();
+	freeOptions(options);
 
-	return _selectedOption;
+	return selectedOption;
 }
 
-void Conv::freeOptions() {
+void Lips::freeOptions(OptionLine *options) {
 	for (int i = 0; i < 3; i++) {
-		delete[] _options[i].text;
-		_options[i].text = 0;
+		delete[] options[i].text;
+		options[i].text = 0;
 
 		for (int j = 0; j < 24; j++) {
-			_options[i].lines[j] = "";
+			options[i].lines[j] = "";
 		}
 	}
 }
 
-int Conv::getOption() {
+int Lips::getOption(OptionLine *options) {
 
-	if (_scrollPos <= _options[0].pixelBottom)
+	if (_optionsScrollPos <= options[0].pixelBottom)
 		return 0;
 
 	for (int i = 1; i < 3; i++) {
-		if (_options[i].text == 0)
+		if (options[i].text == 0)
 			continue;
 
-		if (_options[i].pixelTop < _scrollPos && _scrollPos <= _options[i].pixelBottom)
+		if (options[i].pixelTop < _optionsScrollPos && _optionsScrollPos <= options[i].pixelBottom)
 			return i;
 	}
 
 	return 9999;
 }
 
-void Conv::displayMenuOptions() {
+void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfaceHeight) {
 	int row = 12;
 
-	byte *optionsSurface = new byte[SCREEN_W * (_surfaceHeight + PANEL_H)];
-	memset(optionsSurface, 0, SCREEN_W * (_surfaceHeight + PANEL_H));
+	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H)];
+	memset(optionsSurface, 0, SCREEN_W * (surfaceHeight + PANEL_H));
 
 	// Original method of scrolling - requires slow mouse sampling
 
-	//_scrollPos += _vm->input()->getMouseY() - PANEL_H;
-	//_scrollPos = CLIP(_scrollPos, 0, _surfaceHeight - PANEL_H);
+	//_optionsScrollPos += _vm->input()->getMouseY() - PANEL_H;
+	//_optionsScrollPos = CLIP(_optionsScrollPos, 0, surfaceHeight - PANEL_H);
 	//_vm->input()->setMousePos(_vm->input()->getMouseX(), PANEL_H);
 
 	// New scrolling method
-	_scrollPos = (_surfaceHeight + 24 - PANEL_H) * _vm->input()->getMouseY() / 200;
+	_optionsScrollPos = (surfaceHeight + 24 - PANEL_H) * _vm->input()->getMouseY() / 200;
 
 	for (int i = 0; i < 3; i++) {
 
-		if (_options[i].text == 0)
+		if (options[i].text == 0)
 			continue;
 
-		if (_selectedOption == i) {
+		if (selectedOption == i) {
 
 			for (int j = 0; j < 24; j++) {
-				if (_options[i].lines[j].empty())
+				if (options[i].lines[j].empty())
 					break;
-				_vm->screen()->writeText(optionsSurface, _options[i].lines[j].c_str(), row, j == 0 ? 4 : 18, 1, false);
+				_vm->screen()->writeText(optionsSurface, options[i].lines[j].c_str(), row, j == 0 ? 4 : 18, 1, false);
 				row += 8;
 			}
 
 		} else {
 
 			for (int j = 0; j < 24; j++) {
-				if (_options[i].lines[j].empty())
+				if (options[i].lines[j].empty())
 					break;
-				_vm->screen()->writeText(optionsSurface, _options[i].lines[j].c_str(), row, j == 0 ? 4 : 18, 2, false);
+				_vm->screen()->writeText(optionsSurface, options[i].lines[j].c_str(), row, j == 0 ? 4 : 18, 2, false);
 				row += 8;
 			}
 		}
@@ -1176,12 +1181,12 @@ void Conv::displayMenuOptions() {
 		row += 3;
 	}
 
-	_vm->screen()->drawPanel(SCREEN_W * _scrollPos + optionsSurface);
+	_vm->screen()->drawPanel(SCREEN_W * _optionsScrollPos + optionsSurface);
 
 	delete[] optionsSurface;
 }
 
-int Conv::doStat(int selection) {
+int Conv::doStat(Talk &talk, int selection) {
 
 	int ret = 0;
 
@@ -1191,7 +1196,7 @@ int Conv::doStat(int selection) {
 		switch (i->command) {
 
 		case 306:
-			_talk->doTalk(i->charId, i->emotion, i->filename, _text + i->textOffset);
+			talk.doTalk(i->charId, i->emotion, i->filename, _text + i->textOffset);
 			break;
 
 		case 307:

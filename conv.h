@@ -53,6 +53,17 @@ struct Option {
 	Common::List<Statement> statements;
 };
 
+struct OptionLine {
+	char *offset;
+	char *text;
+	int16 b;
+	Common::List<Statement>* statements;
+	int16 d;
+	Common::String lines[24];
+	int pixelTop;
+	int pixelBottom;
+};
+
 struct Conversation {
 	int16 charId;
 	int16 convNum;
@@ -65,7 +76,7 @@ struct Loop {
 	int16 loopToDepth;
 	int16 currDepth;
 	int16 currFrame;
-	int16 maxDepth;
+	int16 maxDepth; // TODO: unused?
 };
 
 struct State {
@@ -110,6 +121,8 @@ public:
 			  int16 convNum);
 
 	void doTalk(uint16 charId, int16 emotion, const char *filename, const char *text, int pitch);
+	int showOptions(OptionLine *options);
+	void displayMenuOptions(OptionLine *options, int selectedOption, int surfaceHeight);
 
 protected:
 	KomEngine *_vm;
@@ -123,9 +136,10 @@ private:
 	void changeState(Face *face, int emotion);
 	void rewindPlaySentence(Face *face);
 
+	int getOption(OptionLine *options);
+	void freeOptions(OptionLine *options);
+
 	byte *_otherZoomSurface;
-	byte *_frontBuffer;
-	byte *_otherFront;
 	ColorSet *_narrColorSet;
 	ColorSet *_playerColorSet;
 	ColorSet *_otherColorSet;
@@ -157,9 +171,11 @@ private:
 
 	uint16 _lastCharacter;
 	byte *_textSurface;
+
+	int _optionsScrollPos;
 };
 
-class Talk : Lips {
+class Talk : public Lips {
 public:
 	Talk(KomEngine *vm);
 	~Talk();
@@ -184,12 +200,8 @@ private:
 	void initConvs(uint32 offset);
 	void initText(uint32 offset);
 
-	bool doOptions(Conversation *conv, int32 optNum);
-	int showOptions();
-	void freeOptions();
-	int getOption();
-	void displayMenuOptions();
-	int doStat(int selection);
+	bool doOptions(Talk &talk, Conversation *conv, int32 optNum);
+	int doStat(Talk &talk, int selection);
 
 	KomEngine *_vm;
 
@@ -203,22 +215,7 @@ private:
 	byte *_convs;
 	char *_text;
 
-	Talk *_talk;
-
-	int _selectedOption;
-	int _scrollPos;
-	int _surfaceHeight;
-
-	struct {
-		char *offset;
-		char *text;
-		int16 b;
-		Common::List<Statement>* statements;
-		int16 d;
-		Common::String lines[24];
-		int pixelTop;
-		int pixelBottom;
-	} _options[3];
+	OptionLine _options[3];
 
 	Common::List<Conversation> _conversations;
 };
