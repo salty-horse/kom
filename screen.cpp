@@ -1350,6 +1350,7 @@ void Screen::updatePanelOnScreen() {
 void Screen::loadBackground(const Common::String &filename) {
 	_roomBackgroundFlic.close();
 	_roomBackgroundFlic.loadFile(filename);
+	_roomBackgroundFlic.start();
 	_backgroundRedraw = false;
 
 	// Redraw everything
@@ -1362,6 +1363,8 @@ void Screen::updateBackground() {
 	if (_roomBackgroundFlic.isVideoLoaded()) {
 		if (!_roomBackgroundFlic.isPaused() && _roomBackgroundFlic.getTimeToNextFrame() == 0) {
 
+			if (_roomBackgroundFlic.endOfVideo())
+				_roomBackgroundFlic.rewind();
 			_roomBackground = _roomBackgroundFlic.decodeNextFrame();
 
 			if (_roomBackgroundFlic.hasDirtyPalette()) {

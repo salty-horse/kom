@@ -35,7 +35,7 @@
 namespace Kom {
 
 VideoPlayer::VideoPlayer(KomEngine *vm) : _vm(vm), 
-	_smk(vm->_mixer), _background(0) {
+	_smk(), _background(0) {
 	_eventMan = _vm->_system->getEventManager();
 }
 
@@ -105,6 +105,7 @@ bool VideoPlayer::playVideo(char *filename) {
 	}
 
 	_vm->_system->fillScreen(0);
+	_player->start();
 
 	while (!_player->endOfVideo() && !_skipVideo && !_vm->shouldQuit()) {
 		processEvents();
@@ -138,7 +139,7 @@ void VideoPlayer::processFrame() {
 	Graphics::Surface *screen = _vm->_system->lockScreen();
 
 	if (_player->hasDirtyPalette() && _player == &_smk) {
-		_player->setSystemPalette();
+		_vm->_system->getPaletteManager()->setPalette(_smk.getPalette(), 0, 256);
 	}
 
 	if (!_background) {
