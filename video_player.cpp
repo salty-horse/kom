@@ -136,6 +136,13 @@ bool VideoPlayer::playVideo(char *filename) {
 void VideoPlayer::processFrame() {
 	const Graphics::Surface *frame = _player->decodeNextFrame();
 
+	// No frame decoded - this could be if the video is over, but the
+	// audio track is still playing. e.g. kom/cutsconv/in2/in201t0.smk
+	if (frame == NULL) {
+		_vm->_system->delayMillis(10);
+		return;
+	}
+
 	Graphics::Surface *screen = _vm->_system->lockScreen();
 
 	if (_player->hasDirtyPalette() && _player == &_smk) {
