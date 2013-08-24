@@ -782,7 +782,7 @@ void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height,
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= ROOM_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
 				if (invisible)
 					_screenBuf[targetPixel] = _screenBuf[targetPixel + 8];
 				else
@@ -900,7 +900,7 @@ void Screen::drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 hei
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= ROOM_H || ((byte *)_roomMask->pixels)[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
 
 				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
 
@@ -1096,7 +1096,7 @@ void Screen::createSepia(bool shop) {
 
 	for (uint y = 0; y < ROOM_H; ++y) {
 		for (uint x = 0; x < SCREEN_W; ++x) {
-			byte *color = &_backupPalette[((uint8*)screen->pixels)[y * SCREEN_W + x] * 3];
+			byte *color = &_backupPalette[((uint8*)screen->getPixels())[y * SCREEN_W + x] * 3];
 
 			// FIXME: this does not produce the same shade as the original
 			_sepiaScreen[y * SCREEN_W + x] = ((color[0] + color[1] + color[2]) / 3 * 23 + 255 / 2) / 255 + 232;
@@ -1379,7 +1379,7 @@ void Screen::updateBackground() {
 void Screen::drawBackground() {
 	if (_roomBackgroundFlic.isVideoLoaded()) {
 		for (uint16 y = 0; y < _roomBackground->h; y++)
-			memcpy(_screenBuf + y * SCREEN_W, (byte *)_roomBackground->pixels + y * _roomBackground->pitch, _roomBackground->w);
+			memcpy(_screenBuf + y * SCREEN_W, (byte *)_roomBackground->getPixels() + y * _roomBackground->pitch, _roomBackground->w);
 	}
 }
 
@@ -2078,7 +2078,7 @@ byte *Screen::createZoomBlur(int x, int y) {
 		sourceOffset = tempOffset;
 
 		for (int j = 0; j < 108; j++) {
-			byte color = ((byte *)_roomBackground->pixels)[sourceOffset];
+			byte color = ((byte *)_roomBackground->getPixels())[sourceOffset];
 			sourceOffset++;
 
 			*surface = color;
