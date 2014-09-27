@@ -35,12 +35,12 @@ public:
 	Debugger(KomEngine *vm);
 
 protected:
-	bool Cmd_Room(int argc, const char **argv);
-	bool Cmd_Give(int argc, const char **argv);
-	bool Cmd_Proc(int argc, const char **argv);
-	bool Cmd_Day(int argc, const char **argv);
-	bool Cmd_Night(int argc, const char **argv);
-	bool Cmd_Gold(int argc, const char **argv);
+	bool cmdRoom(int argc, const char **argv);
+	bool cmdGive(int argc, const char **argv);
+	bool cmdProc(int argc, const char **argv);
+	bool cmdDay(int argc, const char **argv);
+	bool cmdNight(int argc, const char **argv);
+	bool cmdGold(int argc, const char **argv);
 
 private:
 
