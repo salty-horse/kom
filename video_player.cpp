@@ -195,7 +195,7 @@ void VideoPlayer::drawTalkFrame(int frame) {
 	// Draw frame
 	memcpy(screen, _background, SCREEN_W * ROOM_H);
 	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
-		byte color = ((byte *)surface->pixels)[i];
+		byte color = ((byte *)surface->getPixels())[i];
 		if (color != 0)
 			screen[i] = color;
 	}
