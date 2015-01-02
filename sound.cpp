@@ -132,9 +132,10 @@ void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
 				new Common::MemoryReadStream(data, size, DisposeAfterUse::YES),
 				DisposeAfterUse::YES,
 				size,
-				Audio::kADPCMDVI,
+				Audio::kADPCMMSIma,
 				11025,
-				1);
+				1,
+				4);
 	}
 }
 

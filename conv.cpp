@@ -284,8 +284,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	_exchangeScrollSpeed = 48;
 	_scrollTimer = 0;
 
-	// TODO: handle balrog
-	// if !balrog {
+	if (!_isBalrog) {
 		if (charId == 0) {
 			// TODO - around loc_4260A
 			loadSentence(_playerFace, sampleFilename);
@@ -298,8 +297,10 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			}
 			if (emotion == 3) {
 				// use narrator color set
+				_vm->screen()->useColorSet(_narrColorSet, 0);
 			} else {
 				// use player color set
+				_vm->screen()->useColorSet(_playerColorSet, 0);
 			}
 			// TODO palette editing - loc_4274D
 
@@ -325,8 +326,8 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 				// loc_42883
 				// use color set (multi)
 			} else {
-				// loc_42891
 				// use color set (other)
+				_vm->screen()->useColorSet(_otherColorSet, 0);
 			}
 
 			if (_lastCharacter != 0) {
@@ -418,8 +419,9 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			delete[] _exchangeString;
 
 		_smackerPlayed = 0;
-	// } else { // balrog
-	// }
+	} else {
+		// Balrog
+	}
 }
 
 void Lips::convDialogue() {
@@ -486,12 +488,13 @@ void Lips::loadSentence(Face *face, const Common::String &filename) {
 	face->_sentenceStatus = 3;
 }
 
+// TODO: Animates lips?
 void Lips::updateSentence(Face *face) {
 	if (face == NULL) return;
 
 	if (face->_sentenceStatus == 1) {
 		int depth = 1;
-		int average = 0; //TODO = getAverage;
+		int average = getAverage(face);
 		if (average < 80)
 			depth = 1;
 		else if (average < 90)
@@ -508,7 +511,7 @@ void Lips::updateSentence(Face *face) {
 			depth = 7;
 		else
 			depth = 8;
-		loopTo(face, 2);//depth);
+		loopTo(face, depth);
 
 		if (_talkerSample == NULL || !_vm->sound()->isPlaying(*_talkerSample)) {
 			loopTo(face, 1);
@@ -519,32 +522,65 @@ void Lips::updateSentence(Face *face) {
 	update(face);
 }
 
+int Lips::getAverage(Face *face) {
+	if (face == NULL || _talkerSample == NULL)
+		return -256;
+
+	return 85; // FIXME: Remove
+
+	/*
+	Fetch the largest byte in the next ADPCM sample
+
+	int sampleEndPos = getSampleEndPos();
+	int currentPos = getSampleCurrentPos();
+	int maxValue = 250;
+	int avg = 0;
+	while(1) {
+		maxValue--;
+		if (maxValue == -1) {
+			break;
+		}
+		if (currentPos > sampleEndPos)
+			break;
+		if (getData(currentPos) <= avg) {
+			currentPos++;
+		} else {
+			avg = getData(currentPos);
+			currentPos++;
+		}
+	}
+
+	return avg;
+	*/
+}
+
+
 void Lips::update(Face *face) {
 	if (face == NULL) return;
 
 	int16 frame = -1;
 
 	switch (face->_status) {
-	case 1: {
+	case FACE_STATUS_PLAY_FORWARDS: {
 		warning("face status is 1");
 		Loop *loop = face->_currState->currLoop;
 		if (loop->currDepth != loop->loopToDepth) {
 			loop->currDepth++;
 			loop->currFrame++;
 		} else {
-			face->_status &= ~1;
-			face->_status |= 2;
+			face->_status &= ~FACE_STATUS_PLAY_FORWARDS;
+			face->_status |= FACE_STATUS_PLAY_BACKWARDS;
 			loop->currFrame = loop->startFrame + loop->endFrame - loop->currFrame;
 		}
 		frame = loop->currFrame;
 		break;
 	}
-	case 2: {
+	case FACE_STATUS_PLAY_BACKWARDS: {
 		warning("face status is 2");
 		Loop *loop = face->_currState->currLoop;
 		frame = loop->currFrame;
 		if (loop->currDepth != 1) {
-			loop->currDepth++;
+			loop->currDepth--;
 			loop->currFrame++;
 		} else {
 			face->_status = 0;
@@ -558,11 +594,12 @@ void Lips::update(Face *face) {
 		}
 		break;
 	}
-	case 4:
+	case FACE_STATUS_CHANGE_STATE: // Move from one state to another
 		warning("face status is 4");
 		if (*face->_playLink->currFrame < 0) {
+			// Reached new state. Start playing sample and moving lips
 			face->_currState = face->_playLink->endState;
-			face->_status &= ~4;
+			face->_status &= ~FACE_STATUS_CHANGE_STATE;
 			if (face->_sentenceStatus == 2) {
 				face->_sentenceStatus = 1;
 				_talkerSample = &face->_sample;
@@ -598,7 +635,7 @@ void Lips::update(Face *face) {
 void Lips::loopTo(Face *face, int depth) {
 	warning("loop to %d", depth);
 	if (face == NULL) return;
-	if ((face->_status & 4) == 0) return;
+	if (face->_status & FACE_STATUS_CHANGE_STATE) return;
 	if (face->_currState->loopCount == 0) return;
 
 	if (depth < 1)
@@ -607,19 +644,23 @@ void Lips::loopTo(Face *face, int depth) {
 	Loop *loop = face->_currState->currLoop;
 
 	switch (face->_status) {
-	case 1:
+	case FACE_STATUS_PLAY_FORWARDS:
 		if (depth < loop->currDepth) {
+			// Switch to the frame at the other end of the loop
 			loop->currFrame = loop->startFrame + loop->endFrame - loop->currFrame;
-			face->_status &= ~1;
-			face->_status |= 2;
+			// Go forward to desired depth
+			face->_status &= ~FACE_STATUS_PLAY_FORWARDS;
+			face->_status |= FACE_STATUS_PLAY_BACKWARDS;
 		}
 		loop->loopToDepth = depth;
 		break;
-	case 2:
+	case FACE_STATUS_PLAY_BACKWARDS:
 		if (depth > loop->currDepth) {
+			// Switch to the frame at the other end of the loop
 			loop->currFrame = loop->startFrame + loop->endFrame - loop->currFrame;
-			face->_status &= ~2;
-			face->_status |= 1;
+			// Go back to desired depth
+			face->_status &= ~FACE_STATUS_PLAY_BACKWARDS;
+			face->_status |= FACE_STATUS_PLAY_FORWARDS;
 		}
 		loop->loopToDepth = depth;
 		break;
@@ -627,7 +668,7 @@ void Lips::loopTo(Face *face, int depth) {
 		loop->currFrame = loop->startFrame;
 		loop->currDepth = 1;
 		loop->loopToDepth = depth;
-		face->_status |= 1;
+		face->_status |= FACE_STATUS_PLAY_FORWARDS;
 		break;
 	}
 }
@@ -635,8 +676,8 @@ void Lips::loopTo(Face *face, int depth) {
 void Lips::changeState(Face *face, int emotion) {
 	if (face == NULL) return;
 	if (face->_currState->id == emotion) return;
-	if (face->_status & 4) return;
-	if (face->_status & 3) return;
+	if (face->_status & FACE_STATUS_CHANGE_STATE) return;
+	if (face->_status & (FACE_STATUS_PLAY_FORWARDS | FACE_STATUS_PLAY_BACKWARDS)) return;
 	if (emotion >= face->_stateCount) return;
 
 	face->_playLink = &face->_faceLinks[face->_currState->id * face->_stateCount + emotion];
@@ -647,7 +688,7 @@ void Lips::changeState(Face *face, int emotion) {
 	loops->currFrame = loops->startFrame;
 	loops->loopToDepth = 1;
 	loops->currDepth = 1;
-	face->_status = 4;
+	face->_status = FACE_STATUS_CHANGE_STATE;
 }
 
 void Lips::rewindPlaySentence(Face *face) {

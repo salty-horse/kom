@@ -86,10 +86,18 @@ struct State {
 	Loop *currLoop;
 };
 
+// Links describe which frames to draw to get from one state to another
 struct Link {
 	State *endState;
 	int16 *currFrame;
 	int16 *frameList;
+};
+
+
+enum FaceStatusFlags {
+	FACE_STATUS_PLAY_FORWARDS = 1,
+	FACE_STATUS_PLAY_BACKWARDS = 2,
+	FACE_STATUS_CHANGE_STATE = 4
 };
 
 struct Face {
@@ -104,7 +112,7 @@ struct Face {
 	Link *_playLink;
 	int16 *_linkFrameList;
 	int16 _stateCount;
-	byte _status;
+	byte _status; // Flag with 4 bits
 	byte _sentenceStatus;
 	SoundSample _sample;
 	VideoPlayer _flic;
@@ -130,6 +138,7 @@ protected:
 private:
 	void loadSentence(Face *face, const Common::String &filename);
 	void updateSentence(Face *face);
+	int getAverage(Face *face);
 	void update(Face *face);
 	void convDialogue();
 	void loopTo(Face *face, int depth);

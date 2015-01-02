@@ -190,15 +190,18 @@ void VideoPlayer::drawTalkFrame(int frame) {
 		surface = _flic.decodeNextFrame();
 	}
 
-	byte *screen = _vm->screen()->screenBuf();
+	Graphics::Surface *screen = _vm->_system->lockScreen();
 
 	// Draw frame
-	memcpy(screen, _background, SCREEN_W * ROOM_H);
+	memcpy((byte *)screen->getPixels(), _background, SCREEN_W * ROOM_H);
 	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
 		byte color = ((byte *)surface->getPixels())[i];
 		if (color != 0)
-			screen[i] = color;
+			((byte *)screen->getPixels())[i] = color;
 	}
+
+	_vm->_system->unlockScreen();
+
 	_vm->_system->updateScreen();
 }
 
