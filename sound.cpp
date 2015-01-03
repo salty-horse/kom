@@ -31,11 +31,68 @@
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
 #include "audio/decoders/adpcm.h"
+#include "audio/decoders/adpcm_intern.h"
 
 using Common::File;
 using Common::String;
 
 namespace Kom {
+
+
+// Custom implementation of DVI_ADPCMStream, due to flipped nibbles compared to DVI_ADPCM
+// It also decodes the sample into a raw buffer so it could be queried later.
+class KOMADPCMStream : public Audio::DVI_ADPCMStream {
+public:
+
+	KOMADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, int rate, int channels, uint32 blockAlign = 0)
+		: Audio::DVI_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign) {
+
+		int rawBufferSize = size * 2;
+		_rawBuffer = new int16[rawBufferSize];
+
+		readBuffer(_rawBuffer, size * 2);
+		_stream->seek(0);
+	}
+
+	~KOMADPCMStream() {
+		_decodedSampleCount = 0;
+		delete[] _rawBuffer;
+	}
+
+	bool endOfData() const { return (_stream->eos() || _stream->pos() >= _endpos); }
+
+	int readBuffer(int16 *buffer, const int numSamples) {
+		int samples;
+		byte data;
+
+		for (samples = 0; samples < numSamples && !endOfData(); samples++) {
+			if (_decodedSampleCount == 0) {
+				data = _stream->readByte();
+
+				// (data >> 0) and (data >> 4) are flipped, compared to the DVI_ADPCMStream implementation
+				_decodedSamples[0] = decodeIMA((data >> 0) & 0x0f, 0);
+				_decodedSamples[1] = decodeIMA((data >> 4) & 0x0f, _channels == 2 ? 1 : 0);
+				_decodedSampleCount = 2;
+			}
+
+			// (1 - (count - 1)) ensures that _decodedSamples acts as a FIFO of depth 2
+			buffer[samples] = _decodedSamples[1 - (_decodedSampleCount - 1)];
+			_decodedSampleCount--;
+		}
+
+		return samples;
+	}
+
+	int16 *getRawBuffer() {
+		return _rawBuffer;
+	}
+
+private:
+	uint8 _decodedSampleCount;
+	int16 _decodedSamples[2];
+	int16 *_rawBuffer;
+};
+
 
 bool SoundSample::loadFile(Common::String filename) {
 	File f;
@@ -128,15 +185,27 @@ void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
 		f.seek(offset + 32);
 		f.read(data, size);
 
-		_stream = Audio::makeADPCMStream(
+		_stream = new KOMADPCMStream(
 				new Common::MemoryReadStream(data, size, DisposeAfterUse::YES),
 				DisposeAfterUse::YES,
 				size,
-				Audio::kADPCMMSIma,
 				11025,
-				1,
-				4);
+				1);
+
+		_isCompressed = true;
+		_sampleData = ((KOMADPCMStream *)_stream)->getRawBuffer();
+		_sampleDataSize = size * 2;
 	}
+}
+
+int16 const *SoundSample::getRawBuffer() {
+	assert(_isCompressed);
+	return _sampleData;
+}
+
+uint SoundSample::getRawBufferSize() {
+	assert(_isCompressed);
+	return _sampleDataSize;
 }
 
 Sound::Sound(Audio::Mixer *mixer)
@@ -221,6 +290,10 @@ void Sound::setSampleVolume(SoundSample &sample, byte volume) {
 	if (_mixer->isSoundHandleActive(sample._handle)) {
 		_mixer->setChannelVolume(sample._handle, volume);
 	}
+}
+
+uint16 Sound::getSampleElapsedTime(SoundSample &sample) {
+	return _mixer->getSoundElapsedTime(sample._handle);
 }
 
 } // end of namespace Kom

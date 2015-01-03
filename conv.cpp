@@ -526,32 +526,32 @@ int Lips::getAverage(Face *face) {
 	if (face == NULL || _talkerSample == NULL)
 		return -256;
 
-	return 85; // FIXME: Remove
+	// Fetch the largest byte in the future sample bytes
+	uint16 msc = _vm->sound()->getSampleElapsedTime(*_talkerSample);
+	int currentPos = (int)(msc * 11025 / 1000);
+	int sampleEndPos = _talkerSample->getRawBufferSize() - 1;
+	if (currentPos > sampleEndPos)
+		return 0;
 
-	/*
-	Fetch the largest byte in the next ADPCM sample
+	const int16 *sampleBuffer = _talkerSample->getRawBuffer();
 
-	int sampleEndPos = getSampleEndPos();
-	int currentPos = getSampleCurrentPos();
-	int maxValue = 250;
-	int avg = 0;
-	while(1) {
-		maxValue--;
-		if (maxValue == -1) {
+	int sampleCount = 250;
+	int maxValue = 0;
+	while (1) {
+		sampleCount--;
+		if (sampleCount == -1) {
 			break;
 		}
 		if (currentPos > sampleEndPos)
 			break;
-		if (getData(currentPos) <= avg) {
-			currentPos++;
-		} else {
-			avg = getData(currentPos);
-			currentPos++;
+		int val = (((sampleBuffer[currentPos]) >> 8) ^ 0x80) / 2;
+		if (val > maxValue) {
+			maxValue = val;
 		}
+		currentPos++;
 	}
 
-	return avg;
-	*/
+	return maxValue;
 }
 
 

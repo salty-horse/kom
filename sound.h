@@ -41,16 +41,21 @@ typedef Audio::SoundHandle SoundHandle;
 class SoundSample {
 	friend class Sound;
 public:
-	SoundSample() { _stream = 0; }
+	SoundSample() { _stream = 0; _isCompressed = false; _sampleData = 0; }
 	~SoundSample() { delete _stream; }
 
 	bool loadFile(Common::String filename);
 	void unload();
 	bool isLoaded() { return _stream != 0; }
+	int16 const *getRawBuffer();
+	uint getRawBufferSize();
 
 private:
 	Audio::SoundHandle _handle;
 	Audio::RewindableAudioStream *_stream;
+	bool _isCompressed;
+	int16 *_sampleData;
+	uint _sampleDataSize;
 
 	void loadCompressed(Common::File &f, int offset, int size);
 };
@@ -73,6 +78,7 @@ public:
 	void stopSample(SoundSample &sample);
 	void pauseSample(SoundSample &sample, bool paused);
 	void setSampleVolume(SoundSample &sample, byte volume);
+	uint16 getSampleElapsedTime(SoundSample &sample);
 	bool isPlaying(SoundSample &sample) { return sample.isLoaded() ? _mixer->isSoundHandleActive(sample._handle) : false; }
 
 private:
