@@ -30,8 +30,6 @@
 
 #include "kom/character.h"
 
-class OSystem;
-
 namespace Kom {
 
 class KomEngine;

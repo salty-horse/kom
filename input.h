@@ -23,11 +23,13 @@
 #ifndef KOM_INPUT_H
 #define KOM_INPUT_H
 
-#include "common/system.h"
+#include "common/scummsys.h"
 
-#include "kom/kom.h"
+class OSystem;
 
 namespace Kom {
+
+class KomEngine;
 
 class Input {
 public:

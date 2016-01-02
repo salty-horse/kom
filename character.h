@@ -24,13 +24,12 @@
 #define KOM_CHARACTER_H
 
 #include "common/list.h"
-#include "engines/engine.h"
 
 #include "kom/actor.h"
 
 namespace Kom {
 
-class Database;
+class KomEngine;
 
 struct Character {
 public:

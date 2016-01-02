@@ -23,14 +23,17 @@
 #include "common/file.h"
 #include "common/str.h"
 #include "common/memstream.h"
+#include "common/endian.h"
+#include "common/ptr.h"
+#include "common/stream.h"
+#include "common/textconsole.h"
+#include "common/types.h"
 
-#include "kom/kom.h"
 #include "kom/sound.h"
 
 #include "audio/mixer.h"
 #include "audio/audiostream.h"
 #include "audio/decoders/raw.h"
-#include "audio/decoders/adpcm.h"
 #include "audio/decoders/adpcm_intern.h"
 
 using Common::File;

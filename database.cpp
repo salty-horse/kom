@@ -30,7 +30,6 @@
 #include "common/util.h"
 #include "common/endian.h"
 #include "common/textconsole.h"
-#include "common/util.h"
 
 #include "kom/kom.h"
 #include "kom/actor.h"

@@ -22,14 +22,17 @@
 
 #include "common/events.h"
 #include "common/system.h"
+#include "common/keyboard.h"
 #include "common/textconsole.h"
 
 #include "graphics/surface.h"
 #include "graphics/palette.h"
-#include "video/flic_decoder.h"
+#include "video/video_decoder.h"
 #include "video/smk_decoder.h"
 
+#include "kom/kom.h"
 #include "kom/screen.h"
+#include "kom/sound.h"
 #include "kom/video_player.h"
 
 namespace Kom {

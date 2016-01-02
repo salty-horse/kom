@@ -28,6 +28,7 @@
 
 #include "kom/kom.h"
 #include "kom/actor.h"
+#include "kom/character.h"
 #include "kom/screen.h"
 #include "kom/database.h"
 

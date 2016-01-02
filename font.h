@@ -23,7 +23,7 @@
 #ifndef KOM_FONT_H
 #define KOM_FONT_H
 
-#include "kom/font.h"
+#include "common/scummsys.h"
 
 namespace Kom {
 
