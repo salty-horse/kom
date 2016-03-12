@@ -62,7 +62,7 @@ GameList KomMetaEngine::getSupportedGames() const {
 	GameList games;
 	const PlainGameDescriptor *g = kom_list;
 
-	while (g->gameid) {
+	while (g->gameId) {
 		games.push_back(*g);
 		g++;
 	}
@@ -71,8 +71,8 @@ GameList KomMetaEngine::getSupportedGames() const {
 
 GameDescriptor KomMetaEngine::findGame(const char *gameid) const {
 	const PlainGameDescriptor *g = kom_list;
-	while (g->gameid) {
-		if (0 == scumm_stricmp(gameid, g->gameid))
+	while (g->gameId) {
+		if (0 == scumm_stricmp(gameid, g->gameId))
 			break;
 		g++;
 	}
@@ -88,7 +88,7 @@ GameList KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				detectedGames.push_back(GameDescriptor(kom_list[0].gameid, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS, 0, kUnstableGame));
+				detectedGames.push_back(GameDescriptor(kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS, 0, kUnstableGame));
 				break;
 			}
 		}
