@@ -1394,6 +1394,16 @@ void Screen::drawBackground() {
 	}
 }
 
+void Screen::drawTalkFrame(const Graphics::Surface *frame, const byte *background) {
+	memcpy(_screenBuf, background, SCREEN_W * ROOM_H);
+	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
+		byte color = ((byte *)frame->getPixels())[i];
+		if (color != 0)
+			_screenBuf[i] = color;
+	}
+	_fullRedraw = true;
+}
+
 void Screen::loadMask(const Common::String &filename) {
 	_roomMaskFlic.loadFile(filename);
 	_roomMask = 0;

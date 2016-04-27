@@ -193,19 +193,7 @@ void VideoPlayer::drawTalkFrame(int frame) {
 		surface = _flic.decodeNextFrame();
 	}
 
-	Graphics::Surface *screen = _vm->_system->lockScreen();
-
-	// Draw frame
-	memcpy((byte *)screen->getPixels(), _background, SCREEN_W * ROOM_H);
-	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
-		byte color = ((byte *)surface->getPixels())[i];
-		if (color != 0)
-			((byte *)screen->getPixels())[i] = color;
-	}
-
-	_vm->_system->unlockScreen();
-
-	_vm->_system->updateScreen();
+	_vm->screen()->drawTalkFrame(surface, _background);
 }
 
 } // End of namespace Kom
