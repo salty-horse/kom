@@ -246,7 +246,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 	_talkerSample = NULL;
 	_textSurface = new byte[(PANEL_H + 8) * SCREEN_W];
 	memset(_textSurface, 0, (PANEL_H + 8) * SCREEN_W);
-	_exchangeColor = 1;
+	_exchangeColor = 2;
 	_smackerPlayed = 0;
 }
 
@@ -270,7 +270,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	_exchangeDisplay = 1;
 
 	// TODO: check 'show subtitles' setting
-	_exchangeColor = charId;
+	_exchangeColor = charId + 1;
 
 	if (_exchangeString != NULL) {
 		_exchangeDisplay = 0;
@@ -356,8 +356,9 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 		// palette dirty = true
 
 		while (1) {
-			if (charId == 0) warning("updateSentence player");
-			updateSentence(charId == 0 ? _playerFace: _otherFace);
+			Face *face = (charId == 0) ? _playerFace : _otherFace;
+
+			updateSentence(face);
 
 			if (_talkerSample != NULL && _vm->sound()->isPlaying(*_talkerSample) && !pitchSet) {
 				// TODO: set pitch
@@ -373,35 +374,25 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			if (_vm->shouldQuit())
 				break;
 
-			// TODO
-			// if escape, space, right click
-			//     loc_42AC3;
-			/*
-			Face *face;
-			if (charId == 0) {
-				face = _playerFace;
-			} else {
-				face = _otherFace;
-			}
+			// Skip dialogue
+			// TODO: break on space and esc as well
+			if (_vm->input()->getRightClick()) {
+				//     loc_42AC3;
 
-			// TODO check NULL face?
-			if (face->_sentenceStatus != 0) {
-				if (face->_sentenceStatus == 1) {
-					_vm->sound()->stopSample(*_talkerSample);
+				if (face->_sentenceStatus != 0) {
+					if (face->_sentenceStatus == 1) {
+						_vm->sound()->stopSample(*_talkerSample);
+					}
+					loopTo(face, 1);
+					face->_sentenceStatus = 4;
 				}
-				loopTo(face, 1);
-				face->_sentenceStatus = 4;
+
+				while (face->_sentenceStatus != 3) {
+					updateSentence(face);
+				}
 			}
 
-			while (face->_sentenceStatus != 3) {
-				updateSentence(face);
-			}
-			*/
-
-			if (charId == 0 && _playerFace->_sentenceStatus == 3)
-				break;
-
-			if (charId != 0 && _otherFace->_sentenceStatus == 3)
+			if (face->_sentenceStatus == 3)
 				break;
 		}
 
@@ -425,7 +416,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 
 		_smackerPlayed = 0;
 	} else {
-		// Balrog
+		// TODO: Balrog
 	}
 }
 
@@ -446,7 +437,7 @@ void Lips::convDialogue() {
 				if (width + _exchangeX >= SCREEN_W - 4) {
 					eol = true;
 				} else {
-					_vm->screen()->writeText(_textSurface, _exchangeToken, PANEL_H, _exchangeX, 100, /*isEmbossed=*/false);
+					_vm->screen()->writeText(_textSurface, _exchangeToken, PANEL_H, _exchangeX, _exchangeColor, /*isEmbossed=*/false);
 					_exchangeX += width;
 					_exchangeToken = strtok(NULL, " ");
 				}
@@ -1139,6 +1130,7 @@ int Lips::showOptions(OptionLine *options) {
 	_vm->screen()->clearScreen();
 
 	// TODO balrog
+	_vm->screen()->useColorSet(_playerColorSet, 0);
 	updateSentence(_playerFace);
 	// TODO more stuff
 
@@ -1188,8 +1180,7 @@ int Lips::getOption(OptionLine *options) {
 void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfaceHeight) {
 	int row = 12;
 
-	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H)];
-	memset(optionsSurface, 0, SCREEN_W * (surfaceHeight + PANEL_H));
+	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H)]();
 
 	// Original method of scrolling - requires slow mouse sampling
 
@@ -1227,7 +1218,7 @@ void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfa
 		row += 3;
 	}
 
-	_vm->screen()->drawPanel(SCREEN_W * _optionsScrollPos + optionsSurface);
+	_vm->screen()->drawPanel(optionsSurface + SCREEN_W * _optionsScrollPos);
 
 	delete[] optionsSurface;
 }
