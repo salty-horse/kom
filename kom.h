@@ -84,6 +84,7 @@ public:
 	int gameLoopTimer() { return _gameLoopTimer; }
 	void endGame() { _gameLoopState = GAMELOOP_DEATH; }
 	void quitGame() { _gameLoopState = GAMELOOP_QUIT; }
+	bool shouldQuit() { return _gameLoopState == GAMELOOP_QUIT; }
 
 	void ambientStart(int locId);
 	void ambientStop();

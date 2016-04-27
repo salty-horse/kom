@@ -378,6 +378,9 @@ void KomEngine::gameLoop() {
 			_sound->setSampleVolume(_game->player()->spriteSample, _distanceVolumeTable[distance]);
 		}
 
+		if (shouldQuit())
+			continue;
+
 		// TODO - handle other graphics modes
 		if (_game->player()->sleepTimer != 0)
 			_screen->processGraphics(0);

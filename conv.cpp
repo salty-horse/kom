@@ -257,6 +257,10 @@ bool Conv::doOptions(Conversation *conv, int32 optNum) {
 		while (sel == -1) {
 			sel = showOptions();
 
+			if (_vm->shouldQuit()) {
+				return false;
+			}
+
 			if (sel != -1)
 				break;
 
@@ -355,7 +359,7 @@ int Conv::showOptions() {
 		displayMenuOptions();
 		_vm->screen()->gfxUpdate();
 
-	} while (!_vm->input()->getLeftClick() || _selectedOption == 9999);
+	} while ((!_vm->input()->getLeftClick() || _selectedOption == 9999) && !_vm->shouldQuit());
 
 	freeOptions();
 
