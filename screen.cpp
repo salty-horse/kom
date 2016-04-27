@@ -1134,6 +1134,10 @@ void Screen::showMouseCursor(bool show) {
 	CursorMan.showMouse(show);
 }
 
+bool Screen::isCursorVisible() {
+	return CursorMan.isVisible();
+}
+
 void Screen::updateCursor() {
 	Actor *mouse = _vm->actorMan()->getMouse();
 	Settings *settings = _vm->game()->settings();

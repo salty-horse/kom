@@ -2037,9 +2037,16 @@ void Game::doActionPlayVideo(const char *name) {
 		_vm->ambientPause(true);
 
 	_vm->panel()->suppressLoading();
-	_vm->screen()->showMouseCursor(false);
+
+	// Videos can be played from a conversation, which already hides the cursor
+	bool cursorVisible = _vm->screen()->isCursorVisible();
+	if (cursorVisible)
+		_vm->screen()->showMouseCursor(false);
+
 	_videoPlayer->playVideo(filenameBuf);
-	_vm->screen()->showMouseCursor(true);
+
+	if (cursorVisible)
+		_vm->screen()->showMouseCursor(true);
 
 	if (pauseAmbient)
 		_vm->ambientPause(false);
