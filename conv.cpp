@@ -369,6 +369,10 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 
 			// loc_42A93
 			_vm->screen()->gfxUpdate();
+
+			if (_vm->shouldQuit())
+				break;
+
 			// TODO
 			// if escape, space, right click
 			//     loc_42AC3;
