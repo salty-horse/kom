@@ -69,6 +69,7 @@ enum ObjectType {
 
 struct Settings {
 	Settings() : gameCycles(6000), dayMode(1), mouseState(0),
+		mouseX(0), mouseY(0), mouseMode(0),
 		narratorPatience(0), lastItemUsed(-1), lastWeaponUsed(-1),
 		fightWordScope(0), fightEffectTimer(0), fightEffectScope(0) {
 			for (int i = 0; i < 4; i++) fightNPCCloud[i].charId = -1;
@@ -143,7 +144,7 @@ enum CommandType {
 /** Player settings */
 struct Player {
 	Player() : isNight(0), sleepTimer(0), colgateTimer(0), collideType(COLLIDE_NONE), collideNum(0),
-		greetingChar(-1), greetingLoc(0) {}
+		greetingChar(-1), greetingLoc(0), spriteCutNum(0) {}
 	CommandType command;
 	int16 commandState;
 	CollideType collideType;
