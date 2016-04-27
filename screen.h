@@ -153,9 +153,8 @@ private:
 	const Graphics::Surface *_roomBackground;
 	const Graphics::Surface *_roomMask;
 	Font *_font;
-	bool _backgroundRedraw;
 
-	bool _freshScreen;
+	bool _fullRedraw;
 
 	byte *_sepiaScreen;
 	byte _backupPalette[256 * 4];

@@ -74,7 +74,7 @@ ColorSet::~ColorSet() {
 
 Screen::Screen(KomEngine *vm, OSystem *system)
 	: _system(system), _vm(vm), _sepiaScreen(0),
-	  _freshScreen(false), _paletteChanged(false), _newBrightness(256),
+	  _fullRedraw(false), _paletteChanged(false), _newBrightness(256),
 	  _narratorScrollText(0), _narratorWord(0), _narratorTextSurface(0),
 	  _narratorScrollStatus(0) {
 
@@ -635,7 +635,7 @@ void Screen::copyRectListToScreen(const Common::List<Common::Rect> *list) {
 void Screen::drawDirtyRects() {
 
 	// Copy everything
-	if (_freshScreen || _backgroundRedraw) {
+	if (_fullRedraw) {
 		_system->copyRectToScreen(_screenBuf, SCREEN_W, 0, 0, SCREEN_W, SCREEN_H);
 
 	} else {
@@ -655,8 +655,7 @@ void Screen::drawDirtyRects() {
 		_dirtyRects = new List<Rect>();
 	}
 
-	_freshScreen = false;
-	_backgroundRedraw = false;
+	_fullRedraw = false;
 }
 
 void Screen::gfxUpdate() {
@@ -690,9 +689,8 @@ void Screen::clearScreen() {
 	_dirtyRects->clear();
 	_prevDirtyRects->clear();
 
-	_backgroundRedraw = true;
 	memset(_screenBuf, 0, SCREEN_W * SCREEN_H);
-	_freshScreen = true;
+	_fullRedraw = true;
 }
 
 static byte lineBuffer[SCREEN_W];
@@ -1086,7 +1084,7 @@ void Screen::createSepia(bool shop) {
 	_sepiaScreen = new byte[SCREEN_W * ROOM_H];
 	ColorSet *cs = shop ? _greenColorSet : _orangeColorSet;
 
-	_backgroundRedraw = true;
+	_fullRedraw = true;
 	drawDirtyRects();
 
 	Graphics::Surface *screen = _system->lockScreen();
@@ -1117,7 +1115,7 @@ void Screen::freeSepia() {
 	_sepiaScreen = 0;
 	_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 
-	_backgroundRedraw = true;
+	_fullRedraw = true;
 }
 
 void Screen::copySepia() {
@@ -1351,7 +1349,6 @@ void Screen::loadBackground(const Common::String &filename) {
 	_roomBackgroundFlic.close();
 	_roomBackgroundFlic.loadFile(filename);
 	_roomBackgroundFlic.start();
-	_backgroundRedraw = false;
 
 	// Redraw everything
 	_dirtyRects->clear();
