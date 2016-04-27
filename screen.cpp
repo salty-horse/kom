@@ -76,7 +76,7 @@ Screen::Screen(KomEngine *vm, OSystem *system)
 	: _system(system), _vm(vm), _sepiaScreen(0),
 	  _fullRedraw(false), _paletteChanged(false), _newBrightness(256),
 	  _narratorScrollText(0), _narratorWord(0), _narratorTextSurface(0),
-	  _narratorScrollStatus(0), _backgroundRedraw(false) {
+	  _narratorScrollStatus(0) {
 
 	_lastFrameTime = 0;
 
