@@ -184,12 +184,12 @@ void VideoPlayer::loadTalkVideo(const char *filename, byte *background) {
 void VideoPlayer::drawTalkFrame(int frame) {
 	const Graphics::Surface *surface = NULL;
 
-	if (_flic.getCurFrame() -1 >= frame) {
+	if (_flic.getCurFrame() + 1 >= frame) {
 		_flic.rewind();
 	}
 
 	// Seek to frame
-	while (_flic.getCurFrame() - 1 != frame) {
+	while (_flic.getCurFrame() + 1 != frame) {
 		surface = _flic.decodeNextFrame();
 	}
 
