@@ -51,6 +51,8 @@ Game::~Game() {
 static char filenameBuf[100];
 
 void Game::enterLocation(uint16 locId) {
+	_vm->panel()->setActionDesc("");
+	_vm->panel()->setHotspotDesc("");
 	_vm->panel()->showLoading(true);
 
 	// Don't draw fight bars
