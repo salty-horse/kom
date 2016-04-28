@@ -182,6 +182,8 @@ private:
 	byte *_textSurface;
 
 	int _optionsScrollPos;
+
+	byte _backupPalette[256 * 3];
 };
 
 class Talk : public Lips {
@@ -218,8 +220,6 @@ private:
 	const char *_codename;
 	byte *_convEntry;
 	Common::File *_convData;
-
-	byte _backupPalette[256 * 3];
 
 	byte *_convs;
 	char *_text;

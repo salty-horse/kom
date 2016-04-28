@@ -42,6 +42,9 @@
 
 using Common::File;
 
+static const byte ACTIVE_COLOR[] = {255, 255, 255};
+static const byte INACTIVE_COLOR[] = {162, 130, 130};
+
 namespace Kom {
 
 Face::Face(KomEngine *vm, const Common::String &filename, byte *zoomSurface) :
@@ -122,6 +125,9 @@ Lips::Lips(KomEngine *vm) : _vm(vm) {
 	_playerFace = NULL;
 	_otherFace = NULL;
 	_otherZoomSurface = NULL;
+
+	// Backup the palette
+	_vm->_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
 }
 
 Lips::~Lips() {
@@ -130,6 +136,9 @@ Lips::~Lips() {
 	delete[] _otherZoomSurface;
 	delete _playerFace;
 	delete _otherFace;
+
+	// Restore the palette
+	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 
 	// Clear screen. Yes, this shouldn't be in a destructor
 	_vm->screen()->clearScreen();
@@ -287,14 +296,19 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 
 	if (!_isBalrog) {
 		if (charId == 0) {
-			// TODO - around loc_4260A
+			// TODO - around loc_4264B
+
+			if (!_playerActive)
+				return;
+
 			loadSentence(_playerFace, sampleFilename);
 			if (_lastCharacter != 0) {
 				_vm->screen()->clearRoom();
 				_vm->screen()->gfxUpdate();
 			}
 			if (_fullPalette || emotion != 3) {
-				// TODO: restore palette
+				// Restore palette
+				_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 			}
 			if (emotion == 3) {
 				// use narrator color set
@@ -303,14 +317,13 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 				// use player color set
 				_vm->screen()->useColorSet(_playerColorSet, 0);
 			}
-			// TODO palette editing - loc_4274D
 
 			if (_playerEmotion != emotion) {
 				changeState(_playerFace, emotion);
 				_playerEmotion = emotion;
 			}
 			rewindPlaySentence(_playerFace);
-			// TODO - loc_427AD
+			// TODO - loc_427AD - set pan and pitch
 
 		} else {
 			// TODO - loc_427D8
@@ -318,42 +331,30 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			if (_lastCharacter == 0) {
 				_vm->screen()->clearRoom();
 				_vm->screen()->gfxUpdate();
-				// TODO: restore palette
+				// Restore palette
+				_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 			}
 			if ((_colorSetType == 1 && emotion == 2) ||
 			    (_colorSetType == 2 && emotion == 2) ||
 			    (_colorSetType == 3 && emotion == 2) ||
 			    (_colorSetType == 4 && emotion == 3)) {
-				// loc_42883
-				// use color set (multi)
+				_vm->screen()->useColorSet(_multiColorSet, 0);
 			} else {
-				// use color set (other)
 				_vm->screen()->useColorSet(_otherColorSet, 0);
 			}
 
-			if (_lastCharacter != 0) {
-				// loc_4293D
-			}
-
-			// loc_42978
 			if (_otherEmotion != emotion) {
 				changeState(_otherFace, emotion);
 				_otherEmotion = emotion;
 			}
 			rewindPlaySentence(_otherFace);
-			// TODO - loc_4299D
+			// TODO - loc_4299D - set pan and pitch
 		}
 
 		// loc_429C3
 		_lastCharacter = charId;
-		// TODO: change a few colors in the palette
-		// [eax+3] = 3Fh
-		// [eax+4] = 3Fh
-		// [eax+5] = 3Fh
-		// [eax+6] = 28h
-		// [eax+7] = 20h
-		// [eax+8] = 20h
-		// palette dirty = true
+		_vm->screen()->setPaletteColor(1, ACTIVE_COLOR);
+		_vm->screen()->setPaletteColor(2, INACTIVE_COLOR);
 
 		while (1) {
 			Face *face = (charId == 0) ? _playerFace : _otherFace;
@@ -377,8 +378,6 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			// Skip dialogue
 			// TODO: break on space and esc as well
 			if (_vm->input()->getRightClick()) {
-				//     loc_42AC3;
-
 				if (face->_sentenceStatus != 0) {
 					if (face->_sentenceStatus == 1) {
 						_vm->sound()->stopSample(*_talkerSample);
@@ -826,18 +825,12 @@ Conv::Conv(KomEngine *vm, uint16 charId)
 	_convData = _vm->database()->getConvData();
 	_convEntry = _vm->database()->getConvIndex(_codename);
 
-	// Backup the palette
-	_vm->_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
-
 	_vm->screen()->showMouseCursor(false);
 }
 
 Conv::~Conv() {
 	delete[] _convs;
 	delete[] _text;
-
-	// Restore the palette
-	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 
 	_vm->screen()->showMouseCursor(true);
 }
@@ -1052,13 +1045,7 @@ bool Conv::doOptions(Talk &talk, Conversation *conv, int32 optNum) {
 }
 
 int Lips::showOptions(OptionLine *options) {
-	static const byte active[] = {255, 255, 255};
-	static const byte inactive[] = {162, 130, 130};
-
 	int validOptions = 0;
-
-	_vm->screen()->setPaletteColor(1, active);
-	_vm->screen()->setPaletteColor(2, inactive);
 
 	// Add a bullet at the beginning
 	for (int i = 0; i < 3; i++) {
@@ -1178,7 +1165,8 @@ int Lips::getOption(OptionLine *options) {
 }
 
 void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfaceHeight) {
-	int row = 12;
+	_vm->screen()->setPaletteColor(1, ACTIVE_COLOR);
+	_vm->screen()->setPaletteColor(2, INACTIVE_COLOR);
 
 	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H)]();
 
@@ -1191,6 +1179,7 @@ void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfa
 	// New scrolling method
 	_optionsScrollPos = (surfaceHeight + 24 - PANEL_H) * _vm->input()->getMouseY() / 200;
 
+	int row = 12;
 	for (int i = 0; i < 3; i++) {
 
 		if (options[i].text == 0)
