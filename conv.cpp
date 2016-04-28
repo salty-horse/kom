@@ -557,7 +557,6 @@ void Lips::update(Face *face) {
 
 	switch (face->_status) {
 	case FACE_STATUS_PLAY_FORWARDS: {
-		warning("face status is 1");
 		Loop *loop = face->_currState->currLoop;
 		if (loop->currDepth != loop->loopToDepth) {
 			loop->currDepth++;
@@ -571,7 +570,6 @@ void Lips::update(Face *face) {
 		break;
 	}
 	case FACE_STATUS_PLAY_BACKWARDS: {
-		warning("face status is 2");
 		Loop *loop = face->_currState->currLoop;
 		frame = loop->currFrame;
 		if (loop->currDepth != 1) {
@@ -590,7 +588,6 @@ void Lips::update(Face *face) {
 		break;
 	}
 	case FACE_STATUS_CHANGE_STATE: // Move from one state to another
-		warning("face status is 4");
 		if (*face->_playLink->currFrame < 0) {
 			// Reached new state. Start playing sample and moving lips
 			face->_currState = face->_playLink->endState;
@@ -606,7 +603,6 @@ void Lips::update(Face *face) {
 		}
 		break;
 	default:
-		warning("face status is default");
 		if (face->_sentenceStatus == 4) {
 			face->_sentenceStatus = 3;
 		}
@@ -620,15 +616,13 @@ void Lips::update(Face *face) {
 		break;
 	}
 
-	if (frame != -1) {
-		face->_flic.drawTalkFrame(frame);
-	} else {
-		//TODO error("eep");
-	}
+	// TODO: Is this right?
+	if (frame < 1)
+		return;
+	face->_flic.drawTalkFrame(frame);
 }
 
 void Lips::loopTo(Face *face, int depth) {
-	warning("loop to %d", depth);
 	if (face == NULL) return;
 	if (face->_status & FACE_STATUS_CHANGE_STATE) return;
 	if (face->_currState->loopCount == 0) return;
