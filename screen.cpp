@@ -761,7 +761,7 @@ void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height,
 
 	// check if frame spills over the edge
 	if (visibleHeight + yStart >= SCREEN_H)
-		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H + 1) <= 0)
+		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H) <= 0)
 			return;
 
 	uint8 sourceLine = startLine;
@@ -877,7 +877,7 @@ void Screen::drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 hei
 
 	// check if frame spills over the edge
 	if (visibleHeight + yStart >= SCREEN_H)
-		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H + 1) <= 0)
+		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H) <= 0)
 			return;
 
 	uint8 sourceLine = startLine;
@@ -982,7 +982,7 @@ void Screen::drawActorFrame(const int8 *data, uint16 width, uint16 height, int16
 
 	// check if frame spills over the edge
 	if (visibleHeight + yStart >= SCREEN_H)
-		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H + 1) <= 0)
+		if ((visibleHeight -= visibleHeight + yStart - SCREEN_H) <= 0)
 			return;
 
 	uint8 sourceLine = startLine;
