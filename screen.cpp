@@ -1056,7 +1056,7 @@ void Screen::useColorSet(ColorSet *cs, uint start) {
 }
 
 void Screen::setPaletteColor(int index, const byte color[]) {
-	_system->getPaletteManager()->setPalette(color, index, index + 1);
+	_system->getPaletteManager()->setPalette(color, index, 1);
 
 	_paletteChanged = true;
 }
