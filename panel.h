@@ -36,7 +36,7 @@ public:
 	~Panel();
 
 	void update();
-	void showLoading(bool isLoading);
+	void showLoading(bool isLoading, bool clearScreen = false);
 	void suppressLoading() { _suppressLoading++; }
 	void allowLoading() { if (_suppressLoading > 0) _suppressLoading--; }
 	void setLocationDesc(const char *desc);

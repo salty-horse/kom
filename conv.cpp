@@ -767,7 +767,10 @@ void Talk::init(uint16 charId, int16 convNum) {
 
 	_vm->panel()->setActionDesc("");
 	_vm->panel()->setHotspotDesc("");
-	_vm->panel()->showLoading(true);
+
+	// Clear the screen when showing the loading icon to prevent
+	// palette corruption when a conversation was just displayed
+	_vm->panel()->showLoading(true, true);
 	Lips::init(playerCodename, otherChar->_name,
 		playerX / 2 - 25,
 		playerY / 2 - (playerHeight / playerChar->_start5),

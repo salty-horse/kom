@@ -1348,14 +1348,19 @@ void Screen::clearPanel() {
 	_dirtyRects->push_back(Rect(0, SCREEN_H - PANEL_H, SCREEN_W, SCREEN_H));
 }
 
-void Screen::updatePanelOnScreen() {
+void Screen::updatePanelOnScreen(bool clearScreen) {
 	// Don't update the panel if text is scrolling
 	// TODO: actually check if subtitles are enabled
 	if (_vm->game()->isNarratorPlaying())
 		return;
 
-	_system->copyRectToScreen(_screenBuf + SCREEN_W * ROOM_H,
-		SCREEN_W, 0, ROOM_H, SCREEN_W, PANEL_H);
+	if (clearScreen) {
+		memset(_screenBuf, 0, SCREEN_W * (SCREEN_H - PANEL_H));
+		_system->copyRectToScreen(_screenBuf, SCREEN_W, 0, 0, SCREEN_W, SCREEN_H);
+	} else {
+		_system->copyRectToScreen(_screenBuf + SCREEN_W * ROOM_H,
+			SCREEN_W, 0, ROOM_H, SCREEN_W, PANEL_H);
+	}
 	_system->updateScreen();
 }
 
