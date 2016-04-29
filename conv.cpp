@@ -154,14 +154,12 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 
 	_playerEmotion = 9999;
 	_otherEmotion = 9999;
-	// TODO dword_mouseY_9BA9E = 0;
 	_lastCharacter = 0;
 	_narratorConv = false;
 	_narrColorSet = NULL;
 	_multiColorSet = NULL;
 	_colorSetType = 0;
 	_multiFullPalette = false;
-	// TODO hiword(isfading) = gfxstorepalette();
 
 	if (otherCodename == "s28evs") {
 		_multiColorSet = new ColorSet("kom/conv/gribnick.cl");
@@ -194,18 +192,6 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 		_playerFace = new Face(_vm, flcFilename, zoomSurface);
 		_playerColorSet = new ColorSet(clFilename.c_str());
 		_playerFace->assignLinks(lnkFilename);
-
-	//	p3 = 0;
-	//	for ( i = 0; (signed int)(unsigned __int16)i < 3; ++i )
-	//	{
-	//		for ( j = 0; (signed int)(unsigned __int16)j < 24; ++j )
-	//		{
-	//			p3 = 100 * (unsigned __int16)i;
-	//			(&menuoptions[(unsigned __int16)j])[p3] = (char *)memmalloc(96);
-	//		}
-	//		optiontop[50 * (unsigned __int16)i] = 0;
-	//		optionbottom[50 * (unsigned __int16)i] = 0;
-	//	}
 	}
 
 	if (otherCodename == "s99nar") {
@@ -448,7 +434,7 @@ void Lips::convDialogue() {
 			}
 		} else {
 			_scrollTimer += _exchangeScrollSpeed;
-			// TODO - control scroll speed with mouse
+			// TODO: control scroll speed with mouse
 			if (_scrollTimer >= 256) {
 				_scrollTimer -= 256;
 				_scrollPos = (_scrollPos + 1) % 8;
@@ -483,7 +469,6 @@ void Lips::loadSentence(Face *face, const Common::String &filename) {
 	face->_sentenceStatus = 3;
 }
 
-// TODO: Animates lips?
 void Lips::updateSentence(Face *face) {
 	if (face == NULL) return;
 
