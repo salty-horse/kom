@@ -44,12 +44,13 @@ namespace Kom {
 
 // Custom implementation of DVI_ADPCMStream, due to flipped nibbles compared to DVI_ADPCM
 // It also decodes the sample into a raw buffer so it could be queried later.
-class KOMADPCMStream : public Audio::DVI_ADPCMStream {
+class KOMADPCMStream : public Audio::Ima_ADPCMStream {
 public:
 
 	KOMADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, int rate, int channels, uint32 blockAlign = 0)
-		: Audio::DVI_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign) {
+		: Audio::Ima_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign) {
 
+		_decodedSampleCount = 0;
 		int rawBufferSize = size * 2;
 		_rawBuffer = new int16[rawBufferSize];
 
