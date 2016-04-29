@@ -196,4 +196,12 @@ void VideoPlayer::drawTalkFrame(int frame) {
 	_vm->screen()->drawTalkFrame(surface, _background);
 }
 
+void VideoPlayer::drawTalkFrameCycle() {
+	if (_flic.endOfVideo())
+		_flic.rewind();
+
+	const Graphics::Surface *surface = _flic.decodeNextFrame();
+	_vm->screen()->drawTalkFrame(surface, _background);
+}
+
 } // End of namespace Kom

@@ -121,7 +121,7 @@ void Face::assignLinks(const Common::String &filename) {
 	f.close();
 }
 
-Lips::Lips(KomEngine *vm) : _vm(vm) {
+Lips::Lips(KomEngine *vm) : _vm(vm), _balrogFlic(vm) {
 	_playerFace = NULL;
 	_otherFace = NULL;
 	_otherZoomSurface = NULL;
@@ -213,12 +213,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 
 	if (otherCodename == "m13rog") {
 		_isBalrog = true;
-		// TODO: balrog
-		//	convflicwindow = flicloadwindow(tmpfilename);
-		//	if ( !convflicwindow )
-		//		sub_49c40((int)"lips > lips_initconv", (int)tmpfilename);
-		//	v35 = 0;
-		//	flicplaywindow(convflicwindow, 0, 0, nonplayerlipfrontbuf, blurzoomsurface2);
+		_balrogFlic.loadTalkVideo(fname.c_str(), _otherZoomSurface);
 	} else {
 		_isBalrog = false;
 		_otherFace = new Face(_vm, fname, _narratorConv ? NULL : _otherZoomSurface);
@@ -280,69 +275,80 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	_exchangeScrollSpeed = 48;
 	_scrollTimer = 0;
 
-	if (!_isBalrog) {
-		if (charId == 0) {
-			// TODO - around loc_4264B
+	// if (!_isBalrog) {
+	if (charId == 0) {
+		if (!_playerActive)
+			return;
 
-			if (!_playerActive)
-				return;
-
-			loadSentence(_playerFace, sampleFilename);
-			if (_lastCharacter != 0) {
-				_vm->screen()->clearRoom();
-				_vm->screen()->gfxUpdate();
-			}
-			if (_fullPalette || emotion != 3) {
-				// Restore palette
-				_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
-			}
-			if (emotion == 3) {
-				// use narrator color set
-				_vm->screen()->useColorSet(_narrColorSet, 0);
-			} else {
-				// use player color set
-				_vm->screen()->useColorSet(_playerColorSet, 0);
-			}
-
-			if (_playerEmotion != emotion) {
-				changeState(_playerFace, emotion);
-				_playerEmotion = emotion;
-			}
-			rewindPlaySentence(_playerFace);
-			// TODO - loc_427AD - set pan and pitch
-
+		loadSentence(_playerFace, sampleFilename);
+		if (_lastCharacter != 0) {
+			_vm->screen()->clearRoom();
+			_vm->screen()->gfxUpdate();
+		}
+		if (_fullPalette || emotion != 3) {
+			// Restore palette
+			_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+		}
+		if (emotion == 3) {
+			// use narrator color set
+			_vm->screen()->useColorSet(_narrColorSet, 0);
 		} else {
-			// TODO - loc_427D8
-			loadSentence(_otherFace, sampleFilename);
-			if (_lastCharacter == 0) {
-				_vm->screen()->clearRoom();
-				_vm->screen()->gfxUpdate();
-				// Restore palette
-				_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
-			}
-			if ((_colorSetType == 1 && emotion == 2) ||
-			    (_colorSetType == 2 && emotion == 2) ||
-			    (_colorSetType == 3 && emotion == 2) ||
-			    (_colorSetType == 4 && emotion == 3)) {
-				_vm->screen()->useColorSet(_multiColorSet, 0);
-			} else {
-				_vm->screen()->useColorSet(_otherColorSet, 0);
-			}
-
-			if (_otherEmotion != emotion) {
-				changeState(_otherFace, emotion);
-				_otherEmotion = emotion;
-			}
-			rewindPlaySentence(_otherFace);
-			// TODO - loc_4299D - set pan and pitch
+			// use player color set
+			_vm->screen()->useColorSet(_playerColorSet, 0);
 		}
 
-		// loc_429C3
-		_lastCharacter = charId;
-		_vm->screen()->setPaletteColor(1, ACTIVE_COLOR);
-		_vm->screen()->setPaletteColor(2, INACTIVE_COLOR);
+		if (_playerEmotion != emotion) {
+			changeState(_playerFace, emotion);
+			_playerEmotion = emotion;
+		}
+		rewindPlaySentence(_playerFace);
+		// TODO: set pan and pitch (different when talking to balrog?)
 
-		while (1) {
+	} else {
+		if (_isBalrog) {
+			_balrogSample.loadFile(sampleFilename);
+		} else {
+			loadSentence(_otherFace, sampleFilename);
+		}
+		if (_lastCharacter == 0) {
+			_vm->screen()->clearRoom();
+			_vm->screen()->gfxUpdate();
+			// Restore palette
+			_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+		}
+
+		if (!_isBalrog &&
+			((_colorSetType == 1 && emotion == 2) ||
+			 (_colorSetType == 2 && emotion == 2) ||
+			 (_colorSetType == 3 && emotion == 2) ||
+			 (_colorSetType == 4 && emotion == 3))) {
+			_vm->screen()->useColorSet(_multiColorSet, 0);
+		} else {
+			_vm->screen()->useColorSet(_otherColorSet, 0);
+		}
+
+		// TODO: Check if balrog uses this
+		if (_otherEmotion != emotion) {
+			changeState(_otherFace, emotion);
+			_otherEmotion = emotion;
+		}
+
+		if (_isBalrog) {
+			_vm->sound()->playSampleSpeech(_balrogSample);
+		} else {
+			rewindPlaySentence(_otherFace);
+		}
+		// TODO: set pan and pitch
+	}
+
+	_lastCharacter = charId;
+	_vm->screen()->setPaletteColor(1, ACTIVE_COLOR);
+	_vm->screen()->setPaletteColor(2, INACTIVE_COLOR);
+
+	while (1) {
+		if (_isBalrog && charId != 0) {
+			_balrogFlic.drawTalkFrameCycle();
+		} else {
 			Face *face = (charId == 0) ? _playerFace : _otherFace;
 
 			updateSentence(face);
@@ -351,19 +357,23 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 				// TODO: set pitch
 				pitchSet = true;
 			}
+		}
 
-			if (_exchangeString != NULL)
-				convDialogue();
+		if (_exchangeString != NULL)
+			convDialogue();
 
-			// loc_42A93
-			_vm->screen()->gfxUpdate();
+		_vm->screen()->gfxUpdate();
 
-			if (_vm->shouldQuit())
-				break;
+		if (_vm->shouldQuit())
+			break;
 
-			// Skip dialogue
-			// TODO: break on space and esc as well
-			if (_vm->input()->getRightClick()) {
+		// Skip dialogue
+		// TODO: break on space and esc as well
+		if (_vm->input()->getRightClick()) {
+			if (_isBalrog && charId != 0) {
+				_vm->sound()->stopSample(_balrogSample);
+			} else {
+				Face *face = (charId == 0) ? _playerFace : _otherFace;
 				if (face->_sentenceStatus != 0) {
 					if (face->_sentenceStatus == 1) {
 						_vm->sound()->stopSample(*_talkerSample);
@@ -376,33 +386,37 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 					updateSentence(face);
 				}
 			}
+		}
 
+		if (_isBalrog && charId != 0) {
+			if (!_vm->sound()->isPlaying(_balrogSample))
+				break;
+		} else {
+			Face *face = (charId == 0) ? _playerFace : _otherFace;
 			if (face->_sentenceStatus == 3)
 				break;
 		}
-
-		// TODO: check 'show subtitles' setting
-
-		if (_exchangeString != NULL) {
-			_exchangeDisplay = 0;
-
-			while (_exchangeState != 2)
-				convDialogue();
-
-			// Scroll up
-			memmove(_textSurface, _textSurface + 2 * SCREEN_W, 38 * SCREEN_W);
-			memset(_textSurface + 38 * SCREEN_W, 0, 2 * SCREEN_W);
-
-			_exchangeDisplay = 1;
-		}
-
-		if (_exchangeString != NULL)
-			delete[] _exchangeString;
-
-		_smackerPlayed = 0;
-	} else {
-		// TODO: Balrog
 	}
+
+	// TODO: check 'show subtitles' setting
+
+	if (_exchangeString != NULL) {
+		_exchangeDisplay = 0;
+
+		while (_exchangeState != 2)
+			convDialogue();
+
+		// Scroll up
+		memmove(_textSurface, _textSurface + 2 * SCREEN_W, 38 * SCREEN_W);
+		memset(_textSurface + 38 * SCREEN_W, 0, 2 * SCREEN_W);
+
+		_exchangeDisplay = 1;
+	}
+
+	if (_exchangeString != NULL)
+		delete[] _exchangeString;
+
+	_smackerPlayed = 0;
 }
 
 void Lips::convDialogue() {

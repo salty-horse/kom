@@ -173,8 +173,9 @@ private:
 	int _exchangeDisplay;
 	int _smackerPlayed; // TODO: what to do with this? test smacker during conv?
 	bool _isBalrog;
+	VideoPlayer _balrogFlic;
 	SoundSample *_talkerSample;
-	SoundSample *_otherSample;
+	SoundSample _balrogSample;
 	int16 _playerEmotion;
 	int16 _otherEmotion;
 
