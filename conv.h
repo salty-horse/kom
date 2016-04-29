@@ -145,7 +145,7 @@ private:
 	void changeState(Face *face, int emotion);
 	void rewindPlaySentence(Face *face);
 
-	int getOption(OptionLine *options);
+	int getOption(OptionLine *options, int surfaceHeight);
 	void freeOptions(OptionLine *options);
 
 	byte *_otherZoomSurface;
@@ -180,8 +180,6 @@ private:
 
 	uint16 _lastCharacter;
 	byte *_textSurface;
-
-	int _optionsScrollPos;
 
 	byte _backupPalette[256 * 3];
 };

@@ -1118,12 +1118,11 @@ int Lips::showOptions(OptionLine *options) {
 	updateSentence(_playerFace);
 	// TODO more stuff
 
-	_optionsScrollPos = 0;
 	_vm->input()->setMousePos(_vm->input()->getMouseX(), 0);
 
 	int selectedOption = 9999;
 	do {
-		selectedOption = getOption(options);
+		selectedOption = getOption(options, surfaceHeight);
 		displayMenuOptions(options, selectedOption, surfaceHeight);
 		_vm->screen()->gfxUpdate();
 
@@ -1145,16 +1144,18 @@ void Lips::freeOptions(OptionLine *options) {
 	}
 }
 
-int Lips::getOption(OptionLine *options) {
+int Lips::getOption(OptionLine *options, int surfaceHeight) {
 
-	if (_optionsScrollPos <= options[0].pixelBottom)
+	int scrollPos = surfaceHeight * _vm->input()->getMouseY() / 200;
+
+	if (scrollPos < options[0].pixelBottom)
 		return 0;
 
 	for (int i = 1; i < 3; i++) {
 		if (options[i].text == 0)
 			continue;
 
-		if (options[i].pixelTop < _optionsScrollPos && _optionsScrollPos <= options[i].pixelBottom)
+		if (options[i].pixelTop <= scrollPos && scrollPos < options[i].pixelBottom)
 			return i;
 	}
 
@@ -1165,16 +1166,16 @@ void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfa
 	_vm->screen()->setPaletteColor(1, ACTIVE_COLOR);
 	_vm->screen()->setPaletteColor(2, INACTIVE_COLOR);
 
-	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H)]();
+	byte *optionsSurface = new byte[SCREEN_W * (surfaceHeight + PANEL_H + 24)]();
 
-	// Original method of scrolling - requires slow mouse sampling
+	// Original scrolling method - requires slow mouse sampling
 
-	//_optionsScrollPos += _vm->input()->getMouseY() - PANEL_H;
-	//_optionsScrollPos = CLIP(_optionsScrollPos, 0, surfaceHeight - PANEL_H);
+	//scrollPos += _vm->input()->getMouseY() - PANEL_H;
+	//scrollPos = CLIP(scrollPos, 0, surfaceHeight - PANEL_H);
 	//_vm->input()->setMousePos(_vm->input()->getMouseX(), PANEL_H);
 
 	// New scrolling method
-	_optionsScrollPos = (surfaceHeight + 24 - PANEL_H) * _vm->input()->getMouseY() / 200;
+	int scrollPos = (surfaceHeight + 24 - PANEL_H) * _vm->input()->getMouseY() / 200;
 
 	int row = 12;
 	for (int i = 0; i < 3; i++) {
@@ -1204,7 +1205,7 @@ void Lips::displayMenuOptions(OptionLine *options, int selectedOption, int surfa
 		row += 3;
 	}
 
-	_vm->screen()->drawPanel(optionsSurface + SCREEN_W * _optionsScrollPos);
+	_vm->screen()->drawPanel(optionsSurface + SCREEN_W * scrollPos);
 
 	delete[] optionsSurface;
 }
