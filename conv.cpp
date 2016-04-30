@@ -709,9 +709,9 @@ void Talk::init(uint16 charId, int16 convNum) {
 	_vm->game()->stopNarrator();
 	_vm->game()->stopGreeting();
 
-	sprintf(playerCodename, "%s%d",
+	sprintf(playerCodename, "%s%c",
 		playerChar->_name,
-		playerChar->_xtend);
+		playerChar->_xtend + (playerChar->_xtend < 10 ? '0' : '7'));
 
 	// TODO: Handle height based on spell effect
 	playerHeight = 0x3C00;
