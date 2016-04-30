@@ -20,7 +20,9 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
+#include <string.h>
 #include "common/file.h"
 #include "common/array.h"
 #include "common/memstream.h"
@@ -28,12 +30,12 @@
 
 #include "kom/kom.h"
 #include "kom/actor.h"
+#include "kom/character.h"
 #include "kom/screen.h"
 #include "kom/database.h"
 
 using Common::File;
 using Common::MemoryReadStream;
-using Common::String;
 
 namespace Kom {
 

@@ -20,13 +20,15 @@
  *
  */
 
-#include <stdio.h>
-
 #include "common/system.h"
 #include "common/events.h"
 #include "common/textconsole.h"
+#include "common/keyboard.h"
+#include "common/rect.h"
 
 #include "kom/kom.h"
+#include "kom/character.h"
+#include "kom/database.h"
 #include "kom/screen.h"
 #include "kom/game.h"
 #include "kom/input.h"

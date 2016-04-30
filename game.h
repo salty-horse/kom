@@ -26,13 +26,16 @@
 #include "common/scummsys.h"
 #include "common/array.h"
 
-#include "kom/kom.h"
-#include "kom/database.h"
 #include "kom/sound.h"
-#include "kom/video_player.h"
 #include "kom/character.h"
 
+class OSystem;
+
 namespace Kom {
+
+class KomEngine;
+class VideoPlayer;
+struct Command;
 
 struct RoomObject {
 	int16 objectId;

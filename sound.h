@@ -30,6 +30,10 @@
 #include "audio/mixer.h"
 #include "audio/audiostream.h"
 
+namespace Common {
+class File;
+}
+
 namespace Kom {
 
 class KomEngine;

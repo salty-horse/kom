@@ -23,14 +23,14 @@
 #ifndef KOM_CHARACTER_H
 #define KOM_CHARACTER_H
 
+#include "common/scummsys.h"
 #include "common/list.h"
-#include "engines/engine.h"
 
 #include "kom/actor.h"
 
 namespace Kom {
 
-class Database;
+class KomEngine;
 
 struct Character {
 public:

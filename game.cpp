@@ -20,21 +20,32 @@
  *
  */
 
+#include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common/str.h"
 #include "common/textconsole.h"
 #include "common/util.h"
+#include "common/debug.h"
+#include "common/file.h"
+#include "common/list.h"
+#include "common/random.h"
+#include "video/flic_decoder.h"
 
 #include "kom/kom.h"
+#include "kom/actor.h"
+#include "kom/character.h"
 #include "kom/game.h"
 #include "kom/input.h"
 #include "kom/panel.h"
 #include "kom/screen.h"
+#include "kom/sound.h"
 #include "kom/database.h"
 #include "kom/video_player.h"
 #include "kom/conv.h"
+
 
 namespace Kom {
 

@@ -20,12 +20,15 @@
  *
  */
 
+#include <stdlib.h>
+#include "common/list.h"
 #include "gui/debugger.h"
 
 #include "kom/kom.h"
 #include "kom/debugger.h"
 #include "kom/database.h"
 #include "kom/game.h"
+#include "kom/character.h"
 
 namespace Kom {
 

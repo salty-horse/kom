@@ -28,6 +28,7 @@
 #include "common/file.h"
 #include "common/endian.h"
 #include "common/list.h"
+#include "common/random.h"
 #include "common/rect.h"
 #include "common/str.h"
 #include "common/util.h"

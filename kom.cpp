@@ -25,8 +25,8 @@
 
 #include "engines/engine.h"
 #include "common/archive.h"
+#include "common/random.h"
 #include "common/util.h"
-#include "common/file.h"
 #include "common/error.h"
 #include "common/fs.h"
 #include "common/config-manager.h"
@@ -37,6 +37,7 @@
 #include "kom/actor.h"
 #include "kom/character.h"
 #include "kom/database.h"
+#include "kom/debugger.h"
 #include "kom/input.h"
 #include "kom/panel.h"
 #include "kom/screen.h"
@@ -45,7 +46,6 @@
 
 class OSystem;
 
-using Common::File;
 using Common::String;
 
 namespace Kom {

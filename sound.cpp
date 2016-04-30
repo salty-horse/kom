@@ -20,6 +20,10 @@
  *
  */
 
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "common/file.h"
 #include "common/str.h"
 #include "common/memstream.h"

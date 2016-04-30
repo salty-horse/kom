@@ -24,6 +24,7 @@
 #define KOM_ACTOR_H
 
 #include "common/array.h"
+#include "common/scummsys.h"
 
 namespace Kom {
 

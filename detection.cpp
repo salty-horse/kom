@@ -26,6 +26,11 @@
 #include "common/fs.h"
 #include "common/system.h"
 #include "common/textconsole.h"
+#include "common/array.h"
+#include "common/error.h"
+#include "common/language.h"
+#include "common/platform.h"
+#include "common/str.h"
 
 #include "kom/kom.h"
 

@@ -23,13 +23,12 @@
 #ifndef KOM_PANEL_H
 #define KOM_PANEL_H
 
-#include "common/system.h"
-#include "common/fs.h"
+#include "common/scummsys.h"
 #include "common/list.h"
 
-#include "kom/kom.h"
-
 namespace Kom {
+
+class KomEngine;
 
 class Panel {
 public:

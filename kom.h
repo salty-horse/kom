@@ -26,17 +26,15 @@
 #include "engines/engine.h"
 #include "common/error.h"
 #include "common/scummsys.h"
-#include "common/random.h"
 
 #include "kom/sound.h"
 #include "kom/debugger.h"
 
 class OSystem;
 
-namespace GUI {
-class Debugger;
+namespace Common {
+class RandomSource;
 }
-
 
 /**
  * This is the namespace of the Kom engine.
@@ -50,7 +48,6 @@ namespace Kom {
 
 class ActorManager;
 class Database;
-class Font;
 class Game;
 class Input;
 class Panel;

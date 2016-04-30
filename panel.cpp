@@ -20,12 +20,15 @@
  *
  */
 
+#include <string.h>
 #include "common/file.h"
 
 #include "kom/kom.h"
+#include "kom/actor.h"
 #include "kom/panel.h"
 #include "kom/game.h"
 #include "kom/screen.h"
+#include "kom/sound.h"
 
 using Common::File;
 
