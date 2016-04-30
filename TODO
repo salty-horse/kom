@@ -41,19 +41,6 @@ BUGS
 		$5 = -1
 * zoom buffer coords are wrong in conversations
 
-* Crash when quitting while conversation audio is playing
-	#0  0x0000000000000001 in ?? ()
-	#1  0x00000000006a45ea in Audio::Channel::isFinished (this=0x2171d60) at audio/mixer.cpp:64
-	#2  0x00000000006a2f10 in Audio::MixerImpl::mixCallback (this=0x1afd1c0, samples=0x1af1b50 "\200}\257\001", len=2048) at audio/mixer.cpp:289
-	#3  0x00000000005aea3e in SdlMixerManager::callbackHandler (this=0x1ad87b0, samples=0x1af1b50 "\200}\257\001", len=8192) at backends/mixer/sdl/sdl-mixer.cpp:164
-	#4  0x00000000005ae9b1 in SdlMixerManager::sdlCallback (this_=0x1ad87b0, samples=0x1af1b50 "\200}\257\001", len=8192) at backends/mixer/sdl/sdl-mixer.cpp:171
-	#5  0x00007fd943a0f9e9 in ?? () from /usr/lib/x86_64-linux-gnu/libSDL-1.2.so.0
-	#6  0x00007fd943a190b8 in ?? () from /usr/lib/x86_64-linux-gnu/libSDL-1.2.so.0
-	#7  0x00007fd943a58f59 in ?? () from /usr/lib/x86_64-linux-gnu/libSDL-1.2.so.0
-	#8  0x00007fd93ff8a6fa in start_thread (arg=0x7fd92e471700) at pthread_create.c:333
-	#9  0x00007fd940f0fb5d in clone () at ../sysdeps/unix/sysv/linux/x86_64/clone.S:109
-
-
 MISSING FEATURES
 ================
 * Pause support, GMM - <http://wiki.scummvm.org/index.php/Advanced_Engine_Features#Improved_pause_support>

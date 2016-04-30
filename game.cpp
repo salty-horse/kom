@@ -398,6 +398,9 @@ bool Game::doStat(const Command *cmd) {
 	for (Common::List<OpCode>::const_iterator j = cmd->opcodes.begin();
 			j != cmd->opcodes.end() && keepProcessing; ++j) {
 
+		if (_vm->shouldQuit())
+			break;
+
 		switch (j->opcode) {
 		case 327:
 			db->setVar(j->arg2, j->arg3);

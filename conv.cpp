@@ -125,6 +125,7 @@ Lips::Lips(KomEngine *vm) : _vm(vm), _balrogFlic(vm) {
 	_playerFace = NULL;
 	_otherFace = NULL;
 	_otherZoomSurface = NULL;
+	_exchangeString = NULL;
 
 	// Backup the palette
 	_vm->_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
@@ -136,6 +137,7 @@ Lips::~Lips() {
 	delete[] _otherZoomSurface;
 	delete _playerFace;
 	delete _otherFace;
+	delete[] _exchangeString;
 
 	// Restore the palette
 	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
@@ -398,8 +400,10 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 		}
 	}
 
-	// TODO: check 'show subtitles' setting
+	if (_vm->shouldQuit())
+		return;
 
+	// TODO: check 'show subtitles' setting
 	if (_exchangeString != NULL) {
 		_exchangeDisplay = 0;
 
@@ -413,8 +417,10 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 		_exchangeDisplay = 1;
 	}
 
-	if (_exchangeString != NULL)
+	if (_exchangeString != NULL) {
 		delete[] _exchangeString;
+		_exchangeString = NULL;
+	}
 
 	_smackerPlayed = 0;
 }
@@ -1022,9 +1028,8 @@ bool Conv::doOptions(Talk &talk, Conversation *conv, int32 optNum) {
 		while (sel == -1) {
 			sel = talk.showOptions(_options);
 
-			if (_vm->shouldQuit()) {
+			if (_vm->shouldQuit())
 				return false;
-			}
 
 			if (sel != -1)
 				break;
@@ -1215,6 +1220,9 @@ int Conv::doStat(Talk &talk, int selection) {
 
 	for (Common::List<Statement>::const_iterator i = _options[selection].statements->begin();
 			i != _options[selection].statements->end(); i++) {
+
+		if (_vm->shouldQuit())
+			break;
 
 		switch (i->command) {
 
