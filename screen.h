@@ -77,6 +77,7 @@ public:
 	void drawDirtyRects();
 	void gfxUpdate();
 	void clearScreen();
+	void clearRoom();
 	void drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth, bool invisible = false);
 	void drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
@@ -90,12 +91,14 @@ public:
 	bool isCursorVisible();
 
 	void drawPanel(const byte *panelData);
-	void updatePanelOnScreen();
+	void clearPanel();
+	void updatePanelOnScreen(bool clearScreen);
 
 	void loadBackground(const Common::String &filename);
 	void updateBackground();
 	void drawBackground();
 	void pauseBackground(bool pause) { _roomBackgroundFlic.pauseVideo(pause); }
+	void drawTalkFrame(const Graphics::Surface *frame, const byte *background);
 	void loadMask(const Common::String &filename);
 
 	void drawInventory(Inventory *inv);

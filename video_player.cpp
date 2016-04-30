@@ -22,14 +22,17 @@
 
 #include "common/events.h"
 #include "common/system.h"
+#include "common/keyboard.h"
 #include "common/textconsole.h"
 
 #include "graphics/surface.h"
 #include "graphics/palette.h"
-#include "video/flic_decoder.h"
+#include "video/video_decoder.h"
 #include "video/smk_decoder.h"
 
+#include "kom/kom.h"
 #include "kom/screen.h"
+#include "kom/sound.h"
 #include "kom/video_player.h"
 
 namespace Kom {
@@ -169,6 +172,36 @@ void VideoPlayer::processFrame() {
 
 	// Wait before showing the next frame
 	_vm->_system->delayMillis(_player->getTimeToNextFrame());
+}
+
+void VideoPlayer::loadTalkVideo(const char *filename, byte *background) {
+	if (!_flic.loadFile(filename))
+		error("Could not load video file: %s\n", filename);
+	_flic.start();
+	_background = background;
+}
+
+void VideoPlayer::drawTalkFrame(int frame) {
+	const Graphics::Surface *surface = NULL;
+
+	if (_flic.getCurFrame() + 1 >= frame) {
+		_flic.rewind();
+	}
+
+	// Seek to frame
+	while (_flic.getCurFrame() + 1 != frame) {
+		surface = _flic.decodeNextFrame();
+	}
+
+	_vm->screen()->drawTalkFrame(surface, _background);
+}
+
+void VideoPlayer::drawTalkFrameCycle() {
+	if (_flic.endOfVideo())
+		_flic.rewind();
+
+	const Graphics::Surface *surface = _flic.decodeNextFrame();
+	_vm->screen()->drawTalkFrame(surface, _background);
 }
 
 } // End of namespace Kom

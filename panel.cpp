@@ -202,7 +202,7 @@ void Panel::update() {
 	}
 }
 
-void Panel::showLoading(bool isLoading) {
+void Panel::showLoading(bool isLoading, bool clearScreen) {
 
 	if (_suppressLoading > 0)
 		return;
@@ -210,6 +210,7 @@ void Panel::showLoading(bool isLoading) {
 	if (_isLoading != isLoading) {
 		_isLoading = isLoading;
 
+		update();
 		_vm->screen()->drawPanel(_panelBuf);
 
 		Actor *mouse = _vm->actorMan()->getMouse();
@@ -224,7 +225,7 @@ void Panel::showLoading(bool isLoading) {
 		}
 
 		// The 'loading' icon should be copied directly to screen
-		_vm->screen()->updatePanelOnScreen();
+		_vm->screen()->updatePanelOnScreen(clearScreen);
 	}
 }
 

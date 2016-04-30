@@ -51,6 +51,8 @@ Game::~Game() {
 static char filenameBuf[100];
 
 void Game::enterLocation(uint16 locId) {
+	_vm->panel()->setActionDesc("");
+	_vm->panel()->setHotspotDesc("");
 	_vm->panel()->showLoading(true);
 
 	// Don't draw fight bars
@@ -395,6 +397,9 @@ bool Game::doStat(const Command *cmd) {
 
 	for (Common::List<OpCode>::const_iterator j = cmd->opcodes.begin();
 			j != cmd->opcodes.end() && keepProcessing; ++j) {
+
+		if (_vm->shouldQuit())
+			break;
 
 		switch (j->opcode) {
 		case 327:
