@@ -523,11 +523,11 @@ int Lips::getAverage(Face *face) {
 	// Fetch the largest byte in the future sample bytes
 	uint16 msc = _vm->sound()->getSampleElapsedTime(*_talkerSample);
 	int currentPos = (int)(msc * 11025 / 1000);
-	int sampleEndPos = _talkerSample->getRawBufferSize() - 1;
+	int sampleEndPos = _talkerSample->getSampleCount() - 1;
 	if (currentPos > sampleEndPos)
 		return 0;
 
-	const int16 *sampleBuffer = _talkerSample->getRawBuffer();
+	const int16 *sampleBuffer = _talkerSample->getSamples();
 
 	int sampleCount = 250;
 	int maxValue = 0;

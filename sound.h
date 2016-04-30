@@ -47,15 +47,15 @@ public:
 	bool loadFile(Common::String filename);
 	void unload();
 	bool isLoaded() { return _stream != 0; }
-	int16 const *getRawBuffer();
-	uint getRawBufferSize();
+	int16 const *getSamples();
+	uint getSampleCount();
 
 private:
 	Audio::SoundHandle _handle;
 	Audio::RewindableAudioStream *_stream;
 	bool _isCompressed;
 	int16 *_sampleData;
-	uint _sampleDataSize;
+	int _sampleCount;
 
 	void loadCompressed(Common::File &f, int offset, int size);
 };

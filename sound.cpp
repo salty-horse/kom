@@ -52,19 +52,27 @@ public:
 
 		_decodedSampleCount = 0;
 		int rawBufferSize = size * 2;
-		_rawBuffer = new int16[rawBufferSize];
+		_buffer = new int16[rawBufferSize];
 
-		readBuffer(_rawBuffer, size * 2);
+		_sampleCount = readBuffer(_buffer, size * 2);
 		_stream->seek(0);
 	}
 
 	~KOMADPCMStream() {
-		_decodedSampleCount = 0;
-		delete[] _rawBuffer;
+		delete[] _buffer;
 	}
 
 	bool endOfData() const { return (_stream->eos() || _stream->pos() >= _endpos); }
 
+	int16 *getSamples() {
+		return _buffer;
+	}
+
+	int getSampleCount() {
+		return _sampleCount;
+	}
+
+private:
 	int readBuffer(int16 *buffer, const int numSamples) {
 		int samples;
 		byte data;
@@ -87,14 +95,10 @@ public:
 		return samples;
 	}
 
-	int16 *getRawBuffer() {
-		return _rawBuffer;
-	}
-
-private:
 	uint8 _decodedSampleCount;
 	int16 _decodedSamples[2];
-	int16 *_rawBuffer;
+	int16 *_buffer;
+	int _sampleCount;
 };
 
 
@@ -197,19 +201,19 @@ void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
 				1);
 
 		_isCompressed = true;
-		_sampleData = ((KOMADPCMStream *)_stream)->getRawBuffer();
-		_sampleDataSize = size * 2;
+		_sampleData = ((KOMADPCMStream *)_stream)->getSamples();
+		_sampleCount = ((KOMADPCMStream *)_stream)->getSampleCount();
 	}
 }
 
-int16 const *SoundSample::getRawBuffer() {
+int16 const *SoundSample::getSamples() {
 	assert(_isCompressed);
 	return _sampleData;
 }
 
-uint SoundSample::getRawBufferSize() {
+uint SoundSample::getSampleCount() {
 	assert(_isCompressed);
-	return _sampleDataSize;
+	return _sampleCount;
 }
 
 Sound::Sound(Audio::Mixer *mixer)
