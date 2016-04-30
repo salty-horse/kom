@@ -28,6 +28,7 @@
 #include "common/stream.h"
 #include "common/textconsole.h"
 #include "common/types.h"
+#include "common/debug.h"
 
 #include "kom/sound.h"
 
@@ -144,7 +145,7 @@ bool SoundSample::loadFile(Common::String filename) {
 
 		int offset = READ_LE_UINT32(contents + i*22 + 14);
 		int size = READ_LE_UINT32(contents + i*22 + 18);
-		warning("file %s, entry %s, offset %d, size %d", newName.c_str(), entry.c_str(), offset, size);
+		debug(1, "file %s, entry %s, offset %d, size %d", newName.c_str(), entry.c_str(), offset, size);
 		delete[] contents;
 
 		data = (byte *)malloc(size);

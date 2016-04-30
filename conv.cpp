@@ -68,9 +68,9 @@ void Face::assignLinks(const Common::String &filename) {
 
 	_stateCount = f.readSint16BE();
 	_states = new State[_stateCount];
-	debug("File %s", filename.c_str());
+	debug(1, "File %s", filename.c_str());
 	for (int i = 0; i < _stateCount; ++i) {
-		debug("\tState %d", i);
+		debug(1, "\tState %d", i);
 		_states[i].id = i;
 		int16 loopCount = f.readSint16BE();
 		if (loopCount > 0)
@@ -87,7 +87,7 @@ void Face::assignLinks(const Common::String &filename) {
 			loop->currDepth = 1;
 			loop->currFrame = loop->startFrame;
 			loop->maxDepth = (loop->endFrame - loop->startFrame) * 2 + 1;
-			debug("\t\tLoop %d: %d %d %d", j, loop->startFrame, loop->endFrame, loop->maxDepth);
+			debug(1, "\t\tLoop %d: %d %d %d", j, loop->startFrame, loop->endFrame, loop->maxDepth);
 		}
 	}
 
@@ -98,7 +98,7 @@ void Face::assignLinks(const Common::String &filename) {
 	Link *link = _faceLinks;
 	for (int i = 0; i < _stateCount; ++i) {
 		for (int j = 0; j < _stateCount; ++j) {
-			debugN("link %d,%d: ", i, j);
+			debugN(1, "link %d,%d: ", i, j);
 			link->endState = &_states[j];
 			link->frameList = currFrame;
 
@@ -106,10 +106,10 @@ void Face::assignLinks(const Common::String &filename) {
 			do {
 				data = f.readSint16BE();
 				*currFrame = data;
-				debugN("%d ", *currFrame);
+				debugN(1, "%d ", *currFrame);
 				currFrame++;
 			} while (data >= 0);
-			debug("");
+			debug(1, "");
 			++link;
 		}
 	}
@@ -150,7 +150,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 				int16 char1ZoomX, int16 char1ZoomY,
                 int16 char2ZoomX, int16 char2ZoomY,
 				int16 convNum) {
-	warning("Lips::init(%s, %s, %d, %d, %d, %d, %d)", playerCodename.c_str(), otherCodename.c_str(), char1ZoomX, char1ZoomY, char2ZoomX, char2ZoomY, convNum);
+	debug(1, "Lips::init(%s, %s, %d, %d, %d, %d, %d)", playerCodename.c_str(), otherCodename.c_str(), char1ZoomX, char1ZoomY, char2ZoomX, char2ZoomY, convNum);
 	playerCodename.toLowercase();
 	otherCodename.toLowercase();
 
@@ -783,7 +783,7 @@ Talk::~Talk() {
 }
 
 void Talk::doTalk(int charId, int emotion, const char *sampleFile, const char *sentence) {
-	warning("TODO talk: %d - %s - %s", charId, sampleFile, sentence);
+	debug(1, "talk: %d - %s - %s", charId, sampleFile, sentence);
 
 	Character *chr;
 	if (charId != 0) {
