@@ -277,7 +277,6 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	_exchangeScrollSpeed = 48;
 	_scrollTimer = 0;
 
-	// if (!_isBalrog) {
 	if (charId == 0) {
 		if (!_playerActive)
 			return;
@@ -1115,17 +1114,25 @@ int Lips::showOptions(OptionLine *options) {
 		options[i].pixelBottom = surfaceHeight;
 	}
 
-	_vm->screen()->clearScreen();
+	_lastCharacter = 0;
 
-	// TODO balrog
-	_vm->screen()->useColorSet(_playerColorSet, 0);
+	// Original calls this, not sure why. Crashes when tries to
+	// access a state with no loops.
+	// if (!_isBalrog)
+	// 	updateSentence(_otherFace);
+
 	updateSentence(_playerFace);
-	// TODO more stuff
 
+	if (_fullPalette || _multiFullPalette || _smackerPlayed)
+		_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+
+	_vm->screen()->useColorSet(_playerColorSet, 0);
 	_vm->input()->setMousePos(_vm->input()->getMouseX(), 0);
 
 	int selectedOption = 9999;
 	do {
+		// Original calls this, but there's no need
+		// updateSentence(_playerFace);
 		selectedOption = getOption(options, surfaceHeight);
 		displayMenuOptions(options, selectedOption, surfaceHeight);
 		_vm->screen()->gfxUpdate();
