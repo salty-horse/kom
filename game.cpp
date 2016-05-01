@@ -587,12 +587,12 @@ bool Game::doStat(const Command *cmd) {
 				db->getChar(j->arg2)->_spellPoints = db->getChar(j->arg2)->_spellPointsMax;
 			break;
 		case 420: {
-			Character *targetChar = _vm->database()->getChar(j->arg2);
+			Character *targetChar = db->getChar(j->arg2);
 			if (targetChar->_spellMode == 5)
 				break;
 			targetChar->unsetSpell();
 
-			Object *spellObj = _vm->database()->getObj(j->arg3);
+			Object *spellObj = db->getObj(j->arg3);
 
 			doActionSetSpell(j->arg2, spellObj->spellType);
 
@@ -601,10 +601,10 @@ bool Game::doStat(const Command *cmd) {
 				doActionPlayVideo("msc013g");
 				doSpellAttack(j->arg2, j->arg3);
 
-				Location *loc = _vm->database()->getLoc(targetChar->_locationId);
+				Location *loc = db->getLoc(targetChar->_locationId);
 				for (Common::List<int>::iterator it = loc->characters.begin();
 				     it != loc->characters.begin(); it++) {
-					Character *chr = _vm->database()->getChar(*it);
+					Character *chr = db->getChar(*it);
 
 					// Don't harm the player or immortal chars
 					if (chr->_type == 1 || !chr->_isMortal)
@@ -770,7 +770,7 @@ bool Game::doStat(const Command *cmd) {
 		case 459:
 			db->getLoc(j->arg2)->xtend = j->arg3;
 			if (db->getChar(0)->_lastLocation == j->arg2)
-				enterLocation(_vm->database()->getChar(0)->_lastLocation);
+				enterLocation(db->getChar(0)->_lastLocation);
 			break;
 		case 465:
 			db->setVar(j->arg2, db->getChar(j->arg3)->_xtend);
