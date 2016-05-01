@@ -1604,7 +1604,7 @@ void Game::loopInterfaceCollide() {
 	_settings.collideObj = -1;
 	_settings.collideObjZ = 1073741824;
 
-	Common::Array<RoomObject> *roomObjects = _vm->game()->getObjects();
+	Common::Array<RoomObject> *roomObjects = getObjects();
 
 	for (uint i = 0; i < roomObjects->size(); i++) {
 		if ((*roomObjects)[i].objectId < 0)
@@ -1966,7 +1966,7 @@ void Game::doActionPlayVideo(const char *name) {
 	String videoName(name);
 	videoName.toLowercase();
 
-	if (_vm->game()->player()->selectedChar == 0) {
+	if (player()->selectedChar == 0) {
 		if (videoName.lastChar() == 's')
 			videoName.setChar('t', videoName.size() - 1);
 		// SHAR -> SMAN
@@ -2022,7 +2022,7 @@ void Game::doActionPlayVideo(const char *name) {
 	else {
 		int len = sprintf(filenameBuf, "kom/%s/%s%s%s%d.smk",
 			dir, prefix, prefix[0] ? "/" : "", videoName.c_str(),
-			_vm->game()->player()->isNight);
+			player()->isNight);
 
 		// If the file isn't found, try the other day mode
 		if (!Common::File::exists(filenameBuf)) {
@@ -3378,7 +3378,7 @@ void Game::doFight(int enemyId, int weaponId) {
 			enemy->_modeCount = 0;
 			enemy->_spellMode = 0;
 			enemy->_spellDuration = 0;
-			_vm->game()->doActionSetSpell(enemyId, 0);
+			doActionSetSpell(enemyId, 0);
 		}
 	}
 
@@ -3444,7 +3444,7 @@ void Game::doNPCFight(int attackerId, int defenderId) {
 		defender->_modeCount = 0;
 		defender->_spellMode = 0;
 		defender->_spellDuration = 0;
-		_vm->game()->doActionSetSpell(defenderId, 0);
+		doActionSetSpell(defenderId, 0);
 	}
 }
 
