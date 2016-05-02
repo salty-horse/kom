@@ -709,7 +709,7 @@ void Talk::init(uint16 charId, int16 convNum) {
 	Character *playerChar = _vm->database()->getChar(0);
 	Character *otherChar = _vm->database()->getChar(charId);
 
-	_vm->game()->cb()->talkInitialized = false;
+	_vm->game()->cb()->talkInitialized = true;
 	_talkingChar = charId;
 	_vm->game()->stopNarrator();
 	_vm->game()->stopGreeting();
