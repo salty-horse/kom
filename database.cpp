@@ -452,17 +452,17 @@ void Database::initObjectLocs() {
 			continue;
 
 		if (_objects[i].ownerType == 1)
-			_locations[_objects[i].ownerId].objects.push_back(i);
+			_locations[_objects[i].ownerId].objects.push_front(i);
 		else switch (_objects[i].type) {
 		case 1:
 		case 5:
-			_characters[_objects[i].ownerId]._inventory.push_back(i);
+			_characters[_objects[i].ownerId]._inventory.push_front(i);
 			break;
 		case 2:
-			_characters[_objects[i].ownerId]._weapons.push_back(i);
+			_characters[_objects[i].ownerId]._weapons.push_front(i);
 			break;
 		case 3:
-			_characters[_objects[i].ownerId]._spells.push_back(i);
+			_characters[_objects[i].ownerId]._spells.push_front(i);
 			break;
 		}
 	}
