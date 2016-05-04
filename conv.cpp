@@ -312,7 +312,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 
 	} else {
 		if (_isBalrog) {
-			_balrogSample.loadFile(sampleFilename);
+			_balrogSample.loadFile(sampleFilename, true);
 		} else {
 			loadSentence(_otherFace, sampleFilename);
 		}
@@ -489,7 +489,7 @@ void Lips::loadSentence(Face *face, const Common::String &filename) {
 	if (face->_sentenceStatus != 0) {
 		face->_sample.unload();
 	}
-	face->_sample.loadFile(filename);
+	face->_sample.loadFile(filename, true);
 	face->_sentenceStatus = 3;
 }
 

@@ -48,34 +48,13 @@ namespace Kom {
 
 
 // Custom implementation of DVI_ADPCMStream, due to flipped nibbles compared to DVI_ADPCM
-// It also decodes the sample into a raw buffer so it could be queried later.
 class KOMADPCMStream : public Audio::Ima_ADPCMStream {
 public:
 
 	KOMADPCMStream(Common::SeekableReadStream *stream, DisposeAfterUse::Flag disposeAfterUse, uint32 size, int rate, int channels, uint32 blockAlign = 0)
-		: Audio::Ima_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign) {
+		: Audio::Ima_ADPCMStream(stream, disposeAfterUse, size, rate, channels, blockAlign) { _decodedSampleCount = 0; }
 
-		_decodedSampleCount = 0;
-		int rawBufferSize = size * 2;
-		_buffer = new int16[rawBufferSize];
-
-		_sampleCount = readBuffer(_buffer, size * 2);
-		_stream->seek(0);
-	}
-
-	~KOMADPCMStream() {
-		delete[] _buffer;
-	}
-
-	bool endOfData() const { return (_stream->eos() || _stream->pos() >= _endpos); }
-
-	int16 *getSamples() {
-		return _buffer;
-	}
-
-	int getSampleCount() {
-		return _sampleCount;
-	}
+	bool endOfData() const { return (_stream->eos() || _stream->pos() >= _endpos) && (_decodedSampleCount == 0); }
 
 private:
 	int readBuffer(int16 *buffer, const int numSamples) {
@@ -102,14 +81,13 @@ private:
 
 	uint8 _decodedSampleCount;
 	int16 _decodedSamples[2];
-	int16 *_buffer;
-	int _sampleCount;
 };
 
 
-bool SoundSample::loadFile(Common::String filename) {
+bool SoundSample::loadFile(Common::String filename, bool isSpeech) {
 	File f;
 	byte *data;
+	int size = 0;
 
 	unload();
 
@@ -148,7 +126,7 @@ bool SoundSample::loadFile(Common::String filename) {
 		}
 
 		int offset = READ_LE_UINT32(contents + i*22 + 14);
-		int size = READ_LE_UINT32(contents + i*22 + 18);
+		size = READ_LE_UINT32(contents + i*22 + 18);
 		debug(1, "file %s, entry %s, offset %d, size %d", newName.c_str(), entry.c_str(), offset, size);
 		delete[] contents;
 
@@ -158,22 +136,35 @@ bool SoundSample::loadFile(Common::String filename) {
 		loadCompressed(f, offset, size);
 		f.close();
 
-		return true;
-
 	// Load file as-is
 	} else if (f.open(filename)) {
-		loadCompressed(f, 0, f.size());
+		size = f.size();
+		loadCompressed(f, 0, size);
 		f.close();
-
-		return true;
+	} else {
+		warning("Could not find sound sample %s", filename.c_str());
+		return false;
 	}
 
-	return false;
+	_isSpeech = isSpeech;
+	if (isSpeech) {
+		int rawBufferSize = _isCompressed ? size * 2 : size;
+		_sampleData = new int16[rawBufferSize];
+
+		_sampleCount = _stream->readBuffer(_sampleData, rawBufferSize);
+		_stream->rewind();
+	}
+
+	return (_stream != NULL);
 }
 
 void SoundSample::unload() {
 	delete _stream;
-	_stream = 0;
+	_stream = NULL;
+	if (_isSpeech) {
+		delete[] _sampleData;
+	   _sampleData = NULL;
+	}
 }
 
 void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
@@ -206,18 +197,16 @@ void SoundSample::loadCompressed(Common::File &f, int offset, int size) {
 				1);
 
 		_isCompressed = true;
-		_sampleData = ((KOMADPCMStream *)_stream)->getSamples();
-		_sampleCount = ((KOMADPCMStream *)_stream)->getSampleCount();
 	}
 }
 
 int16 const *SoundSample::getSamples() {
-	assert(_isCompressed);
+	assert(_isSpeech);
 	return _sampleData;
 }
 
 uint SoundSample::getSampleCount() {
-	assert(_isCompressed);
+	assert(_isSpeech);
 	return _sampleCount;
 }
 

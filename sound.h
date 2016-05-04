@@ -45,10 +45,10 @@ typedef Audio::SoundHandle SoundHandle;
 class SoundSample {
 	friend class Sound;
 public:
-	SoundSample() { _stream = 0; _isCompressed = false; _sampleData = 0; }
-	~SoundSample() { delete _stream; }
+	SoundSample() { _stream = 0; _isCompressed = false; _isSpeech = false; _sampleData = 0; }
+	~SoundSample() { unload(); }
 
-	bool loadFile(Common::String filename);
+	bool loadFile(Common::String filename, bool isSpeech = false);
 	void unload();
 	bool isLoaded() { return _stream != 0; }
 	int16 const *getSamples();
@@ -57,6 +57,7 @@ public:
 private:
 	Audio::SoundHandle _handle;
 	Audio::RewindableAudioStream *_stream;
+	bool _isSpeech;
 	bool _isCompressed;
 	int16 *_sampleData;
 	int _sampleCount;
