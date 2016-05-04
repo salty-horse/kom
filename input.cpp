@@ -69,7 +69,7 @@ void Input::handleMouse() {
 			}
 
 			if (settings->objectNum >= 0) {
-				_vm->game()->doInventory(&settings->object2Num, &settings->object2Type, false, 7);
+				_vm->game()->doInventory(&settings->object2Num, &settings->object2Type, 0, 7);
 
 				if (settings->objectNum < 0) {
 					settings->objectType = settings->object2Type;
@@ -91,7 +91,7 @@ void Input::handleMouse() {
 			} else {
 				settings->object2Type = OBJECT_NONE;
 				settings->object2Num = -1;
-				_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 7);
+				_vm->game()->doInventory(&settings->objectNum, &settings->objectType, 0, 7);
 				_vm->game()->checkUseImmediate(settings->objectType, settings->objectNum);
 				player->commandState = 0;
 			}
@@ -260,7 +260,7 @@ void Input::handleMouse() {
 
 					// Select weapon from inventory
 					if (settings->objectNum < 0 || settings->objectType != OBJECT_WEAPON)
-						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 2);
+						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, 0, 2);
 
 					if (settings->objectNum < 0 || settings->objectType != OBJECT_WEAPON ||
 					    !_vm->database()->getChar(settings->collideChar)->_isAlive) {
@@ -287,7 +287,7 @@ void Input::handleMouse() {
 
 					// Select spell from inventory
 					if (settings->objectNum < 0 || settings->objectType != OBJECT_SPELL)
-						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, false, 4);
+						_vm->game()->doInventory(&settings->objectNum, &settings->objectType, 0, 4);
 
 					if (settings->objectNum < 0 || settings->objectType != OBJECT_SPELL ||
 					    !_vm->database()->getChar(settings->collideChar)->_isAlive) {

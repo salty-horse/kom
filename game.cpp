@@ -916,6 +916,20 @@ bool Game::doStat(const Command *cmd) {
 		case 489:
 			db->getChar(j->arg2)->_spellMode = j->arg3;
 			break;
+		case 490:
+			db->setVar(j->arg3, doActionShop((uint16)j->arg2));
+			break;
+		case 491: {
+			int16 objId = db->getVar(j->arg2);
+			if (objId == -1)
+				break;
+			Object *obj = db->getObj(objId);
+			db->getChar(0)->_gold -= obj->price;
+			db->getChar(obj->ownerId)->_gold += obj->price;
+			if (!db->giveObject(objId, 0))
+				keepProcessing = false;
+			break;
+		}
 		case 492:
 			warning("TODO: give weapons");
 			break;
@@ -2570,7 +2584,7 @@ int Game::getDonutSegment(int xPos, int yPos) {
 		return segment + 8;
 }
 
-void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 mode) {
+void Game::doInventory(int16 *objectNum, ObjectType *objectType, uint16 shopChar, uint8 mode) {
 	bool inInventory = false;
 	bool inLoop;
 	Character *playerChar = _vm->database()->getChar(0);
@@ -2578,7 +2592,7 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 	Inventory inv;
 
 	do {
-		inv.shop = shop;
+		inv.shopChar = shopChar;
 		inv.mode = mode;
 		inLoop = true;
 		inv.selectedBox2 = -1;
@@ -2602,7 +2616,7 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 		_vm->screen()->displayDoors();
 		_vm->actorMan()->displayAll();
 		_vm->screen()->drawFightBars();
-		_vm->screen()->createSepia(shop);
+		_vm->screen()->createSepia(shopChar);
 		_vm->screen()->clearScreen();
 		_vm->panel()->update();
 		_vm->screen()->gfxUpdate();
@@ -2720,8 +2734,8 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 					_vm->sound()->playSampleSFX(_vm->_clickSample, false);
 					cmdBackup = _player.command;
 
-					if (_settings.objectNum < 0 && (mode & 1) && !shop) {
-						donutState = doDonut(shop ? 2 : 1, &inv);
+					if (_settings.objectNum < 0 && (mode & 1) && !shopChar) {
+						donutState = doDonut(shopChar ? 2 : 1, &inv);
 						_vm->input()->setMousePos(_vm->input()->getMouseX(), 83);
 					} else {
 						_player.command = CMD_USE;
@@ -2824,6 +2838,89 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint
 	} while (inInventory);
 
 	stopNarrator();
+}
+
+static const char *thidneyShopCostumier[] = {
+	"I like the look of this one!",
+	"Can you afford such an outfit?",
+	"No.",
+	"Then I must encourage you to select something else.",
+	"That looks great.  It looks like it was made for you.",
+	"You know what, I think I\'ll come back later.",
+	"Oh no!  That wouldn't suit you at all!",
+};
+
+static const char *shahronShopCostumier[] = {
+	"I like the look of this one!",
+	"Can you afford such an outfit?",
+	"Can I afford such an outfit?  You're asking me if I can afford such an outfit?  No.",
+	"Then I must encourage you to select something else.",
+	"That looks great.  It looks like it was made for you.",
+	"You know what, I think I\'ll come back later.",
+	"Oh no!  That wouldn't suit you at all!",
+};
+
+static const char *dialogueShopkeeper[] = {
+	"I'll take this!",
+	"Can you afford it?",
+	"No.",
+	"Then you\'ll have to choose something else.",
+	"Sold!",
+	"You know what, I think I\'ll come back later.",
+};
+
+int16 Game::doActionShop(uint16 charId) {
+	assert(charId == 3 || charId == 65);
+
+	Character *playerChar = _vm->database()->getChar(0);
+	Character *shopChar = _vm->database()->getChar(charId);
+
+	const char **dialogues;
+
+	_vm->panel()->suppressLoading();
+	if (charId == 3) {
+		if (_player.selectedChar == 0)
+			dialogues = thidneyShopCostumier;
+		else
+			dialogues = shahronShopCostumier;
+	} else {
+		dialogues = dialogueShopkeeper;
+	}
+
+	int16 objectNum;
+	ObjectType objectType;
+
+	doInventory(&objectNum, &objectType, charId, 7);
+	{
+		Talk talk(_vm);
+		talk.init(charId, 999);
+
+		String samplePrefix("sh");
+		samplePrefix += shopChar->_name[5];
+
+		if (objectNum < 0) {
+			talk.doTalk(0, 0, "youpoo", dialogues[5]);
+		} else {
+			talk.doTalk(0, 0, "youtake", dialogues[0]);
+			if ((_player.selectedChar == 0 && objectNum == 37) ||
+				(_player.selectedChar == 1 && objectNum == 38)) {
+				objectNum = -1;
+				talk.doTalk(1, 0, (samplePrefix + "clit").c_str(), dialogues[6]);
+			} else if (objectNum == 94) {
+				objectNum = -1;
+				doActionPlaySample("nmess061");
+			} else if (playerChar->_gold < _vm->database()->getObj(objectNum)->price) {
+				objectNum = -1;
+				talk.doTalk(1, 0, (samplePrefix + "can").c_str(), dialogues[1]);
+				talk.doTalk(0, 1, "youno", dialogues[2]);
+				talk.doTalk(1, 0, (samplePrefix + "else").c_str(), dialogues[3]);
+			} else {
+				talk.doTalk(1, 0, (samplePrefix + "sold").c_str(), dialogues[4]);
+			}
+		}
+	}
+
+	return objectNum;
 }
 
 void Game::doActionGotObject(uint16 obj) {

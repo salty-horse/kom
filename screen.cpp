@@ -53,6 +53,7 @@
 using Common::File;
 using Common::List;
 using Common::Rect;
+using Common::String;
 
 namespace Kom {
 
@@ -1365,7 +1366,7 @@ void Screen::updatePanelOnScreen(bool clearScreen) {
 	_system->updateScreen();
 }
 
-void Screen::loadBackground(const Common::String &filename) {
+void Screen::loadBackground(const String &filename) {
 	_roomBackgroundFlic.close();
 	_roomBackgroundFlic.loadFile(filename);
 	_roomBackgroundFlic.start();
@@ -1410,7 +1411,7 @@ void Screen::drawTalkFrame(const Graphics::Surface *frame, const byte *backgroun
 	_fullRedraw = true;
 }
 
-void Screen::loadMask(const Common::String &filename) {
+void Screen::loadMask(const String &filename) {
 	_roomMaskFlic.loadFile(filename);
 	_roomMask = 0;
 	_roomMask = _roomMaskFlic.decodeNextFrame();
@@ -1454,7 +1455,7 @@ void Screen::drawInventory(Inventory *inv) {
 
 	// Inventory objects
 	if (inv->mode & 1) {
-		invList = &_vm->database()->getChar(0)->_inventory;
+		invList = &_vm->database()->getChar(inv->shopChar)->_inventory;
 		for (invId = invList->begin(), invCounter = 0;
 			 invId != invList->end(); ++invId, ++invCounter) {
 
@@ -1488,7 +1489,7 @@ void Screen::drawInventory(Inventory *inv) {
 
 	// Inventory weapons
 	if (inv->mode & 2) {
-		invList = &_vm->database()->getChar(0)->_weapons;
+		invList = &_vm->database()->getChar(inv->shopChar)->_weapons;
 		for (invId = invList->begin(), invCounter = 0;
 			 invId != invList->end(); ++invId, ++invCounter) {
 
@@ -1517,7 +1518,7 @@ void Screen::drawInventory(Inventory *inv) {
 
 	// Inventory spells
 	if (inv->mode & 4) {
-		invList = &_vm->database()->getChar(0)->_spells;
+		invList = &_vm->database()->getChar(inv->shopChar)->_spells;
 		for (invId = invList->begin(), invCounter = 0;
 			 invId != invList->end(); ++invId, ++invCounter) {
 
@@ -1548,9 +1549,9 @@ void Screen::drawInventory(Inventory *inv) {
 	}
 
 	// Draw headlines
-	if (inv->shop) {
-		writeText(_screenBuf, "Choose an item to Purchase...", 3, 29, 0, false);
-		writeText(_screenBuf, "Choose an item to Purchase...", 2, 28, 31, false);
+	if (inv->shopChar) {
+		writeText(_screenBuf, "Choose an Item to Purchase...", 3, 29, 0, false);
+		writeText(_screenBuf, "Choose an Item to Purchase...", 2, 28, 31, false);
 	} else {
 		if (inv->mode & 4) {
 			writeText(_screenBuf, "Spells", 3, 29, 0, false);
@@ -1583,8 +1584,11 @@ void Screen::drawInventory(Inventory *inv) {
 		} else {
 			switch (inv->action) {
 			case 0:
-				if (inv->shop) {
-					warning("TODO: shop");
+				if (inv->shopChar) {
+					inv->blinkLight = 4;
+					int price = _vm->database()->getObj(inv->selectedObj)->price;
+					String text = String::format("Purchase for %d Gold piece%s,", price, price == 1 ? "" : "s");
+					_vm->panel()->setActionDesc(text.c_str());
 				} else {
 					if (!useImmediate) {
 						inv->blinkLight = 4;
@@ -1606,12 +1610,14 @@ void Screen::drawInventory(Inventory *inv) {
 		}
 	}
 
-	if (inv->shop) {
-		warning("TODO: Print gold info");
+	if (inv->shopChar) {
+		int gold = _vm->database()->getChar(0)->_gold;
+		String text = String::format("You have %d Gold piece%s", gold, gold == 1 ? "" : "s");
+		_vm->panel()->setLocationDesc(text.c_str());
 	}
 
 	if (inv->mouseY * 2 > 344) {
-		_vm->panel()->setHotspotDesc(inv->shop ? "No sale" : "Exit");
+		_vm->panel()->setHotspotDesc(inv->shopChar ? "No sale" : "Exit");
 		_vm->panel()->update();
 		return;
 	}

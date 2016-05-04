@@ -193,7 +193,7 @@ struct Cb {
 };
 
 struct Inventory {
-	bool shop;
+	uint16 shopChar;
 	uint8 mode;
 	int16 mouseState;
 	int16 selectedBox;
@@ -265,7 +265,8 @@ public:
 	void doReply(int charId, const char *reply);
 
 	int8 doDonut(int type, Inventory *inv);
-	void doInventory(int16 *objectNum, ObjectType *objectType, bool shop, uint8 num);
+	void doInventory(int16 *objectNum, ObjectType *objectType, uint16 shopChar, uint8 num);
+	int16 doActionShop(uint16 charId);
 
 	void doActionGotObject(uint16 obj);
 	void doActionLostObject(uint16 obj);
