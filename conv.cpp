@@ -147,8 +147,11 @@ Lips::~Lips() {
 	// Restore the palette
 	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 
-	// Clear screen. Yes, this shouldn't be in a destructor
-	_vm->screen()->clearScreen();
+	// Clear screen. (Yes, this shouldn't be in a destructor).
+	// This is required because if a sprite cutscene is played directly after
+	// this, a "show loading" will be called while the conversation flic is
+	// still on screen.
+	_vm->screen()->clearScreen(true);
 }
 
 void Lips::init(Common::String playerCodename, Common::String otherCodename,

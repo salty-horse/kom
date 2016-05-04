@@ -687,12 +687,17 @@ void Screen::gfxUpdate() {
 	_lastFrameTime = _system->getMillis();
 }
 
-void Screen::clearScreen() {
+void Screen::clearScreen(bool now) {
 	_dirtyRects->clear();
 	_prevDirtyRects->clear();
 
 	memset(_screenBuf, 0, SCREEN_W * SCREEN_H);
 	_fullRedraw = true;
+
+	if (now) {
+		_system->copyRectToScreen(_screenBuf, SCREEN_W, 0, 0, SCREEN_W, SCREEN_H);
+		_system->updateScreen();
+	}
 }
 
 void Screen::clearRoom() {

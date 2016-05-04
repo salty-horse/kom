@@ -76,7 +76,7 @@ public:
 	void processGraphics(int mode, bool samplePlaying = false);
 	void drawDirtyRects();
 	void gfxUpdate();
-	void clearScreen();
+	void clearScreen(bool now = false);
 	void clearRoom();
 	void drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth, bool invisible = false);
