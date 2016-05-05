@@ -284,6 +284,12 @@ void Game::processChars() {
 					ch->unsetSpell();
 				else
 					ch->_spellDuration--;
+
+				if (0 <= ch->_spellMode && ch->_spellMode <= 6) {
+					if (ch->_spellMode == 0)
+						ch->_mode = 0;
+					processChar(ch->_proc);
+				}
 				break;
 			case 4:
 			case 5:
