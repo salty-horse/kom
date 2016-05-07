@@ -544,6 +544,38 @@ bool Game::doStat(const Command *cmd) {
 			db->getChar(j->arg2)->_destLoc = j->arg3;
 			db->getChar(j->arg2)->_destBox = j->arg4;
 			break;
+		case 404: {
+			Character *chr1 = db->getChar(j->arg2);
+			Character *chr2 = db->getChar(j->arg3);
+
+			for (int i = 0; i < ARRAYSIZE(_spells); i++) {
+				Character *magicChar = _vm->database()->getMagicChar(i);
+				if (magicChar->_id < 0)
+					continue;
+
+				Spell *spell = &_spells[i];
+				if (spell->targetId == j->arg3)
+					spell->targetId = j->arg2;
+			}
+			chr1->stopChar();
+			chr2->stopChar();
+
+			chr1->_lastLocation = chr2->_lastLocation;
+			chr1->_lastBox = chr2->_lastBox;
+			chr1->_gotoBox = chr2->_gotoBox;
+			chr1->_screenX = chr2->_screenX;
+			chr1->_start3 = chr2->_screenX * 256;
+			chr1->_screenY = chr2->_screenY;
+			chr1->_start4 = chr2->_screenY * 256;
+			chr1->_gotoX = chr2->_gotoX;
+			chr1->_gotoY = chr2->_gotoY;
+			chr1->_gotoLoc = chr2->_gotoLoc;
+			chr1->_start5 = chr2->_start5;
+
+			chr1->stopChar();
+			chr2->stopChar();
+			break;
+		}
 		case 405:
 			db->getChar(j->arg2)->_destLoc =
 			db->getChar(j->arg2)->_destBox = -2;
@@ -572,6 +604,9 @@ bool Game::doStat(const Command *cmd) {
 		case 412:
 			keepProcessing = !(db->getChar(j->arg2)->_isAlive);
 			break;
+		case 413:
+			db->getChar(j->arg2)->_isAlive = true;
+			break;
 		case 414:
 			db->getChar(j->arg2)->unsetSpell();
 			db->getChar(j->arg2)->_isAlive = false;
@@ -591,6 +626,9 @@ bool Game::doStat(const Command *cmd) {
 				(db->getVar(j->arg3) ? db->getVar(j->arg3) : 0);
 			if (db->getChar(j->arg2)->_spellPoints > db->getChar(j->arg2)->_spellPointsMax)
 				db->getChar(j->arg2)->_spellPoints = db->getChar(j->arg2)->_spellPointsMax;
+			break;
+		case 419:
+			db->getChar(j->arg2)->unsetSpell();
 			break;
 		case 420: {
 			Character *targetChar = db->getChar(j->arg2);
@@ -778,6 +816,9 @@ bool Game::doStat(const Command *cmd) {
 			if (db->getChar(0)->_lastLocation == j->arg2)
 				enterLocation(db->getChar(0)->_lastLocation);
 			break;
+		case 462:
+			db->getLoc(j->arg2)->xtend = db->getVar(j->arg3);
+			break;
 		case 465:
 			db->setVar(j->arg2, db->getChar(j->arg3)->_xtend);
 			break;
@@ -936,9 +977,24 @@ bool Game::doStat(const Command *cmd) {
 				keepProcessing = false;
 			break;
 		}
-		case 492:
-			warning("TODO: give weapons");
+		case 492: {
+			Common::List<int> *weapons = &db->getChar(j->arg2)->_weapons;
+
+			// Since giveObject removes weapons as we iterate over them,
+			// copy them to an array first
+			Common::List<int>::size_type count = weapons->size();
+			int *weaponArray = new int[count];
+			Common::List<int>::size_type i = 0;
+			for (Common::List<int>::const_iterator it = weapons->begin();
+			     it != weapons->end();
+			     it++, i++)
+				weaponArray[i] = *it;
+			for (i = 0; i < count; i++)
+				db->giveObject(weaponArray[i], j->arg3);
+			delete[] weaponArray;
+			_settings.lastWeaponUsed = -1;
 			break;
+		}
 		case 494:
 			_vm->endGame();
 			break;
