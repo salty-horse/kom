@@ -2429,7 +2429,7 @@ int8 Game::doDonut(int type, Inventory *inv) {
 			_vm->database()->getObj(_settings.collideObj)->isPickable ? 0 : 6;
 		verbs[FIGHT] = 6;
 		verbs[TALK_TO] = 6;
-		verbs[LOOK_AT] = 0;
+		verbs[LOOK_AT] = _settings.collideObj == 212 ? 6 : 0; // Arcade machine
 		verbs[USE] =
 			_vm->database()->getObj(_settings.collideObj)->isUsable ? 0 : 6;
 		verbs[CAST_SPELL] = 6;
@@ -2566,7 +2566,7 @@ int8 Game::doDonut(int type, Inventory *inv) {
 		// Display the donut verbs
 		donut->enable(1);
 		donut->setPos(hotspotX / 2, hotspotY / 2);
-		for (int i = 0; i < 6; ++i) {
+		for (int i = 0; i < ARRAYSIZE(verbs); ++i) {
 			donut->setFrame(verbs[i] + i);
 			donut->display();
 		}
