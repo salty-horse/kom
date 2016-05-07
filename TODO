@@ -13,7 +13,6 @@ BUGS
   and make the cursor disappear (until right-click).
 * don't try showing "loading" icon while narrator subtitles are on.
 * narrator subtitles disappear when the audio stops, even before they finish scrolling.
-* room 34 -- "look at" and "use" on the arcade machine doesn't play the "rupert" audio
 * kom/cutsconv/bst/bst01g0.smk seems corrupt - check if original game falls back to playing the .flc
 * Crash while standing in place in room 63, and an orc attacks you:
 		(gdb) bt
@@ -40,6 +39,8 @@ BUGS
 		(gdb) p targetBox
 		$5 = -1
 * zoom buffer coords are wrong in conversations
+* Using cabbage spell on ferryman while idle anim is playing gets him stuck in idle anim instead of being a cabbage
+* Bug in original: After using a weapon on the elf guard (room 27), hotspots are broken until right-clicking to drop the weapon
 
 MISSING FEATURES
 ================
