@@ -679,7 +679,7 @@ bool Game::doStat(const Command *cmd) {
 				targetChar->_spellDuration = 600;
 
 				// Do nothing with Shield
-				if (spellObj->spellType != 5)
+				if (spellObj->spellType == 5)
 					break;
 
 				targetChar->_oldStrength = targetChar->_strength;
