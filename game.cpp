@@ -1328,7 +1328,7 @@ void Game::loopMove() {
 	}
 
 	// Move magic characters
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < ARRAYSIZE(_spells); i++) {
 		Character *magicChar = _vm->database()->getMagicChar(i);
 		Spell *spell = &_spells[i];
 		Character *targetChar = NULL;
@@ -1403,7 +1403,7 @@ void Game::loopCollide() {
 	}
 
 	// Collide magic characters
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < ARRAYSIZE(_spells); i++) {
 		Character *magicChar = _vm->database()->getMagicChar(i);
 		if (magicChar->_id == -1)
 			continue;
@@ -1515,7 +1515,7 @@ void Game::loopSpriteCut() {
 }
 
 void Game::loopSpells() {
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < ARRAYSIZE(_spells); i++) {
 		Spell *spell = &_spells[i];
 		Character *magicChar = _vm->database()->getMagicChar(i);
 
@@ -1926,7 +1926,7 @@ void Game::doActionMoveChar(uint16 charId, int16 loc, int16 box) {
 	}
 
 	if (_vm->database()->loc2loc(chr->_lastLocation, loc) == -1) {
-		for (int i = 0; i < 10; ++i) {
+		for (int i = 0; i < ARRAYSIZE(_spells); ++i) {
 			Character *magicChar = _vm->database()->getMagicChar(i);
 			Spell *spell = &_spells[i];
 			if (magicChar->_id != -1 && spell->targetId == charId) {
@@ -3612,7 +3612,7 @@ bool Game::castSpell(int16 charId, int16 spellId, int16 target) {
 	Spell *spell = NULL;
 
 	// Find unused magic actor
-	for (int i = 0; i < 10; i++) {
+	for (int i = 0; i < ARRAYSIZE(_spells); i++) {
 		magicChar = _vm->database()->getMagicChar(i);
 		if (magicChar->_id == -1) {
 			spell = &_spells[i];
