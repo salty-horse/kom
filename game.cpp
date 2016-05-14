@@ -2573,6 +2573,8 @@ int8 Game::doDonut(int type, Inventory *inv) {
 		donut->enable(0);
 
 		_vm->screen()->gfxUpdate();
+		if (_vm->shouldQuit())
+			return -1;
 	}
 
 	if (overVerb) {
@@ -2847,6 +2849,9 @@ void Game::doInventory(int16 *objectNum, ObjectType *objectType, uint16 shopChar
 			_vm->screen()->gfxUpdate();
 			_vm->panel()->setActionDesc("");
 			_vm->panel()->setHotspotDesc("");
+
+			if (_vm->shouldQuit())
+				break;
 		}
 
 		_vm->panel()->setLocationDesc(
@@ -3418,7 +3423,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 			loopTimer--;
 		}
 
-		if (_vm->input()->getRightClick() /* TODO: || space key */) {
+		if (_vm->input()->getRightClick() || _vm->shouldQuit() /* TODO: || space key */) {
 			loopState = 4;
 		}
 

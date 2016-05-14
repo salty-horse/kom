@@ -793,6 +793,10 @@ Talk::~Talk() {
 void Talk::doTalk(int charId, int emotion, const char *sampleFile, const char *sentence) {
 	debug(1, "talk: %d - %s - %s", charId, sampleFile, sentence);
 
+	// In case the game should quit during a shop conversation
+	if (_vm->shouldQuit())
+		return;
+
 	Character *chr;
 	if (charId != 0) {
 		chr = _vm->database()->getChar(_talkingChar);
