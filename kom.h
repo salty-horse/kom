@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef KOM_H
-#define KOM_H
+#ifndef KOM_KOM_H
+#define KOM_KOM_H
 
 #include "engines/engine.h"
 #include "common/error.h"
