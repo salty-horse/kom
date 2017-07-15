@@ -792,7 +792,7 @@ void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height,
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= ROOM_H || ((byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((const byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
 				if (invisible)
 					_screenBuf[targetPixel] = _screenBuf[targetPixel + 8];
 				else
@@ -910,7 +910,7 @@ void Screen::drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 hei
 
 		for (int j = 0; j < visibleWidth; ++j) {
 			if (lineBuffer[sourcePixel] != 0
-			    && (targetLine >= ROOM_H || ((byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
+			    && (targetLine >= ROOM_H || ((const byte *)_roomMask->getPixels())[targetPixel] >= maskDepth)) {
 
 				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
 
@@ -1355,13 +1355,13 @@ void Screen::clearPanel() {
 	_dirtyRects->push_back(Rect(0, SCREEN_H - PANEL_H, SCREEN_W, SCREEN_H));
 }
 
-void Screen::updatePanelOnScreen(bool clearScreen) {
+void Screen::updatePanelOnScreen(bool clearScreenFlag) {
 	// Don't update the panel if text is scrolling
 	// TODO: actually check if subtitles are enabled
 	if (_vm->game()->isNarratorPlaying())
 		return;
 
-	if (clearScreen) {
+	if (clearScreenFlag) {
 		memset(_screenBuf, 0, SCREEN_W * (SCREEN_H - PANEL_H));
 		_system->copyRectToScreen(_screenBuf, SCREEN_W, 0, 0, SCREEN_W, SCREEN_H);
 	} else {
@@ -1402,14 +1402,14 @@ void Screen::updateBackground() {
 void Screen::drawBackground() {
 	if (_roomBackgroundFlic.isVideoLoaded()) {
 		for (uint16 y = 0; y < _roomBackground->h; y++)
-			memcpy(_screenBuf + y * SCREEN_W, (byte *)_roomBackground->getPixels() + y * _roomBackground->pitch, _roomBackground->w);
+			memcpy(_screenBuf + y * SCREEN_W, (const byte *)_roomBackground->getPixels() + y * _roomBackground->pitch, _roomBackground->w);
 	}
 }
 
 void Screen::drawTalkFrame(const Graphics::Surface *frame, const byte *background) {
 	memcpy(_screenBuf, background, SCREEN_W * ROOM_H);
 	for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
-		byte color = ((byte *)frame->getPixels())[i];
+		byte color = ((const byte *)frame->getPixels())[i];
 		if (color != 0)
 			_screenBuf[i] = color;
 	}
@@ -2116,7 +2116,7 @@ byte *Screen::createZoomBlur(int x, int y) {
 		sourceOffset = tempOffset;
 
 		for (int j = 0; j < 108; j++) {
-			byte color = ((byte *)_roomBackground->getPixels())[sourceOffset];
+			byte color = ((const byte *)_roomBackground->getPixels())[sourceOffset];
 			sourceOffset++;
 
 			*surface = color;

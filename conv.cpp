@@ -114,7 +114,7 @@ void Face::assignLinks(const Common::String &filename) {
 				debugN(1, "%d ", *currFrame);
 				currFrame++;
 			} while (data >= 0);
-			debug(1, "");
+			debug(1, "%s", "");
 			++link;
 		}
 	}

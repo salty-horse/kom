@@ -154,12 +154,12 @@ void VideoPlayer::processFrame() {
 
 	if (!_background) {
 		for (uint16 y = 0; y < frame->h; y++)
-			memcpy((byte *)screen->getPixels() + y * screen->pitch, (byte *)frame->getPixels() + y * frame->pitch, frame->w);
+			memcpy((byte *)screen->getPixels() + y * screen->pitch, (const byte *)frame->getPixels() + y * frame->pitch, frame->w);
 
 	} else {
 		memcpy((byte *)screen->getPixels(), _background, SCREEN_W * ROOM_H);
 		for (int i = 0; i < SCREEN_W * ROOM_H; i++) {
-			byte color = ((byte *)frame->getPixels())[i];
+			byte color = ((const byte *)frame->getPixels())[i];
 			if (color != 0)
 				((byte *)screen->getPixels())[i] = color;
 		}

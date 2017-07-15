@@ -92,7 +92,7 @@ public:
 
 	void drawPanel(const byte *panelData);
 	void clearPanel();
-	void updatePanelOnScreen(bool clearScreen);
+	void updatePanelOnScreen(bool clearScreenFlag);
 
 	void loadBackground(const Common::String &filename);
 	void updateBackground();
