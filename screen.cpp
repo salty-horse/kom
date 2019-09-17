@@ -114,7 +114,8 @@ Screen::~Screen() {
 }
 
 bool Screen::init() {
-	initGraphics(SCREEN_W, SCREEN_H, false);
+	Graphics::PixelFormat pixelFormat = Graphics::PixelFormat::createFormatCLUT8();
+	initGraphics(SCREEN_W, SCREEN_H, &pixelFormat);
 
 	useColorSet(_c0ColorSet, 0);
 

@@ -48,9 +48,9 @@ public:
 	virtual const char *getName() const;
 	virtual const char *getOriginalCopyright() const;
 
-	virtual GameList getSupportedGames() const;
-	virtual GameDescriptor findGame(const char *gameid) const;
-	virtual GameList detectGames(const Common::FSList &fslist) const;
+	virtual PlainGameList getSupportedGames() const;
+	virtual PlainGameDescriptor findGame(const char *gameid) const;
+	virtual DetectedGames detectGames(const Common::FSList &fslist) const;
 
 	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
 };
@@ -63,8 +63,8 @@ const char *KomMetaEngine::getOriginalCopyright() const {
 	return "Kingdom O' Magic (C) 1996 SCi (Sales Curve Interactive) Ltd.";
 }
 
-GameList KomMetaEngine::getSupportedGames() const {
-	GameList games;
+PlainGameList KomMetaEngine::getSupportedGames() const {
+	PlainGameList games;
 	const PlainGameDescriptor *g = kom_list;
 
 	while (g->gameId) {
@@ -74,7 +74,7 @@ GameList KomMetaEngine::getSupportedGames() const {
 	return games;
 }
 
-GameDescriptor KomMetaEngine::findGame(const char *gameid) const {
+PlainGameDescriptor KomMetaEngine::findGame(const char *gameid) const {
 	const PlainGameDescriptor *g = kom_list;
 	while (g->gameId) {
 		if (0 == scumm_stricmp(gameid, g->gameId))
@@ -84,8 +84,8 @@ GameDescriptor KomMetaEngine::findGame(const char *gameid) const {
 	return *g;
 }
 
-GameList KomMetaEngine::detectGames(const Common::FSList &fslist) const {
-	GameList detectedGames;
+DetectedGames KomMetaEngine::detectGames(const Common::FSList &fslist) const {
+	DetectedGames detectedGames;
 	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
 		if (!file->isDirectory()) {
 			const char *filename = file->getName().c_str();
@@ -93,7 +93,9 @@ GameList KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				detectedGames.push_back(GameDescriptor(kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS, 0, kUnstableGame));
+				DetectedGame game = DetectedGame(kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS);
+				game.gameSupportLevel = kUnstableGame;
+				detectedGames.push_back(game);
 				break;
 			}
 		}
