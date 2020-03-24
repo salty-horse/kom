@@ -45,8 +45,17 @@ static const PlainGameDescriptor kom_list[] = {
 
 class KomMetaEngine : public MetaEngine {
 public:
-	virtual const char *getName() const;
-	virtual const char *getOriginalCopyright() const;
+	const char *getEngineId() const {
+		return "kom";
+	}
+
+	const char *getName() const {
+		return "Kingdom O\' Magic";
+	}
+
+	const char *getOriginalCopyright() const {
+		return "Kingdom O' Magic (C) 1996 SCi (Sales Curve Interactive) Ltd.";
+	}
 
 	virtual PlainGameList getSupportedGames() const;
 	virtual PlainGameDescriptor findGame(const char *gameid) const;
@@ -54,14 +63,6 @@ public:
 
 	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
 };
-
-const char *KomMetaEngine::getName() const {
-	return "Kingdom O\' Magic";
-}
-
-const char *KomMetaEngine::getOriginalCopyright() const {
-	return "Kingdom O' Magic (C) 1996 SCi (Sales Curve Interactive) Ltd.";
-}
 
 PlainGameList KomMetaEngine::getSupportedGames() const {
 	PlainGameList games;
@@ -93,7 +94,7 @@ DetectedGames KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				DetectedGame game = DetectedGame(kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS);
+				DetectedGame game = DetectedGame(getEngineId(), kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS);
 				game.gameSupportLevel = kUnstableGame;
 				detectedGames.push_back(game);
 				break;

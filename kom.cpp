@@ -88,6 +88,7 @@ Common::Error KomEngine::run() {
 
 	_actorMan = new ActorManager(this);
 
+	_debugger = new Debugger(this);
 	_screen = new Screen(this, _system);
 	assert(_screen);
 	if (!_screen->init())
@@ -96,7 +97,6 @@ Common::Error KomEngine::run() {
 	_database = new Database(this);
 	_input = new Input(this, _system);
 	_sound = new Sound(_mixer);
-	_debugger = new Debugger(this);
 	_panel = new Panel(this, "kom/oneoffs/pan1.img");
 	_game = new Game(this, _system);
 
