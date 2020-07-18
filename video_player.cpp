@@ -55,7 +55,7 @@ void VideoPlayer::processEvents() {
 			_skipVideo = true;
 			break;
 
-		case Common::EVENT_RTL:
+		case Common::EVENT_RETURN_TO_LAUNCHER:
 		case Common::EVENT_QUIT:
 			_skipVideo = true;
 			_vm->quitGame();
