@@ -36,14 +36,10 @@
 
 #include "engines/metaengine.h"
 
-namespace Kom {
+static const PlainGameDescriptor komSetting =
+	{"kom", "Kingdom O\' Magic"};
 
-static const PlainGameDescriptor kom_list[] = {
-	{ "kom", "Kingdom O\' Magic" },
-	{ 0, 0 }
-};
-
-class KomMetaEngine : public MetaEngine {
+class KomMetaEngineDetection : public MetaEngineDetection {
 public:
 	const char *getEngineId() const {
 		return "kom";
@@ -57,35 +53,24 @@ public:
 		return "Kingdom O' Magic (C) 1996 SCi (Sales Curve Interactive) Ltd.";
 	}
 
-	virtual PlainGameList getSupportedGames() const;
-	virtual PlainGameDescriptor findGame(const char *gameid) const;
-	virtual DetectedGames detectGames(const Common::FSList &fslist) const;
-
-	virtual Common::Error createInstance(OSystem *syst, Engine **engine) const;
+	PlainGameList getSupportedGames() const override;
+	PlainGameDescriptor findGame(const char *gameid) const override;
+	DetectedGames detectGames(const Common::FSList &fslist) const override;
 };
 
-PlainGameList KomMetaEngine::getSupportedGames() const {
+PlainGameList KomMetaEngineDetection::getSupportedGames() const {
 	PlainGameList games;
-	const PlainGameDescriptor *g = kom_list;
-
-	while (g->gameId) {
-		games.push_back(*g);
-		g++;
-	}
+	games.push_back(komSetting);
 	return games;
 }
 
-PlainGameDescriptor KomMetaEngine::findGame(const char *gameid) const {
-	const PlainGameDescriptor *g = kom_list;
-	while (g->gameId) {
-		if (0 == scumm_stricmp(gameid, g->gameId))
-			break;
-		g++;
-	}
-	return *g;
+PlainGameDescriptor KomMetaEngineDetection::findGame(const char *gameid) const {
+	if (0 == scumm_stricmp(gameid, komSetting.gameId))
+		return komSetting;
+	return PlainGameDescriptor::empty();
 }
 
-DetectedGames KomMetaEngine::detectGames(const Common::FSList &fslist) const {
+DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist) const {
 	DetectedGames detectedGames;
 	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
 		if (!file->isDirectory()) {
@@ -94,7 +79,7 @@ DetectedGames KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				DetectedGame game = DetectedGame(getEngineId(), kom_list[0].gameId, kom_list[0].description, Common::EN_ANY, Common::kPlatformDOS);
+				DetectedGame game = DetectedGame(getEngineId(), komSetting.gameId, komSetting.description, Common::EN_ANY, Common::kPlatformDOS);
 				game.gameSupportLevel = kUnstableGame;
 				detectedGames.push_back(game);
 				break;
@@ -104,29 +89,4 @@ DetectedGames KomMetaEngine::detectGames(const Common::FSList &fslist) const {
 	return detectedGames;
 }
 
-Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine) const {
-	Common::FSNode dir(ConfMan.get("path"));
-
-	// Unable to locate game data
-	if (!(dir.getChild("thidney.dsk").exists() || dir.getChild("shahron.dsk").exists())) {
-		warning("KOM: unable to locate game data at path '%s'", dir.getPath().c_str());
-		return Common::kNoGameDataFoundError;
-	}
-
-	if (engine == NULL) {
-		return Common::kUnknownError;
-	}
-
-	*engine = new KomEngine(syst);
-	return Common::kNoError;
-}
-
-} // End of namespace Kom
-
-using namespace Kom;
-
-#if PLUGIN_ENABLED_DYNAMIC(KOM)
-	REGISTER_PLUGIN_DYNAMIC(KOM, PLUGIN_TYPE_ENGINE, KomMetaEngine);
-#else
-	REGISTER_PLUGIN_STATIC(KOM, PLUGIN_TYPE_ENGINE, KomMetaEngine);
-#endif
+REGISTER_PLUGIN_STATIC(KOM_DETECTION, PLUGIN_TYPE_ENGINE_DETECTION, KomMetaEngineDetection);

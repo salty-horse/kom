@@ -14,7 +14,8 @@ MODULE_OBJS := \
 	font.o \
 	debugger.o \
 	video_player.o \
-	detection.o
+	detection.o \
+	metaengine.o
 
 # This module can be built as a plugin
 ifeq ($(ENABLE_KOM), DYNAMIC_PLUGIN)
