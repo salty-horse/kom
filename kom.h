@@ -67,8 +67,6 @@ public:
 
 	Common::Error run();
 
-	::GUI::Debugger *getDebugger() { return _debugger; }
-
 	Input *input() const { return _input; }
 	ActorManager *actorMan() const { return _actorMan; }
 	Screen *screen() const { return _screen; }

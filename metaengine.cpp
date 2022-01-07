@@ -19,10 +19,10 @@ public:
 		return "kom";
 	}
 
-	Common::Error createInstance(OSystem *syst, Engine **engine) const override;
+	Common::Error createInstance(OSystem *syst, Engine **engine) override;
 };
 
-Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine) const {
+Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine) {
 	Common::FSNode dir(ConfMan.get("path"));
 
 	// Unable to locate game data

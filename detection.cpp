@@ -55,7 +55,7 @@ public:
 
 	PlainGameList getSupportedGames() const override;
 	PlainGameDescriptor findGame(const char *gameid) const override;
-	DetectedGames detectGames(const Common::FSList &fslist) const override;
+	DetectedGames detectGames(const Common::FSList &fslist) override;
 };
 
 PlainGameList KomMetaEngineDetection::getSupportedGames() const {
@@ -70,7 +70,7 @@ PlainGameDescriptor KomMetaEngineDetection::findGame(const char *gameid) const {
 	return PlainGameDescriptor::empty();
 }
 
-DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist) const {
+DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist) {
 	DetectedGames detectedGames;
 	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
 		if (!file->isDirectory()) {
