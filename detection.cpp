@@ -41,11 +41,11 @@ static const PlainGameDescriptor komSetting =
 
 class KomMetaEngineDetection : public MetaEngineDetection {
 public:
-	const char *getEngineId() const {
+	const char *getName() const {
 		return "kom";
 	}
 
-	const char *getName() const {
+	const char *getEngineName() const {
 		return "Kingdom O\' Magic";
 	}
 
@@ -55,7 +55,11 @@ public:
 
 	PlainGameList getSupportedGames() const override;
 	PlainGameDescriptor findGame(const char *gameid) const override;
-	DetectedGames detectGames(const Common::FSList &fslist) override;
+	DetectedGames detectGames(const Common::FSList &fslist, uint32 /*skipADFlags*/, bool /*skipIncomplete*/) override;
+
+	uint getMD5Bytes() const override {
+		return 0;
+	}
 };
 
 PlainGameList KomMetaEngineDetection::getSupportedGames() const {
@@ -70,7 +74,7 @@ PlainGameDescriptor KomMetaEngineDetection::findGame(const char *gameid) const {
 	return PlainGameDescriptor::empty();
 }
 
-DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist) {
+DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist, uint32 /*skipADFlags*/, bool /*skipIncomplete*/) {
 	DetectedGames detectedGames;
 	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
 		if (!file->isDirectory()) {
@@ -79,7 +83,7 @@ DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist) 
 			if (0 == scumm_stricmp("thidney.dsk", filename) ||
 			    0 == scumm_stricmp("shahron.dsk", filename)) {
 				// Only 1 target ATM
-				DetectedGame game = DetectedGame(getEngineId(), komSetting.gameId, komSetting.description, Common::EN_ANY, Common::kPlatformDOS);
+				DetectedGame game = DetectedGame(getName(), komSetting.gameId, komSetting.description, Common::EN_ANY, Common::kPlatformDOS);
 				game.gameSupportLevel = kUnstableGame;
 				detectedGames.push_back(game);
 				break;
