@@ -191,7 +191,7 @@ void Database::initLocations() {
 			&(_locations[index].allowedTime));
 
 		line = f.readLine();
-		strcpy(_locations[index].desc, line.c_str());
+		Common::strlcpy(_locations[index].desc, line.c_str(), sizeof(_locations[index].desc));
 		stripUndies(_locations[index].desc);
 
 		// Skip line containing "-1"
@@ -239,7 +239,7 @@ void Database::initCharacters() {
 			&(_characters[index]._type));
 
 		line = f.readLine();
-		strcpy(_characters[index]._desc, line.c_str());
+		Common::strlcpy(_characters[index]._desc, line.c_str(), sizeof(_characters[index]._desc));
 		stripUndies(_characters[index]._desc);
 
 		line = f.readLine();
@@ -337,7 +337,7 @@ void Database::initObjects() {
 			&(_objects[index].data1));
 
 		line = f.readLine();
-		strcpy(_objects[index].desc, line.c_str());
+		Common::strlcpy(_objects[index].desc, line.c_str(), sizeof(_objects[index].desc));
 		stripUndies(_objects[index].desc);
 
 		line = f.readLine();
@@ -501,7 +501,7 @@ void Database::initProcs() {
 		sscanf(line.c_str(), "%d", &index);
 
 		line = f.readLine();
-		strcpy(_processes[index].name, line.c_str());
+		Common::strlcpy(_processes[index].name, line.c_str(), sizeof(_processes[index].name));
 
 		do {
 			line = f.readLine();
@@ -533,7 +533,7 @@ void Database::initProcs() {
 				// string + int/short
 				case 474:
 					line = f.readLine();
-					strcpy(opObject.arg1, line.c_str());
+					Common::strlcpy(opObject.arg1, line.c_str(), sizeof(opObject.arg1));
 					line = f.readLine();
 					sscanf(line.c_str(), "%d", &(opObject.arg2));
 					break;
@@ -542,7 +542,7 @@ void Database::initProcs() {
 				case 467:
 				case 469:
 					line = f.readLine();
-					strcpy(opObject.arg1, line.c_str());
+					Common::strlcpy(opObject.arg1, line.c_str(), sizeof(opObject.arg1));
 
 					// Skip empty line
 					f.readLine();
@@ -551,7 +551,7 @@ void Database::initProcs() {
 				// string + int + int + int
 				case 468:
 					line = f.readLine();
-					strcpy(opObject.arg1, line.c_str());
+					Common::strlcpy(opObject.arg1, line.c_str(), sizeof(opObject.arg1));
 					line = f.readLine();
 					sscanf(line.c_str(), "%d %d %d", &(opObject.arg2),
 					       &(opObject.arg3), &(opObject.arg4));

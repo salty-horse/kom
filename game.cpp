@@ -109,7 +109,7 @@ void Game::enterLocation(uint16 locId) {
 	if (_vm->gameLoopTimer() > 1)
 		_vm->ambientStart(locId);
 
-	sprintf(filenameBuf, "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
+	Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
 	_vm->screen()->loadBackground(locDir + filenameBuf);
 
 	// TODO - init some other flic var
@@ -132,7 +132,7 @@ void Game::enterLocation(uint16 locId) {
 		roomObj.objectId = *objId;
 
 		if (obj->isSprite) {
-			sprintf(filenameBuf, "%s%s%d.act", locDir.c_str(), obj->name, _player.isNight);
+			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%s%d.act", locDir.c_str(), obj->name, _player.isNight);
 			roomObj.actorId = _vm->actorMan()->load(filenameBuf);
 			roomObj.priority = db->getBox(locId, obj->box)->priority;
 			Actor *act = _vm->actorMan()->get(roomObj.actorId);
@@ -155,7 +155,7 @@ void Game::enterLocation(uint16 locId) {
 			String exitName(db->getLoc(exits[i].exitLoc)->name);
 			exitName.toLowercase();
 
-			sprintf(filenameBuf, "%s%s%dd.act", locDir.c_str(), exitName.c_str(),
+			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%s%dd.act", locDir.c_str(), exitName.c_str(),
 					loc->xtend + _player.isNight);
 
 			// The exit can have no door
@@ -2077,7 +2077,7 @@ void Game::doActionPlayVideo(const char *name) {
 			for (uint i = 0; i < ARRAYSIZE(convPrefix); i++) {
 				if (videoName.hasPrefix(convPrefix[i])) {
 					dir = "cutsconv";
-					strcpy(prefix, convPrefix[i]);
+					Common::strlcpy(prefix, convPrefix[i], sizeof(prefix));
 					break;
 				}
 			}
@@ -2093,10 +2093,10 @@ void Game::doActionPlayVideo(const char *name) {
 	}
 
 	if (noModifier)
-		sprintf(filenameBuf, "kom/%s/%s%s%s.smk",
+		Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/%s/%s%s%s.smk",
 			dir, prefix, prefix[0] ? "/" : "", videoName.c_str());
 	else {
-		int len = sprintf(filenameBuf, "kom/%s/%s%s%s%d.smk",
+		int len = Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/%s/%s%s%s%d.smk",
 			dir, prefix, prefix[0] ? "/" : "", videoName.c_str(),
 			player()->isNight);
 
@@ -2175,18 +2175,18 @@ void Game::doActionPlaySample(const char *name) {
 	}
 
 	if (sampleName.hasPrefix("nmess")) {
-		sprintf(filenameBuf, "kom/nar/%s.raw", sampleName.c_str());
+		Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/nar/%s.raw", sampleName.c_str());
 
 	} else if (sampleName.lastChar() == 'l' || sampleName.lastChar() == 'u' ||
 	           sampleName.lastChar() == 'g') {
 
 		strncpy(prefix, sampleName.c_str(), sampleName.size()-2);
 		prefix[sampleName.size()-2] = '\0';
-		sprintf(filenameBuf, "kom/locs/%c%c/%s/%s.raw",
+		Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/locs/%c%c/%s/%s.raw",
 				sampleName[0], sampleName[1], prefix, sampleName.c_str());
 
 	} else {
-		sprintf(filenameBuf, "kom/obj/%s.raw", sampleName.c_str());
+		Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/obj/%s.raw", sampleName.c_str());
 	}
 
 	if ((mode & 4) == 0)
@@ -2269,7 +2269,7 @@ void Game::doGreeting(int charId, int greeting) {
 
 	String charName(_vm->database()->getChar(charId)->_name);
 	charName.toLowercase();
-	sprintf(filenameBuf, "kom/conv/%s/response/%d.raw", charName.c_str(), greeting);
+	Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/conv/%s/response/%d.raw", charName.c_str(), greeting);
 
 	_vm->panel()->showLoading(true);
 		stopGreeting();
@@ -2282,7 +2282,7 @@ void Game::doGreeting(int charId, int greeting) {
 
 void Game::doReply(int charId, int reply) {
 	char buf[10];
-	sprintf(buf, "%d", reply);
+	Common::sprintf_s(buf, sizeof(buf), "%d", reply);
 	doReply(charId, buf);
 }
 
@@ -2292,7 +2292,7 @@ void Game::doReply(int charId, const char *reply) {
 
 	String charName(_vm->database()->getChar(charId)->_name);
 	charName.toLowercase();
-	sprintf(filenameBuf, "kom/conv/%s/response/%s.raw", charName.c_str(), reply);
+	Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "kom/conv/%s/response/%s.raw", charName.c_str(), reply);
 
 	_vm->panel()->showLoading(true);
 		stopGreeting();
@@ -3193,7 +3193,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 	if (chr->_hitPoints == -1) {
 		KOM_LABEL_TEXT(labels[2], invincible[hash[1] % ARRAYSIZE(invincible)]);
 	} else {
-		sprintf(hitPoints, "%d/%d", chr->_hitPoints, chr->_hitPointsMax);
+		Common::sprintf_s(hitPoints, sizeof(hitPoints), "%d/%d", chr->_hitPoints, chr->_hitPointsMax);
 		KOM_LABEL_TEXT(labels[2], hitPoints);
 	}
 	KOM_LABEL(labels[2], 205, currRow, 319, -40);
@@ -3203,7 +3203,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 	KOM_LABEL_TEXT(labels[3], "Spellpower:");
 	KOM_LABEL(labels[3], 122, currRow, 319, -30);
 
-	sprintf(spellPoints, "%d", chr->_spellPoints);
+	Common::sprintf_s(spellPoints, sizeof(spellPoints), "%d", chr->_spellPoints);
 	KOM_LABEL_TEXT(labels[4], spellPoints);
 	KOM_LABEL(labels[4], 205, currRow, 319, -50);
 
@@ -3230,7 +3230,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 	if (chr->_gold == 0) {
 		KOM_LABEL_TEXT(labels[12], noMoney[hash[1] % ARRAYSIZE(noMoney)]);
 	} else {
-		sprintf(gold, "%d", chr->_gold);
+		Common::sprintf_s(gold, sizeof(gold), "%d", chr->_gold);
 		KOM_LABEL_TEXT(labels[12], gold);
 	}
 	KOM_LABEL(labels[12], 205, currRow, 319, -80);
@@ -3355,7 +3355,7 @@ void Game::doLookAt(int charId, int pauseTimer, bool showBackground) {
 
 				int endPos = MAX(0, MIN(labels[i].length, labels[i].delay));
 				char str[42];
-				strcpy(str, labels[i].text);
+				Common::strlcpy(str, labels[i].text, sizeof(str));
 
 				// Special handling of object name - word by word
 				if (i == 15) {
@@ -3506,7 +3506,7 @@ void Game::declareNewEnemy(int16 enemy) {
 					found = true;
 				}
 			}
-			strcpy(_player.enemyDesc, desc);
+			Common::strlcpy(_player.enemyDesc, desc, sizeof(_player.enemyDesc));
 		}
 	}
 }

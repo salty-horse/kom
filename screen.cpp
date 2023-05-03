@@ -1319,7 +1319,7 @@ void Screen::updateActionStrings() {
 
 	// Set panel strings
 
-	sprintf(panelText, "%s %s", text1, text2);
+	Common::sprintf_s(panelText, sizeof(panelText), "%s %s", text1, text2);
 	_vm->panel()->setActionDesc(panelText);
 
 	if (text1[0] != 0)
@@ -1331,10 +1331,10 @@ void Screen::updateActionStrings() {
 		if (!_vm->database()->getChar(hoverId)->_isAlive)
 			textRIP = " (RIP)";
 
-		sprintf(panelText, "%s%s%s%s%s", space1, text3, space2, text4, textRIP);
+		Common::sprintf_s(panelText, sizeof(panelText), "%s%s%s%s%s", space1, text3, space2, text4, textRIP);
 
 	} else {
-		sprintf(panelText, "%s%s%s%s", space1, text3, space2, text4);
+		Common::sprintf_s(panelText, sizeof(panelText), "%s%s%s%s", space1, text3, space2, text4);
 	}
 
 	_vm->panel()->setHotspotDesc(panelText);
@@ -1638,19 +1638,19 @@ void Screen::drawInventory(Inventory *inv) {
 	}
 
 	if (settings->objectNum > 0) {
-		sprintf(panelText, "Use %s", _vm->database()->getObj(settings->objectNum)->desc);
+		Common::sprintf_s(panelText, sizeof(panelText), "Use %s", _vm->database()->getObj(settings->objectNum)->desc);
 		_vm->panel()->setActionDesc(panelText);
 
 		if (inv->selectedSpellObj >= 0) {
-			sprintf(panelText, "with %s (%dpts)", descString,
+			Common::sprintf_s(panelText, sizeof(panelText), "with %s (%dpts)", descString,
 					_vm->database()->getObj(inv->selectedObj)->spellCost);
 		} else {
-			sprintf(panelText, "with %s", descString);
+			Common::sprintf_s(panelText, sizeof(panelText), "with %s", descString);
 		}
 		_vm->panel()->setHotspotDesc(panelText);
 	} else {
 		if (inv->selectedSpellObj >= 0) {
-			sprintf(panelText, "%s (%dpts)", descString,
+			Common::sprintf_s(panelText, sizeof(panelText), "%s (%dpts)", descString,
 					_vm->database()->getObj(inv->selectedObj)->spellCost);
 			_vm->panel()->setHotspotDesc(panelText);
 		} else {
@@ -1731,7 +1731,7 @@ void Screen::drawFightBars() {
 		writeText(_vm->screen()->screenBuf(), desc, 17, 41, 31, false);
 
 		// Write hit points
-		sprintf(buf, "%d", drawnHitPoints);
+		Common::sprintf_s(buf, sizeof(buf), "%d", drawnHitPoints);
 		writeText(_vm->screen()->screenBuf(), buf, 9, 42, 0, false);
 		writeText(_vm->screen()->screenBuf(), buf, 8, 41, 31, false);
 	}
@@ -1777,9 +1777,9 @@ void Screen::drawFightBars() {
 
 		// Write hit points
 		if (!immortal)
-			sprintf(buf, "%d", drawnHitPoints);
+			Common::sprintf_s(buf, sizeof(buf), "%d", drawnHitPoints);
 		else
-			strcpy(buf, "Immortal");
+			Common::strlcpy(buf, "Immortal", sizeof(buf));
 		writeTextRight(_vm->screen()->screenBuf(), buf, 9, 286, 0, false);
 		writeTextRight(_vm->screen()->screenBuf(), buf, 8, 285, 31, false);
 
@@ -1980,8 +1980,8 @@ void Screen::narratorWriteLine(byte *buf) {
 		if (col + width > 308)
 			return;
 
-		strcpy(word, _narratorWord);
-		strcat(word, " ");
+		Common::strlcpy(word, _narratorWord, sizeof(word));
+		Common::strlcat(word, " ", sizeof(word));
 
 		writeText(buf, word, 0, col, 25, true);
 		col += width;
@@ -2004,8 +2004,9 @@ void Screen::writeTextCentered(byte *buf, const char *text, uint8 row, uint8 col
 
 void Screen::writeTextWrap(byte *buf, const char *text, uint8 row, uint16 col, uint16 wrapCol, uint8 color, bool isEmbossed) {
 	uint16 currCol = col;
-	char *txt = new char[strlen(text) + 1];
-	strcpy(txt, text);
+	size_t len = strlen(text) + 1;
+	char *txt = new char[len];
+	Common::strlcpy(txt, text, len);
 	for (char *word = strtok(txt, " "); word != 0; word = strtok(NULL, " ")) {
 		uint16 wordWidth = calcWordWidth(word);
 		if (currCol + wordWidth >= wrapCol) {

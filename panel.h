@@ -25,6 +25,7 @@
 
 #include "common/scummsys.h"
 #include "common/list.h"
+#include "common/str.h"
 
 namespace Kom {
 
@@ -63,9 +64,9 @@ private:
 	bool _isDirty;
 	int _suppressLoading;
 
-	char *_locationDesc;
-	char *_actionDesc;
-	char *_hotspotDesc;
+	Common::String _locationDesc;
+	Common::String _actionDesc;
+	Common::String _hotspotDesc;
 
 	Common::List<int> _gotObjects;
 	int _gotObjTime;

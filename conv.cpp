@@ -257,8 +257,9 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 	if (text == NULL) {
 		_exchangeString = NULL;
 	} else {
-		_exchangeString = new char[strlen(text) + 4];
-		strcpy(_exchangeString, text);
+		size_t len = strlen(text) + 4;
+		_exchangeString = new char[len];
+		Common::strlcpy(_exchangeString, text, len);
 	}
 
 	_scrollTimer = 0;
@@ -717,7 +718,7 @@ void Talk::init(uint16 charId, int16 convNum) {
 	_vm->game()->stopNarrator();
 	_vm->game()->stopGreeting();
 
-	sprintf(playerCodename, "%s%c",
+	Common::sprintf_s(playerCodename, sizeof(playerCodename), "%s%c",
 		playerChar->_name,
 		playerChar->_xtend + (playerChar->_xtend < 10 ? '0' : '7'));
 
@@ -922,7 +923,7 @@ void Conv::initConvs(uint32 offset) {
 				case 467:
 				case 469:
 					lineBuffer = _convData->readLine();
-					strcpy(statObject.filename, lineBuffer.c_str());
+					Common::strlcpy(statObject.filename, lineBuffer.c_str(), sizeof(statObject.filename));
 					break;
 
 				default:
@@ -1008,7 +1009,7 @@ void Conv::doResponse(int responseNum) {
 	if (num != responseNum) {
 		error("Could not find response %d of %s", responseNum, _codename);
 	}
-	sprintf(convName, "%d", responseNum);
+	Common::sprintf_s(convName, sizeof(convName), "%d", responseNum);
 	Talk talk(_vm);
 	talk.init(_charId, 0);
 	talk.doTalk(_charId, emotion, convName, _text + offset);
@@ -1062,12 +1063,13 @@ int Lips::showOptions(OptionLine *options) {
 	// Add a bullet at the beginning
 	for (int i = 0; i < 3; i++) {
 		if (options[i].offset == 0) {
-			options[i].text = 0;
+			options[i].text = NULL;
 		} else {
 			if (options[i].offset) {
-				options[i].text = new char[strlen(options[i].offset) + 3];
-				strcpy(options[i].text, "\x08 ");
-				strcat(options[i].text, options[i].offset);
+				size_t len = strlen(options[i].offset) + 3;
+				options[i].text = new char[len];
+				Common::strlcpy(options[i].text, "\x08 ", len);
+				Common::strlcat(options[i].text, options[i].offset, len);
 			}
 
 			validOptions++;
@@ -1086,7 +1088,7 @@ int Lips::showOptions(OptionLine *options) {
 		char *word;
 
 		if (options[i].offset == 0) {
-			options[i].text = 0;
+			options[i].text = NULL;
 			continue;
 		}
 
@@ -1159,7 +1161,7 @@ int Lips::showOptions(OptionLine *options) {
 void Lips::freeOptions(OptionLine *options) {
 	for (int i = 0; i < 3; i++) {
 		delete[] options[i].text;
-		options[i].text = 0;
+		options[i].text = NULL;
 
 		for (int j = 0; j < 24; j++) {
 			options[i].lines[j] = "";

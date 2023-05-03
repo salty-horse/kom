@@ -31,12 +31,13 @@
 #include "kom/sound.h"
 
 using Common::File;
+using Common::String;
 
 namespace Kom {
 
 Panel::Panel(KomEngine *vm, const char *filename) : _vm(vm),
 	_isEnabled(true), _isLoading(false), _suppressLoading(0),
-	_locationDesc(0), _actionDesc(0), _hotspotDesc(0), _gotObjTime(0) {
+	_gotObjTime(0) {
 
 	File f;
 	f.open(filename);
@@ -57,9 +58,6 @@ Panel::Panel(KomEngine *vm, const char *filename) : _vm(vm),
 Panel::~Panel() {
 	delete[] _panelData;
 	delete[] _panelBuf;
-	delete[] _locationDesc;
-	delete[] _actionDesc;
-	delete[] _hotspotDesc;
 }
 
 void Panel::clear() {
@@ -76,14 +74,14 @@ void Panel::update() {
 	//         4 pixels to the right.
 	// Actually, the original prints all text 4 pixels to the right, so we're using
 	// 6 as the column instead of 10 for the two bottom lines.
-	if (_locationDesc)
-		_vm->screen()->writeTextCentered(_panelBuf, _locationDesc, 3, 31, true);
+	if (!_locationDesc.empty())
+		_vm->screen()->writeTextCentered(_panelBuf, _locationDesc.c_str(), 3, 31, true);
 
-	if (_actionDesc)
-		_vm->screen()->writeText(_panelBuf, _actionDesc, 12, 6, 31, true);
+	if (!_actionDesc.empty())
+		_vm->screen()->writeText(_panelBuf, _actionDesc.c_str(), 12, 6, 31, true);
 
-	if (_hotspotDesc)
-		_vm->screen()->writeText(_panelBuf, _hotspotDesc, 22, 6, 31, true);
+	if (!_hotspotDesc.empty())
+		_vm->screen()->writeText(_panelBuf, _hotspotDesc.c_str(), 22, 6, 31, true);
 
 	// FIXME: check loading in the middle of object animation
 	if (_isLoading)
@@ -233,23 +231,17 @@ void Panel::showLoading(bool isLoading, bool clearScreen) {
 }
 
 void Panel::setLocationDesc(const char *desc) {
-	delete[] _locationDesc;
-	_locationDesc = new char[strlen(desc) + 1];
-	strcpy(_locationDesc, desc);
+	_locationDesc = desc;
 	_isDirty = true;
 }
 
 void Panel::setActionDesc(const char *desc) {
-	delete[] _actionDesc;
-	_actionDesc = new char[strlen(desc) + 1];
-	strcpy(_actionDesc, desc);
+	_actionDesc = desc;
 	_isDirty = true;
 }
 
 void Panel::setHotspotDesc(const char *desc) {
-	delete[] _hotspotDesc;
-	_hotspotDesc = new char[strlen(desc) + 1];
-	strcpy(_hotspotDesc, desc);
+	_hotspotDesc = desc;
 	_isDirty = true;
 }
 

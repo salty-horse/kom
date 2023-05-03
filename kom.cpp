@@ -494,7 +494,7 @@ void KomEngine::ambientStart(int locId) {
 
 	} else if (musicId != _playingMusicId) {
 
-		sprintf(musicIdStr, "amb%d.raw", musicId);
+		Common::sprintf_s(musicIdStr, sizeof(musicIdStr), "amb%d.raw", musicId);
 		_ambientSample.loadFile(musicDir + musicIdStr);
 		_sound->playSampleMusic(_ambientSample);
 

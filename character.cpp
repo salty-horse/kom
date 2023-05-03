@@ -595,7 +595,7 @@ void Character::setScopeX(int16 scope) {
 			strncpy(prefix, name.c_str(), 4);
 			prefix[4] = '\0';
 
-			sprintf(filename, "%s%s/%s%d.act", spritesDir.c_str(), prefix,
+			Common::sprintf_s(filename, sizeof(filename), "%s%s/%s%d.act", spritesDir.c_str(), prefix,
 					name.c_str(), _vm->game()->player()->isNight);
 
 			if (!Common::File::exists(filename)) {
@@ -603,7 +603,7 @@ void Character::setScopeX(int16 scope) {
 
 				if (!Common::File::exists(filename)) {
 					prefix[3] = '\0';
-					sprintf(filename, "%s%s/%s%d.act", spritesDir.c_str(), prefix,
+					Common::sprintf_s(filename, sizeof(filename), "%s%s/%s%d.act", spritesDir.c_str(), prefix,
 							name.c_str(), _vm->game()->player()->isNight);
 
 					if (!Common::File::exists(filename)) {
@@ -690,7 +690,7 @@ void Character::setScopeX(int16 scope) {
 				_actorId = -1;
 			}
 
-			sprintf(filename, "kom/actors/%s%c.act", charName.c_str(),
+			Common::sprintf_s(filename, sizeof(filename), "kom/actors/%s%c.act", charName.c_str(),
 					xtend + (xtend < 10 ? '0' : '7'));
 			_loadedScopeXtend = xtend;
 
