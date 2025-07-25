@@ -41,6 +41,7 @@
 namespace Kom {
 
 using Common::String;
+using Common::Path;
 
 void Character::moveChar(bool param) {
 	int16 nextLoc, targetBox, targetBoxX, targetBoxY, nextBox;
@@ -533,8 +534,9 @@ void Character::setScope(int16 scope) {
 }
 
 void Character::setScopeX(int16 scope) {
-	static String spritesDir("kom/cutsprit/");
-	char filename[100];
+	static Path spritesDir("kom/cutsprit/");
+	static Path actorsDir("kom/actors/");
+	Path filename;
 	String charName(_name);
 	charName.toLowercase();
 	Actor *act;
@@ -558,7 +560,7 @@ void Character::setScopeX(int16 scope) {
 			_vm->actorMan()->unload(_actorId);
 			_actorId = -1;
 		}
-		_actorId = _vm->actorMan()->load("kom/actors/grave.act");
+		_actorId = _vm->actorMan()->load(actorsDir.appendComponent("kom/actors/grave.act"));
 		act = _vm->actorMan()->get(_actorId);
 		act->enable(1);
 		act->defineScope(0, 0, 0, 0);
@@ -592,22 +594,25 @@ void Character::setScopeX(int16 scope) {
 			// Figure out if the prefix directory is 3 or 4 characters long
 			// and if the filename has a day/night variant
 			char prefix[5];
+			char actorFilename[13];
 			strncpy(prefix, name.c_str(), 4);
 			prefix[4] = '\0';
 
-			Common::sprintf_s(filename, sizeof(filename), "%s%s/%s%d.act", spritesDir.c_str(), prefix,
+			Common::sprintf_s(actorFilename, sizeof(actorFilename), "%s%d.act",
 					name.c_str(), _vm->game()->player()->isNight);
+			filename = spritesDir.appendComponent(prefix).appendComponent(actorFilename);
 
 			if (!Common::File::exists(filename)) {
-				filename[strlen(filename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
+				actorFilename[strlen(actorFilename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
+				filename = filename.getParent().appendComponent(actorFilename);
 
 				if (!Common::File::exists(filename)) {
 					prefix[3] = '\0';
-					Common::sprintf_s(filename, sizeof(filename), "%s%s/%s%d.act", spritesDir.c_str(), prefix,
-							name.c_str(), _vm->game()->player()->isNight);
+					filename = spritesDir.appendComponent(prefix).appendComponent(actorFilename);
 
 					if (!Common::File::exists(filename)) {
-						filename[strlen(filename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
+						actorFilename[strlen(actorFilename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
+						filename = filename.getParent().appendComponent(actorFilename);
 					}
 				}
 			}
@@ -621,7 +626,7 @@ void Character::setScopeX(int16 scope) {
 
 				// play sample
 				if (_vm->game()->player()->spriteSample.
-						loadFile(spritesDir + prefix + "/" + name + '0' + ".raw"))
+						loadFile(spritesDir.appendComponent(prefix).appendComponent(name + '0' + ".raw")))
 					_vm->sound()->playSampleSFX(_vm->game()->player()->spriteSample, false);
 			}
 
@@ -659,7 +664,7 @@ void Character::setScopeX(int16 scope) {
 			_actorId = -1;
 		}
 		_vm->panel()->showLoading(true);
-			_actorId = _vm->actorMan()->load("kom/actors/cabbage.act");
+			_actorId = _vm->actorMan()->load(actorsDir.appendComponent("cabbage.act"));
 			act = _vm->actorMan()->get(_actorId);
 			act->enable(1);
 			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
@@ -690,12 +695,13 @@ void Character::setScopeX(int16 scope) {
 				_actorId = -1;
 			}
 
-			Common::sprintf_s(filename, sizeof(filename), "kom/actors/%s%c.act", charName.c_str(),
+			char actorFilename[13];
+			Common::sprintf_s(actorFilename, sizeof(actorFilename), "%s%c.act", charName.c_str(),
 					xtend + (xtend < 10 ? '0' : '7'));
 			_loadedScopeXtend = xtend;
 
 			_vm->panel()->showLoading(true);
-			_actorId = _vm->actorMan()->load(filename);
+			_actorId = _vm->actorMan()->load(actorsDir.appendComponent(actorFilename));
 			_vm->actorMan()->get(_actorId)->enable(1);
 			_vm->panel()->showLoading(false);
 		}

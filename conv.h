@@ -32,6 +32,7 @@
 
 namespace Common {
 class File;
+class Path;
 }
 
 namespace Kom {
@@ -106,9 +107,9 @@ enum FaceStatusFlags {
 };
 
 struct Face {
-	Face(KomEngine *vm, const Common::String &filename, byte *zoomSurface);
+	Face(KomEngine *vm, const Common::Path &filename, byte *zoomSurface);
 	~Face();
-	void assignLinks(const Common::String &filename);
+	void assignLinks(const Common::Path &filename);
 
 	KomEngine *_vm;
 	State *_currState;
@@ -141,7 +142,7 @@ protected:
 	KomEngine *_vm;
 
 private:
-	void loadSentence(Face *face, const Common::String &filename);
+	void loadSentence(Face *face, const Common::Path &filename);
 	void updateSentence(Face *face);
 	int getAverage(Face *face);
 	void update(Face *face);
@@ -160,7 +161,7 @@ private:
 	ColorSet *_multiColorSet;
 	bool _fullPalette;
 	bool _multiFullPalette;
-	Common::String _convDir;
+	Common::Path _convDir;
 	int _colorSetType;
 	bool _playerActive;
 	bool _narratorConv;

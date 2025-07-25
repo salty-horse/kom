@@ -26,6 +26,7 @@
 #include <assert.h>
 #include "common/scummsys.h"
 #include "common/str.h"
+#include "common/path.h"
 #include "common/list.h"
 #include "common/file.h"
 
@@ -198,7 +199,7 @@ private:
 	KomEngine *_vm;
 
 	Common::String _databasePrefix;
-	Common::String _pathPrefix;
+	Common::Path _pathPrefix;
 
 	Location *_locations;
 	int _locationsNum;

@@ -31,6 +31,7 @@
 #include "common/fs.h"
 #include "common/config-manager.h"
 #include "common/str.h"
+#include "common/path.h"
 #include "common/textconsole.h"
 
 #include "kom/kom.h"
@@ -47,6 +48,7 @@
 class OSystem;
 
 using Common::String;
+using Common::Path;
 
 namespace Kom {
 
@@ -79,12 +81,12 @@ KomEngine::~KomEngine() {
 
 Common::Error KomEngine::run() {
 
-	const Common::FSNode gameDataDir(ConfMan.get("path"));
+	const Common::FSNode gameDataDir(ConfMan.getPath("path"));
 
 	// Add the game path to the directory search list.
 	// ScummVM defaults to 4, KoM needs 5
-	SearchMan.remove(gameDataDir.getPath());
-	SearchMan.addDirectory(gameDataDir.getPath(), gameDataDir, 0, 5);
+	SearchMan.remove(gameDataDir.getPath().toString());
+	SearchMan.addDirectory(gameDataDir, 0, 5);
 
 	_actorMan = new ActorManager(this);
 
@@ -124,19 +126,19 @@ Common::Error KomEngine::run() {
 	 */
 
 	// Load sound effects
-	static String samplesDir("kom/samples/");
-	_ripSample.loadFile(samplesDir + "rip.raw");
-	_hotspotSample.loadFile(samplesDir + "hotspot.raw");
-	_doorsSample.loadFile(samplesDir + "doors.raw");
-	_clickSample.loadFile(samplesDir + "mouse_l.raw");
-	_swipeSample.loadFile(samplesDir + "swipe.raw");
-	_cashSample.loadFile(samplesDir + "cash.raw");
-	_loseItemSample.loadFile(samplesDir + "loseitem.raw");
-	_magicSample.loadFile(samplesDir + "magic.raw");
-	_fluffSample.loadFile(samplesDir + "fluff.raw");
-	_colgateSample.loadFile(samplesDir + "colgate.raw");
-	_colgateOffSample.loadFile(samplesDir + "colgatof.raw");
-	_fightSample.loadFile(samplesDir + "fight.raw");
+	static Path samplesDir("kom/samples/");
+	_ripSample.loadFile(samplesDir.appendComponent("rip.raw"));
+	_hotspotSample.loadFile(samplesDir.appendComponent("hotspot.raw"));
+	_doorsSample.loadFile(samplesDir.appendComponent("doors.raw"));
+	_clickSample.loadFile(samplesDir.appendComponent("mouse_l.raw"));
+	_swipeSample.loadFile(samplesDir.appendComponent("swipe.raw"));
+	_cashSample.loadFile(samplesDir.appendComponent("cash.raw"));
+	_loseItemSample.loadFile(samplesDir.appendComponent("loseitem.raw"));
+	_magicSample.loadFile(samplesDir.appendComponent("magic.raw"));
+	_fluffSample.loadFile(samplesDir.appendComponent("fluff.raw"));
+	_colgateSample.loadFile(samplesDir.appendComponent("colgate.raw"));
+	_colgateOffSample.loadFile(samplesDir.appendComponent("colgatof.raw"));
+	_fightSample.loadFile(samplesDir.appendComponent("fight.raw"));
 
 	_game->player()->weaponSoundEffect = 8;
 	loadWeaponSample(_game->player()->weaponSoundEffect);
@@ -470,7 +472,7 @@ void KomEngine::ambientStart(int locId) {
 
 	int16 musicId, musicVolume;
 
-	static String musicDir("kom/music/");
+	static Path musicDir("kom/music/");
 
 	// Special handling for the honeymoon suite
    	if (locId == 21 && _database->getLoc(locId)->xtend == 2) {
@@ -495,7 +497,7 @@ void KomEngine::ambientStart(int locId) {
 	} else if (musicId != _playingMusicId) {
 
 		Common::sprintf_s(musicIdStr, sizeof(musicIdStr), "amb%d.raw", musicId);
-		_ambientSample.loadFile(musicDir + musicIdStr);
+		_ambientSample.loadFile(musicDir.appendComponent(musicIdStr));
 		_sound->playSampleMusic(_ambientSample);
 
 		_playingMusicId = musicId;
@@ -520,7 +522,7 @@ void KomEngine::loadWeaponSample(int id) {
 		"BASEBAT", "BASEBAT", "CATTLE", "CHAINSAW", "MALLET",
 		"MALLET", "SABER", "SWORD", "FIGHT", "FIGHT"
 	};
-	_weaponSample.loadFile(String("kom/samples/") + weaponsTable[id] + ".raw");
+	_weaponSample.loadFile(Path("kom/samples/").appendComponent(weaponsTable[id]).append(".raw"));
 }
 
 const byte KomEngine::_distanceVolumeTable[] = { 255, 115, 50, 20, 10, 0 };

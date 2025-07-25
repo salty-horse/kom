@@ -50,6 +50,7 @@
 namespace Kom {
 
 using Common::String;
+using Common::Path;
 
 Game::Game(KomEngine *vm, OSystem *system) : _system(system), _vm(vm) {
 	_videoPlayer = new VideoPlayer(_vm);
@@ -102,7 +103,7 @@ void Game::enterLocation(uint16 locId) {
 	Location *loc = _vm->database()->getLoc(locId);
 	String locName(loc->name);
 	locName.toLowercase();
-	String locDir("kom/locs/" + String(locName.c_str(), 2) + "/" + locName + "/");
+	Path locDir("kom/locs/" + String(locName.c_str(), 2) + "/" + locName);
 
 	// Load room background and mask
 
@@ -110,7 +111,7 @@ void Game::enterLocation(uint16 locId) {
 		_vm->ambientStart(locId);
 
 	Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
-	_vm->screen()->loadBackground(locDir + filenameBuf);
+	_vm->screen()->loadBackground(locDir.appendComponent(filenameBuf));
 
 	// TODO - init some other flic var
 	_vm->_flicLoaded = 2;
@@ -118,7 +119,7 @@ void Game::enterLocation(uint16 locId) {
 	filenameBuf[strlen(filenameBuf) - 6] = '0';
 	filenameBuf[strlen(filenameBuf) - 5] = 'm';
 	Video::FlicDecoder mask;
-	_vm->screen()->loadMask(locDir + filenameBuf);
+	_vm->screen()->loadMask(locDir.appendComponent(filenameBuf));
 
 	Database *db = _vm->database();
 
@@ -132,8 +133,8 @@ void Game::enterLocation(uint16 locId) {
 		roomObj.objectId = *objId;
 
 		if (obj->isSprite) {
-			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%s%d.act", locDir.c_str(), obj->name, _player.isNight);
-			roomObj.actorId = _vm->actorMan()->load(filenameBuf);
+			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%d.act", obj->name, _player.isNight);
+			roomObj.actorId = _vm->actorMan()->load(locDir.appendComponent(filenameBuf));
 			roomObj.priority = db->getBox(locId, obj->box)->priority;
 			Actor *act = _vm->actorMan()->get(roomObj.actorId);
 			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
@@ -155,15 +156,16 @@ void Game::enterLocation(uint16 locId) {
 			String exitName(db->getLoc(exits[i].exitLoc)->name);
 			exitName.toLowercase();
 
-			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%s%dd.act", locDir.c_str(), exitName.c_str(),
+			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%dd.act", exitName.c_str(),
 					loc->xtend + _player.isNight);
+			Path filename = locDir.appendComponent(filenameBuf);
 
 			// The exit can have no door
-			if (!Common::File::exists(filenameBuf))
+			if (!Common::File::exists(filename))
 				continue;
 
 			RoomDoor roomDoor;
-			roomDoor.actorId = _vm->actorMan()->load(filenameBuf);
+			roomDoor.actorId = _vm->actorMan()->load(filename);
 			Actor *act = _vm->actorMan()->get(roomDoor.actorId);
 			act->enable(1);
 			act->setEffect(4);

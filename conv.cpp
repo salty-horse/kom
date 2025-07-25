@@ -29,10 +29,12 @@
 #include "common/file.h"
 #include "common/list.h"
 #include "common/str.h"
+#include "common/path.h"
 #include "common/system.h"
 #include "common/textconsole.h"
 
 #include "graphics/palette.h"
+#include "graphics/paletteman.h"
 
 #include "kom/kom.h"
 #include "kom/character.h"
@@ -46,16 +48,17 @@
 #include "kom/video_player.h"
 
 using Common::File;
+using Common::Path;
 
 static const byte ACTIVE_COLOR[] = {255, 255, 255};
 static const byte INACTIVE_COLOR[] = {162, 130, 130};
 
 namespace Kom {
 
-Face::Face(KomEngine *vm, const Common::String &filename, byte *zoomSurface) :
+Face::Face(KomEngine *vm, const Path &filename, byte *zoomSurface) :
 	_sentenceStatus(0), _flic(vm) {
 
-	_flic.loadTalkVideo(filename.c_str(), zoomSurface);
+	_flic.loadTalkVideo(filename, zoomSurface);
 }
 
 Face::~Face() {
@@ -67,13 +70,13 @@ Face::~Face() {
 	delete[] _states;
 }
 
-void Face::assignLinks(const Common::String &filename) {
+void Face::assignLinks(const Path &filename) {
 	File f;
 	f.open(filename);
 
 	_stateCount = f.readSint16BE();
 	_states = new State[_stateCount];
-	debug(1, "File %s", filename.c_str());
+	debug(1, "File %s", filename.toString().c_str());
 	for (int i = 0; i < _stateCount; ++i) {
 		debug(1, "\tState %d", i);
 		_states[i].id = i;
@@ -195,13 +198,10 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 
 		_narrColorSet = new ColorSet("kom/conv/nartalk.cl");
 		byte *zoomSurface = _vm->screen()->createZoomBlur(char1ZoomX, char1ZoomY);
-		Common::String filenamePrefix = Common::String("kom/conv/") + playerCodename;
-		Common::String flcFilename = filenamePrefix + ".flc";
-		Common::String clFilename = filenamePrefix + ".cl";
-		Common::String lnkFilename = filenamePrefix + ".lnk";
-		_playerFace = new Face(_vm, flcFilename, zoomSurface);
-		_playerColorSet = new ColorSet(clFilename.c_str());
-		_playerFace->assignLinks(lnkFilename);
+		Path fnamePrefix = Path("kom/conv").appendComponent(playerCodename);
+		_playerFace = new Face(_vm, fnamePrefix.append(".flc"), zoomSurface);
+		_playerColorSet = new ColorSet(fnamePrefix.append(".cl"));
+		_playerFace->assignLinks(fnamePrefix.append(".lnk"));
 	}
 
 	if (otherCodename == "s99nar") {
@@ -212,35 +212,36 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 		_otherZoomSurface = _vm->screen()->createZoomBlur(char2ZoomX, char2ZoomY);
 	}
 
-	Common::String fnamePrefix;
+	Path fnamePrefix("kom/conv");
+	fnamePrefix.joinInPlace(otherCodename).joinInPlace(otherCodename);
 	if ( _narratorConv) {
-		fnamePrefix = Common::String::format("kom/conv/%s/%s%02d", otherCodename.c_str(), otherCodename.c_str(), convNum);
-	} else {
-		fnamePrefix = Common::String::format("kom/conv/%s/%s", otherCodename.c_str(), otherCodename.c_str());
+		fnamePrefix.joinInPlace(Common::String::format("%02d", convNum));
 	}
 
-	Common::String fname = fnamePrefix + ".flc";
+	Path fname = fnamePrefix.append(".flc");
 
 	if (otherCodename == "m13rog") {
 		_isBalrog = true;
-		_balrogFlic.loadTalkVideo(fname.c_str(), _otherZoomSurface);
+		_balrogFlic.loadTalkVideo(fname, _otherZoomSurface);
 	} else {
 		_isBalrog = false;
 		_otherFace = new Face(_vm, fname, _narratorConv ? NULL : _otherZoomSurface);
 	}
 
-	fname = fnamePrefix + ".cl";
-	_otherColorSet = new ColorSet(fname.c_str());
+	fname = fnamePrefix.append(".cl");
+	_otherColorSet = new ColorSet(fname);
 	_fullPalette = _otherColorSet->size > 128;
 
-	fname = fnamePrefix + ".lnk";
+	fname = fnamePrefix.append(".lnk");
 	if (!_isBalrog) {
 		_otherFace->assignLinks(fname);
 	}
+	_convDir.clear();
+	_convDir.joinInPlace("kom/conv").joinInPlace(otherCodename);
 	if (_playerActive) {
-		_convDir = Common::String::format("kom/conv/%s/conv%d", otherCodename.c_str(), convNum);
+		_convDir.joinInPlace(Common::String::format("conv%d", convNum));
 	} else {
-		_convDir = Common::String::format("kom/conv/%s/response", otherCodename.c_str());
+		_convDir.joinInPlace("response");
 	}
 	_vm->screen()->showMouseCursor(false);
 	_talkerSample = NULL;
@@ -251,7 +252,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 }
 
 void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char *text, int pitch) {
-	Common::String sampleFilename = Common::String::format("%s/%s.raw", _convDir.c_str(), filename);
+	Path sampleFilename = _convDir.appendComponent(Common::String::format("%s.raw", filename));
 
 	bool pitchSet = false;
 	if (text == NULL) {
@@ -489,7 +490,7 @@ void Lips::convDialogue() {
 	_vm->screen()->drawPanel(_textSurface + _scrollPos * SCREEN_W);
 }
 
-void Lips::loadSentence(Face *face, const Common::String &filename) {
+void Lips::loadSentence(Face *face, const Path &filename) {
 	if (face->_sentenceStatus != 0) {
 		face->_sample.unload();
 	}

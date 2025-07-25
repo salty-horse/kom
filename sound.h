@@ -31,7 +31,7 @@
 #include "audio/audiostream.h"
 
 namespace Common {
-class File;
+class Path;
 }
 
 namespace Kom {
@@ -48,7 +48,7 @@ public:
 	SoundSample() { _stream = 0; _isCompressed = false; _isSpeech = false; _sampleData = 0; }
 	~SoundSample() { unload(); }
 
-	bool loadFile(Common::String filename, bool isSpeech = false);
+	bool loadFile(const Common::Path &filename, bool isSpeech = false);
 	void unload();
 	bool isLoaded() { return _stream != 0; }
 	int16 const *getSamples();
@@ -73,8 +73,8 @@ public:
 	bool _musicEnabled;
 	bool _sfxEnabled;
 
-	bool playFileSFX(Common::String filename, SoundHandle *handle);
-	bool playFileSpeech(Common::String filename, SoundHandle *handle);
+	bool playFileSFX(const Common::Path &filename, SoundHandle *handle);
+	bool playFileSpeech(const Common::Path &filename, SoundHandle *handle);
 	void playSampleSFX(SoundSample &sample, bool loop);
 	void playSampleMusic(SoundSample &sample);
 	void playSampleSpeech(SoundSample &sample);
@@ -88,7 +88,7 @@ public:
 
 private:
 
-	bool playFile(Common::String filename, SoundHandle *handle, Audio::Mixer::SoundType type, byte volume);
+	bool playFile(const Common::Path &filename, SoundHandle *handle, Audio::Mixer::SoundType type, byte volume);
 	void playSample(SoundSample &sample, bool loop, Audio::Mixer::SoundType type, byte volume);
 
 	Audio::Mixer *_mixer;

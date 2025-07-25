@@ -24,9 +24,11 @@
 #include "common/system.h"
 #include "common/keyboard.h"
 #include "common/textconsole.h"
+#include "common/path.h"
 
 #include "graphics/surface.h"
 #include "graphics/palette.h"
+#include "graphics/paletteman.h"
 #include "video/video_decoder.h"
 #include "video/smk_decoder.h"
 
@@ -34,6 +36,8 @@
 #include "kom/screen.h"
 #include "kom/sound.h"
 #include "kom/video_player.h"
+
+using Common::Path;
 
 namespace Kom {
 
@@ -66,7 +70,7 @@ void VideoPlayer::processEvents() {
 	}
 }
 
-bool VideoPlayer::playVideo(char *filename) {
+bool VideoPlayer::playVideo(const Path &filename) {
 	_skipVideo = false;
 	byte backupPalette[256 * 3];
 
@@ -74,35 +78,29 @@ bool VideoPlayer::playVideo(char *filename) {
 	_vm->_system->getPaletteManager()->grabPalette(backupPalette, 0, 256);
 
 	// Figure out which player to use, based on extension
-	int length = strlen(filename);
 
-	if (filename[length - 3] == 's' &&
-		filename[length - 2] == 'm' &&
-		filename[length - 1] == 'k') {
-
+	Common::String basename = filename.baseName();
+	if (basename.hasSuffix("smk")) {
 		_player = &_smk;
 
 		if (!_player->loadFile(filename))
-			error("Could not load video file: %s\n", filename);
+			error("Could not load video file: %s\n", filename.toString().c_str());
 
 	// Flic files have associated color set and audio files
 	} else {
 		_player = &_flic;
 
 		if (!_player->loadFile(filename))
-			error("Could not load video file: %s\n", filename);
+			error("Could not load video file: %s\n", filename.toString().c_str());
 
-		filename[length - 3] = 'c';
-		filename[length - 2] = 'l';
-		filename[length - 1] = '\0';
-		ColorSet *cs = new ColorSet(filename);
+		basename.chop(3);
+		Path filenameWithoutExt = filename.getParent().appendComponent(basename);
+
+		ColorSet *cs = new ColorSet(filenameWithoutExt.append("cl"));
 		_vm->screen()->useColorSet(cs, 0);
 		delete cs;
 
-		filename[length - 3] = 'r';
-		filename[length - 2] = 'a';
-		filename[length - 1] = 'w';
-		_vm->sound()->playFileSFX(filename, &_soundHandle);
+		_vm->sound()->playFileSFX(filenameWithoutExt.append("raw"), &_soundHandle);
 
 		_background = _vm->screen()->createZoomBlur(160, 100);
 	}
@@ -174,9 +172,9 @@ void VideoPlayer::processFrame() {
 	_vm->_system->delayMillis(_player->getTimeToNextFrame());
 }
 
-void VideoPlayer::loadTalkVideo(const char *filename, byte *background) {
+void VideoPlayer::loadTalkVideo(const Path &filename, byte *background) {
 	if (!_flic.loadFile(filename))
-		error("Could not load video file: %s\n", filename);
+		error("Could not load video file: %s\n", filename.toString().c_str());
 	_flic.start();
 	_background = background;
 }

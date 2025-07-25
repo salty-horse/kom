@@ -43,9 +43,9 @@ public:
 	VideoPlayer(KomEngine *vm);
 	~VideoPlayer() { }
 
-	bool playVideo(char *filename);
+	bool playVideo(const Common::Path &filename);
 
-	void loadTalkVideo(const char *filename, byte *background);
+	void loadTalkVideo(const Common::Path &filename, byte *background);
 	void drawTalkFrame(int frame);
 	void drawTalkFrameCycle();
 private:

@@ -26,6 +26,10 @@
 #include "common/array.h"
 #include "common/scummsys.h"
 
+namespace Common {
+class Path;
+}
+
 namespace Kom {
 
 struct Scope {
@@ -75,7 +79,8 @@ public:
 
 
 protected:
-	Actor(KomEngine *vm, const char *filename, bool isMouse = false);
+	Actor(KomEngine *vm, const Common::Path &filename, bool isMouse = false);
+	Actor(KomEngine *vm, const char *filename, bool isMouse = false) : Actor(vm, Common::Path(filename), isMouse) {}
 
 	int16 _framesNum;
 	byte _isPlayerControlled;
@@ -122,7 +127,8 @@ public:
 
 	ActorManager(KomEngine *vm);
 	~ActorManager();
-	int load(const char *filename);
+	int load(const Common::Path &filename);
+	int load(const char *filename) { return this->load(Common::Path(filename)); };
 	void loadExtras();
 	Actor *get(int idx) { return _actors[idx]; }
 	Actor *getMouse() { return _mouseActor; }

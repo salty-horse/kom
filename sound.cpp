@@ -26,6 +26,7 @@
 
 #include "common/file.h"
 #include "common/str.h"
+#include "common/path.h"
 #include "common/memstream.h"
 #include "common/endian.h"
 #include "common/ptr.h"
@@ -43,6 +44,7 @@
 
 using Common::File;
 using Common::String;
+using Common::Path;
 
 namespace Kom {
 
@@ -84,7 +86,7 @@ private:
 };
 
 
-bool SoundSample::loadFile(Common::String filename, bool isSpeech) {
+bool SoundSample::loadFile(const Path &filename, bool isSpeech) {
 	File f;
 	byte *data;
 	int size = 0;
@@ -92,15 +94,12 @@ bool SoundSample::loadFile(Common::String filename, bool isSpeech) {
 	unload();
 
 	// Check for archive file
-	String entry = lastPathComponent(filename, '/');
+	String entry = filename.getLastComponent().toString();
 	if ('1' <= entry[0] && entry[0] <= '9') {
 		entry.toUppercase();
 
 		// Construct new filename
-		String newName = filename;
-		while (newName.lastChar() != '/')
-			newName.deleteLastChar();
-		newName += "convall.dat";
+		Path newName = filename.getParent().appendComponent("convall.dat");
 
 		if (!f.open(newName))
 			return false;
@@ -120,14 +119,14 @@ bool SoundSample::loadFile(Common::String filename, bool isSpeech) {
 		}
 
 		if (!found) {
-			warning("Could not find %s in %s", entry.c_str(), newName.c_str());
+			warning("Could not find %s in %s", entry.c_str(), newName.toString().c_str());
 			delete[] contents;
 			return false;
 		}
 
 		int offset = READ_LE_UINT32(contents + i*22 + 14);
 		size = READ_LE_UINT32(contents + i*22 + 18);
-		debug(1, "file %s, entry %s, offset %d, size %d", newName.c_str(), entry.c_str(), offset, size);
+		debug(1, "file %s, entry %s, offset %d, size %d", newName.toString().c_str(), entry.c_str(), offset, size);
 		delete[] contents;
 
 		data = (byte *)malloc(size);
@@ -142,7 +141,7 @@ bool SoundSample::loadFile(Common::String filename, bool isSpeech) {
 		loadCompressed(f, 0, size);
 		f.close();
 	} else {
-		warning("Could not find sound sample %s", filename.c_str());
+		warning("Could not find sound sample %s", filename.toString().c_str());
 		return false;
 	}
 
@@ -218,11 +217,11 @@ Sound::Sound(Audio::Mixer *mixer)
 Sound::~Sound() {
 }
 
-bool Sound::playFileSFX(Common::String filename, SoundHandle *handle) {
+bool Sound::playFileSFX(const Path &filename, SoundHandle *handle) {
 	return playFile(filename, handle, Audio::Mixer::kSFXSoundType, 255);
 }
 
-bool Sound::playFileSpeech(Common::String filename, SoundHandle *handle) {
+bool Sound::playFileSpeech(const Path &filename, SoundHandle *handle) {
 	return playFile(filename, handle, Audio::Mixer::kSpeechSoundType, 255);
 }
 
@@ -238,7 +237,7 @@ void Sound::playSampleSpeech(SoundSample &sample) {
 	playSample(sample, false, Audio::Mixer::kSpeechSoundType, 255);
 }
 
-bool Sound::playFile(Common::String filename, SoundHandle *handle, Audio::Mixer::SoundType type, byte volume) {
+bool Sound::playFile(const Path &filename, SoundHandle *handle, Audio::Mixer::SoundType type, byte volume) {
 	File *f = new File();
 	Audio::SeekableAudioStream *stream;
 

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "common/file.h"
+#include "common/path.h"
 #include "common/array.h"
 #include "common/memstream.h"
 #include "common/textconsole.h"
@@ -35,6 +36,7 @@
 #include "kom/database.h"
 
 using Common::File;
+using Common::Path;
 using Common::MemoryReadStream;
 
 namespace Kom {
@@ -56,7 +58,7 @@ ActorManager::~ActorManager() {
 	delete _fightBarRActor;
 }
 
-int ActorManager::load(const char *filename) {
+int ActorManager::load(const Path &filename) {
 
 	Actor *act = new Actor(_vm, filename);
 
@@ -218,7 +220,7 @@ Actor *ActorManager::getFarthestActor() {
 	return maxActor;
 }
 
-Actor::Actor(KomEngine *vm, const char *filename, bool isMouse) : _vm(vm) {
+Actor::Actor(KomEngine *vm, const Path &filename, bool isMouse) : _vm(vm) {
 	File f;
 	char magicName[8];
 

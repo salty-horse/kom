@@ -31,12 +31,13 @@
 #include "common/random.h"
 #include "common/rect.h"
 #include "common/str.h"
+#include "common/path.h"
 #include "common/util.h"
 #include "common/textconsole.h"
 #include "engines/util.h"
 #include "graphics/cursorman.h"
 #include "graphics/surface.h"
-#include "graphics/palette.h"
+#include "graphics/paletteman.h"
 
 #include "kom/screen.h"
 #include "kom/kom.h"
@@ -54,10 +55,11 @@ using Common::File;
 using Common::List;
 using Common::Rect;
 using Common::String;
+using Common::Path;
 
 namespace Kom {
 
-ColorSet::ColorSet(const char *filename) {
+ColorSet::ColorSet(const Path &filename) {
 	File f;
 
 	if (!f.open(filename))
@@ -1372,7 +1374,7 @@ void Screen::updatePanelOnScreen(bool clearScreenFlag) {
 	_system->updateScreen();
 }
 
-void Screen::loadBackground(const String &filename) {
+void Screen::loadBackground(const Path &filename) {
 	_roomBackgroundFlic.close();
 	_roomBackgroundFlic.loadFile(filename);
 	_roomBackgroundFlic.start();
@@ -1417,7 +1419,7 @@ void Screen::drawTalkFrame(const Graphics::Surface *frame, const byte *backgroun
 	_fullRedraw = true;
 }
 
-void Screen::loadMask(const String &filename) {
+void Screen::loadMask(const Path &filename) {
 	_roomMaskFlic.loadFile(filename);
 	_roomMask = 0;
 	_roomMask = _roomMaskFlic.decodeNextFrame();

@@ -31,6 +31,7 @@
 class OSystem;
 
 namespace Common {
+struct Path;
 struct Rect;
 template<typename t_T> class List;
 }
@@ -56,7 +57,8 @@ enum {
 };
 
 struct ColorSet {
-	ColorSet(const char *filename);
+	ColorSet(const Common::Path &filename);
+	ColorSet(const char *filename): ColorSet(Common::Path(filename)) {}
 	~ColorSet();
 
 	uint size;
@@ -94,12 +96,12 @@ public:
 	void clearPanel();
 	void updatePanelOnScreen(bool clearScreenFlag);
 
-	void loadBackground(const Common::String &filename);
+	void loadBackground(const Common::Path &filename);
 	void updateBackground();
 	void drawBackground();
 	void pauseBackground(bool pause) { _roomBackgroundFlic.pauseVideo(pause); }
 	void drawTalkFrame(const Graphics::Surface *frame, const byte *background);
-	void loadMask(const Common::String &filename);
+	void loadMask(const Common::Path &filename);
 
 	void drawInventory(Inventory *inv);
 	void drawFightBars();
