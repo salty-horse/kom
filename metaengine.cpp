@@ -8,6 +8,7 @@
 #include "graphics/surface.h"
 #include "common/config-manager.h"
 #include "common/file.h"
+#include "common/path.h"
 
 #include "kom/kom.h"
 
@@ -19,15 +20,17 @@ public:
 		return "kom";
 	}
 
-	Common::Error createInstance(OSystem *syst, Engine **engine) override;
+	Common::Error createInstance(OSystem *syst, Engine **engine,
+	                             const DetectedGame &gameDescriptor, const void *metaEngineDescriptor) override;
 };
 
-Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine) {
-	Common::FSNode dir(ConfMan.get("path"));
+Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine,
+	const DetectedGame &gameDescriptor, const void *metaEngineDescriptor) {
+	Common::FSNode dir(ConfMan.getPath("path"));
 
 	// Unable to locate game data
 	if (!(dir.getChild("thidney.dsk").exists() || dir.getChild("shahron.dsk").exists())) {
-		warning("KOM: unable to locate game data at path '%s'", dir.getPath().c_str());
+		warning("KOM: unable to locate game data at path '%s'", dir.getPath().toString().c_str());
 		return Common::kNoGameDataFoundError;
 	}
 
