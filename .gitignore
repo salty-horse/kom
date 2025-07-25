@@ -1,3 +1,4 @@
 .deps
 libkom.a
 *.o
+*.dwo
