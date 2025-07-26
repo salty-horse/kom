@@ -343,11 +343,19 @@ void Input::checkKeys() {
 	while (eventMan->pollEvent(event)) {
 		switch (event.type) {
 		case Common::EVENT_KEYDOWN:
+			if (event.kbd.keycode == '1') {
+				_vm->game()->doActionPlayVideo("shar02s");
+				_vm->game()->doExternalAction("brightlight");
+			} else
+
 			if (event.kbd.hasFlags(Common::KBD_CTRL)) {
 				if (event.kbd.keycode == 'd') {
 					_debugMode = true;
-				}
-			} else {
+				} else if (event.kbd.keycode == 'a') {
+					_vm->screen()->pulseFade();
+				} else if (event.kbd.keycode == 'z') {
+					_vm->screen()->pulseFade(true);
+				}			} else {
 				_inKey = event.kbd.keycode;
 				switch (_inKey) {
 					case Common::KEYCODE_ESCAPE:
