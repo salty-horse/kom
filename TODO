@@ -1,5 +1,6 @@
 BUGS
 ====
+* Crash when dying (talking to dragon in mountain)
 * When leaving the treehouse, there's a glitch in the graphics
 * In the first room, thidney appears before the teleport animation (maybe
   having the welcoming screens can fix that)
@@ -44,6 +45,8 @@ BUGS
 
 MISSING FEATURES
 ================
+* Snow
+* External actions
 * Pause support, GMM - <http://wiki.scummvm.org/index.php/Advanced_Engine_Features#Improved_pause_support>
 * Switch to AdvancedDetector
 * Graphics transaction extension - <http://article.gmane.org/gmane.games.devel.scummvm/4619>
