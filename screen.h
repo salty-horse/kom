@@ -106,11 +106,14 @@ public:
 	void drawInventory(Inventory *inv);
 	void drawFightBars();
 
-	void useColorSet(ColorSet *cs, uint start);
+	void useColorSet(ColorSet *cs, uint start, bool applyImmediately = false);
 	void setPaletteColor(int index, const byte color[]);
 	void createSepia(bool shop);
 	void freeSepia();
 	void copySepia();
+	void backupPalette(byte palette[]);
+	void restorePalette(const byte palette[]);
+	void setPalette();
 
 	void setBrightness(uint16 brightness) { _newBrightness = brightness; }
 
@@ -135,6 +138,9 @@ public:
 
 	byte *createZoomBlur(int x, int y);
 
+	void fadeTo(uint16 target, uint16 speed);
+	void pulseFade(bool red = false);
+
 private:
 
 	void copyRectListToScreen(const Common::List<Common::Rect> *);
@@ -143,7 +149,8 @@ private:
 
 	void writeTextStyle(byte *buf, const char *text, uint8 startRow, uint16 startCol, uint8 color, bool isBackground);
 
-	void setPaletteBrightness();
+	void doFadeTo();
+	void updatePaletteWithBrightness();
 
 	void printIcon(Inventory *inv, int objNum, int mode);
 
@@ -163,15 +170,20 @@ private:
 	bool _fullRedraw;
 
 	byte *_sepiaScreen;
-	byte _backupPalette[256 * 4];
+	byte _sepiaBackupPalette[256 * 3];
 
 	ColorSet *_c0ColorSet;
 	ColorSet *_orangeColorSet;
 	ColorSet *_greenColorSet;
+	byte _palette[256 * 3];
 	bool _paletteChanged;
 
 	uint16 _currBrightness;
 	uint16 _newBrightness;
+	bool _isFading;
+	bool _pulseFadeRed;
+	uint16 _fadeTargetBrightness;
+	uint16 _fadeSpeed;
 
 	uint32 _lastFrameTime;
 

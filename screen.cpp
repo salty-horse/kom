@@ -78,9 +78,10 @@ ColorSet::~ColorSet() {
 
 Screen::Screen(KomEngine *vm, OSystem *system)
 	: _system(system), _vm(vm), _sepiaScreen(0),
-	  _fullRedraw(false), _paletteChanged(false), _newBrightness(256),
+	  _fullRedraw(false), _paletteChanged(false), _currBrightness(0), _newBrightness(256),
 	  _narratorScrollText(0), _narratorWord(0), _narratorTextSurface(0),
-	  _narratorScrollStatus(0) {
+	  _narratorScrollStatus(0), _isFading(false), _pulseFadeRed(false),
+	  _fadeTargetBrightness(256), _fadeSpeed(0) {
 
 	_lastFrameTime = 0;
 
@@ -665,18 +666,31 @@ void Screen::drawDirtyRects() {
 
 void Screen::gfxUpdate() {
 
-	narratorScrollUpdate();
+	if (_isFading) {
+		doFadeTo();
+	}
 
-	// TODO: set palette brightness
+	bool updatePalette = false;
+
+	if (_paletteChanged) {
+		updatePalette = true;
+	}
+
+	if (_newBrightness != 9999) {
+		_currBrightness = _newBrightness;
+		updatePalette = true;
+	}
+
+	if (updatePalette)
+		updatePaletteWithBrightness();
+
+	narratorScrollUpdate();
 
 	drawDirtyRects();
 
+
 	// FIXME: this shouldn't be called. doesn't allow long key presses
 	_vm->input()->resetInput();
-
-	if (_paletteChanged) {
-		_paletteChanged = false;
-	}
 
 	while (_system->getMillis() < _lastFrameTime + 41 /* 24 fps */) {
 		_vm->input()->checkKeys();
@@ -1062,39 +1076,99 @@ void Screen::drawActorFrameLine(byte *outBuffer, const int8 *rowData, uint16 len
 	}
 }
 
-void Screen::useColorSet(ColorSet *cs, uint start) {
+void Screen::useColorSet(ColorSet *cs, uint start, bool applyImmediately) {
 	static const byte black[] = { 0, 0, 0 };
 
-	_system->getPaletteManager()->setPalette(cs->data, start, cs->size);
+	if (applyImmediately) {
+		_system->getPaletteManager()->setPalette(cs->data, start, cs->size);
+		_system->getPaletteManager()->setPalette(black, 0, 1);
+		return;
+	}
+
+	memcpy(_palette + start * 3, cs->data, cs->size * 3);
 
 	// Index 0 is always black
-	_system->getPaletteManager()->setPalette(black, 0, 1);
+	memcpy(_palette, black, 3);
 
 	_paletteChanged = true;
 }
 
 void Screen::setPaletteColor(int index, const byte color[]) {
-	_system->getPaletteManager()->setPalette(color, index, 1);
-
+	memcpy(_palette + index * 3, color, 3);
 	_paletteChanged = true;
 }
 
-void Screen::setPaletteBrightness() {
+void Screen::backupPalette(byte palette[]) {
+	memcpy(palette, _palette, 256 * 3);
+}
+
+void Screen::restorePalette(const byte palette[]) {
+	memcpy(_palette, palette, 256 * 3);
+	_paletteChanged = true;
+}
+
+void Screen::fadeTo(uint16 target, uint16 speed) {
+	_fadeTargetBrightness = target;
+	_fadeSpeed = speed;
+	_isFading = true;
+}
+
+void Screen::pulseFade(bool red) {
+	_newBrightness = 341;
+	_currBrightness = 341;
+	_fadeTargetBrightness = 256;
+	_fadeSpeed = 4;
+	_isFading = true;
+	_pulseFadeRed = red;
+}
+
+void Screen::doFadeTo() {
+	if (_currBrightness == _fadeTargetBrightness) {
+		_isFading = false;
+		return;
+	}
+
+	if (_currBrightness > _fadeTargetBrightness) {
+		_currBrightness = MAX(_currBrightness - _fadeSpeed, (int)_fadeTargetBrightness);
+	} else {
+		_currBrightness = MIN(_currBrightness + _fadeSpeed, (int)_fadeTargetBrightness);
+	}
+	_newBrightness = _currBrightness;
+}
+
+void Screen::updatePaletteWithBrightness() {
 	byte newPalette[256 * 3];
 
-	_system->getPaletteManager()->grabPalette(newPalette, 0, 256);
+	_paletteChanged = false;
 
-	if (_currBrightness < 256) {
-
-		for (uint i = 0; i < 256 * 3; i++) {
-			newPalette[i] = newPalette[i] * _currBrightness / 256;
+	if (_currBrightness <= 256) {
+		if (_currBrightness == 256) {
+			_system->getPaletteManager()->setPalette(_palette, 0, 256);
+		} else {
+			for (uint i = 0; i < 256 * 3; i++) {
+				newPalette[i] = _palette[i] * _currBrightness / 256;
+			}
+			_system->getPaletteManager()->setPalette(newPalette, 0, 256);
 		}
 
-		_system->getPaletteManager()->setPalette(newPalette, 0, 256);
-		_paletteChanged = true;
 		_newBrightness = 9999;
 	} else {
-		warning("TODO: setPaletteBrightness");
+		uint16 mod = PALETTE_6BIT_TO_8BIT(_currBrightness - 256);
+		if (_pulseFadeRed) {
+			for (uint i = 0; i < 256 * 3; i++) {
+				newPalette[i] = MIN((uint16)_palette[i] + mod, 255);
+				i++;
+				newPalette[i] = MAX((uint16)_palette[i] - mod, 0);
+				i++;
+				newPalette[i] = MAX((uint16)_palette[i] - mod, 0);
+			}
+		} else {
+			for (uint i = 0; i < 256 * 3; i++) {
+				newPalette[i] = MIN((uint16)_palette[i] + mod, 255);
+			}
+		}
+		_newBrightness = 9999;
+		_system->getPaletteManager()->setPalette(newPalette, 0, 256);
 	}
 }
 
@@ -1108,11 +1182,11 @@ void Screen::createSepia(bool shop) {
 	Graphics::Surface *screen = _system->lockScreen();
 	assert(screen);
 
-	_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
+	_system->getPaletteManager()->grabPalette(_sepiaBackupPalette, 0, 256);
 
 	for (uint y = 0; y < ROOM_H; ++y) {
 		for (uint x = 0; x < SCREEN_W; ++x) {
-			byte *color = &_backupPalette[((uint8*)screen->getPixels())[y * SCREEN_W + x] * 3];
+			byte *color = &_sepiaBackupPalette[((uint8*)screen->getPixels())[y * SCREEN_W + x] * 3];
 
 			// FIXME: this does not produce the same shade as the original
 			_sepiaScreen[y * SCREEN_W + x] = ((color[0] + color[1] + color[2]) / 3 * 23 + 255 / 2) / 255 + 232;
@@ -1131,7 +1205,7 @@ void Screen::freeSepia() {
 
 	delete[] _sepiaScreen;
 	_sepiaScreen = 0;
-	_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+	_system->getPaletteManager()->setPalette(_sepiaBackupPalette, 0, 256);
 
 	_fullRedraw = true;
 }
@@ -1398,7 +1472,7 @@ void Screen::updateBackground() {
 
 			if (_roomBackgroundFlic.hasDirtyPalette()) {
 				const byte *flicPalette = _roomBackgroundFlic.getPalette();
-				_system->getPaletteManager()->setPalette(flicPalette + 128 * 3, 128, 128);
+				memcpy(_palette + 128 * 3, flicPalette + 128 * 3, 128 * 3);
 				_paletteChanged = true;
 			}
 		}

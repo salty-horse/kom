@@ -136,7 +136,7 @@ Lips::Lips(KomEngine *vm) : _vm(vm), _balrogFlic(vm) {
 	_exchangeString = NULL;
 
 	// Backup the palette
-	_vm->_system->getPaletteManager()->grabPalette(_backupPalette, 0, 256);
+	_vm->screen()->backupPalette(_backupPalette);
 }
 
 Lips::~Lips() {
@@ -147,8 +147,7 @@ Lips::~Lips() {
 	delete _otherFace;
 	delete[] _exchangeString;
 
-	// Restore the palette
-	_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+	_vm->screen()->restorePalette(_backupPalette);
 
 	// Clear screen. (Yes, this shouldn't be in a destructor).
 	// This is required because if a sprite cutscene is played directly after
@@ -297,8 +296,7 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			_vm->screen()->gfxUpdate();
 		}
 		if (_fullPalette || emotion != 3) {
-			// Restore palette
-			_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+			_vm->screen()->restorePalette(_backupPalette);
 		}
 		if (emotion == 3) {
 			// use narrator color set
@@ -322,10 +320,9 @@ void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char
 			loadSentence(_otherFace, sampleFilename);
 		}
 		if (_lastCharacter == 0) {
+			_vm->screen()->restorePalette(_backupPalette);
 			_vm->screen()->clearRoom();
 			_vm->screen()->gfxUpdate();
-			// Restore palette
-			_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
 		}
 
 		if (!_isBalrog &&
@@ -1138,8 +1135,9 @@ int Lips::showOptions(OptionLine *options) {
 
 	updateSentence(_playerFace);
 
-	if (_fullPalette || _multiFullPalette || _smackerPlayed)
-		_vm->_system->getPaletteManager()->setPalette(_backupPalette, 0, 256);
+	if (_fullPalette || _multiFullPalette || _smackerPlayed) {
+		_vm->screen()->restorePalette(_backupPalette);
+	}
 
 	_vm->screen()->useColorSet(_playerColorSet, 0);
 	_vm->input()->setMousePos(_vm->input()->getMouseX(), 0);

@@ -293,7 +293,7 @@ public:
 	Common::Array<RoomDoor> *getDoors() { return &_roomDoors; }
 	Spell *getSpell(int i) { return &_spells[i]; }
 
-private:
+//private:
 
 	OSystem *_system;
 	KomEngine *_vm;
