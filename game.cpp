@@ -1889,6 +1889,14 @@ int16 Game::doExternalAction(const char *action) {
 	} else if (strcmp(action, "crowdOFF") == 0) {
 		// Do nothing
 
+	} else if (strcmp(action, "brightlight") == 0) {
+		_vm->screen()->pulseFade();
+		_vm->screen()->gfxUpdate();
+
+	} else if (strcmp(action, "redsonja") == 0) {
+		_vm->screen()->pulseFade(/* red = */ true);
+		_vm->screen()->gfxUpdate();
+
 	} else {
 		warning("TODO: Unknown external action: %s", action);
 	}
@@ -3751,7 +3759,7 @@ void Game::doActionSetSpell(int16 target, int16 spellType) {
 		targetChar->_height = -0x5A0000;
 		break;
 	case 5: // Shield
-		warning("TODO: pulseFade");
+		_vm->screen()->pulseFade();
 		_player.colgateTimer = 20;
 		break;
 	case 9: // Airstrike

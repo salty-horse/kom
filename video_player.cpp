@@ -41,7 +41,7 @@ using Common::Path;
 
 namespace Kom {
 
-VideoPlayer::VideoPlayer(KomEngine *vm) : _vm(vm), 
+VideoPlayer::VideoPlayer(KomEngine *vm) : _vm(vm),
 	_smk(), _background(0) {
 	_eventMan = _vm->_system->getEventManager();
 }
@@ -75,7 +75,7 @@ bool VideoPlayer::playVideo(const Path &filename) {
 	byte backupPalette[256 * 3];
 
 	// Backup the palette
-	_vm->_system->getPaletteManager()->grabPalette(backupPalette, 0, 256);
+	_vm->screen()->backupPalette(backupPalette);
 
 	// Figure out which player to use, based on extension
 
@@ -97,7 +97,7 @@ bool VideoPlayer::playVideo(const Path &filename) {
 		Path filenameWithoutExt = filename.getParent().appendComponent(basename);
 
 		ColorSet *cs = new ColorSet(filenameWithoutExt.append("cl"));
-		_vm->screen()->useColorSet(cs, 0);
+		_vm->screen()->useColorSet(cs, 0, /* applyImmediately */ true);
 		delete cs;
 
 		_vm->sound()->playFileSFX(filenameWithoutExt.append("raw"), &_soundHandle);
@@ -129,7 +129,7 @@ bool VideoPlayer::playVideo(const Path &filename) {
 	_vm->_system->updateScreen();
 
 	// Restore the palette
-	_vm->_system->getPaletteManager()->setPalette(backupPalette, 0, 256);
+	_vm->screen()->restorePalette(backupPalette);
 
 	return true;
 }
