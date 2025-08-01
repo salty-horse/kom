@@ -560,7 +560,7 @@ void Character::setScopeX(int16 scope) {
 			_vm->actorMan()->unload(_actorId);
 			_actorId = -1;
 		}
-		_actorId = _vm->actorMan()->load(actorsDir.appendComponent("kom/actors/grave.act"));
+		_actorId = _vm->actorMan()->load(actorsDir / "kom/actors/grave.act");
 		act = _vm->actorMan()->get(_actorId);
 		act->enable(1);
 		act->defineScope(0, 0, 0, 0);
@@ -600,19 +600,19 @@ void Character::setScopeX(int16 scope) {
 
 			Common::sprintf_s(actorFilename, sizeof(actorFilename), "%s%d.act",
 					name.c_str(), _vm->game()->player()->isNight);
-			filename = spritesDir.appendComponent(prefix).appendComponent(actorFilename);
+			filename = spritesDir / prefix / actorFilename;
 
 			if (!Common::File::exists(filename)) {
 				actorFilename[strlen(actorFilename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
-				filename = filename.getParent().appendComponent(actorFilename);
+				filename = filename.getParent() / actorFilename;
 
 				if (!Common::File::exists(filename)) {
 					prefix[3] = '\0';
-					filename = spritesDir.appendComponent(prefix).appendComponent(actorFilename);
+					filename = spritesDir / prefix / actorFilename;
 
 					if (!Common::File::exists(filename)) {
 						actorFilename[strlen(actorFilename) - 5] = '0' + 1 - _vm->game()->player()->isNight;
-						filename = filename.getParent().appendComponent(actorFilename);
+						filename = filename.getParent() / actorFilename;
 					}
 				}
 			}
@@ -626,7 +626,7 @@ void Character::setScopeX(int16 scope) {
 
 				// play sample
 				if (_vm->game()->player()->spriteSample.
-						loadFile(spritesDir.appendComponent(prefix).appendComponent(name + '0' + ".raw")))
+						loadFile(spritesDir / prefix / (name + '0' + ".raw")))
 					_vm->sound()->playSampleSFX(_vm->game()->player()->spriteSample, false);
 			}
 
@@ -664,7 +664,7 @@ void Character::setScopeX(int16 scope) {
 			_actorId = -1;
 		}
 		_vm->panel()->showLoading(true);
-			_actorId = _vm->actorMan()->load(actorsDir.appendComponent("cabbage.act"));
+			_actorId = _vm->actorMan()->load(actorsDir / "cabbage.act");
 			act = _vm->actorMan()->get(_actorId);
 			act->enable(1);
 			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
@@ -701,7 +701,7 @@ void Character::setScopeX(int16 scope) {
 			_loadedScopeXtend = xtend;
 
 			_vm->panel()->showLoading(true);
-			_actorId = _vm->actorMan()->load(actorsDir.appendComponent(actorFilename));
+			_actorId = _vm->actorMan()->load(actorsDir / actorFilename);
 			_vm->actorMan()->get(_actorId)->enable(1);
 			_vm->panel()->showLoading(false);
 		}

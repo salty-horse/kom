@@ -99,7 +99,7 @@ bool SoundSample::loadFile(const Path &filename, bool isSpeech) {
 		entry.toUppercase();
 
 		// Construct new filename
-		Path newName = filename.getParent().appendComponent("convall.dat");
+		Path newName = filename.getParent() / "convall.dat";
 
 		if (!f.open(newName))
 			return false;

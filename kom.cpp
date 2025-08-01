@@ -126,19 +126,19 @@ Common::Error KomEngine::run() {
 	 */
 
 	// Load sound effects
-	static Path samplesDir("kom/samples/");
-	_ripSample.loadFile(samplesDir.appendComponent("rip.raw"));
-	_hotspotSample.loadFile(samplesDir.appendComponent("hotspot.raw"));
-	_doorsSample.loadFile(samplesDir.appendComponent("doors.raw"));
-	_clickSample.loadFile(samplesDir.appendComponent("mouse_l.raw"));
-	_swipeSample.loadFile(samplesDir.appendComponent("swipe.raw"));
-	_cashSample.loadFile(samplesDir.appendComponent("cash.raw"));
-	_loseItemSample.loadFile(samplesDir.appendComponent("loseitem.raw"));
-	_magicSample.loadFile(samplesDir.appendComponent("magic.raw"));
-	_fluffSample.loadFile(samplesDir.appendComponent("fluff.raw"));
-	_colgateSample.loadFile(samplesDir.appendComponent("colgate.raw"));
-	_colgateOffSample.loadFile(samplesDir.appendComponent("colgatof.raw"));
-	_fightSample.loadFile(samplesDir.appendComponent("fight.raw"));
+	static Path samplesDir("kom/samples");
+	_ripSample.loadFile(samplesDir / "rip.raw");
+	_hotspotSample.loadFile(samplesDir / "hotspot.raw");
+	_doorsSample.loadFile(samplesDir / "doors.raw");
+	_clickSample.loadFile(samplesDir / "mouse_l.raw");
+	_swipeSample.loadFile(samplesDir / "swipe.raw");
+	_cashSample.loadFile(samplesDir / "cash.raw");
+	_loseItemSample.loadFile(samplesDir / "loseitem.raw");
+	_magicSample.loadFile(samplesDir / "magic.raw");
+	_fluffSample.loadFile(samplesDir / "fluff.raw");
+	_colgateSample.loadFile(samplesDir / "colgate.raw");
+	_colgateOffSample.loadFile(samplesDir / "colgatof.raw");
+	_fightSample.loadFile(samplesDir / "fight.raw");
 
 	_game->player()->weaponSoundEffect = 8;
 	loadWeaponSample(_game->player()->weaponSoundEffect);
@@ -497,7 +497,7 @@ void KomEngine::ambientStart(int locId) {
 	} else if (musicId != _playingMusicId) {
 
 		Common::sprintf_s(musicIdStr, sizeof(musicIdStr), "amb%d.raw", musicId);
-		_ambientSample.loadFile(musicDir.appendComponent(musicIdStr));
+		_ambientSample.loadFile(musicDir / musicIdStr);
 		_sound->playSampleMusic(_ambientSample);
 
 		_playingMusicId = musicId;
@@ -522,7 +522,7 @@ void KomEngine::loadWeaponSample(int id) {
 		"BASEBAT", "BASEBAT", "CATTLE", "CHAINSAW", "MALLET",
 		"MALLET", "SABER", "SWORD", "FIGHT", "FIGHT"
 	};
-	_weaponSample.loadFile(Path("kom/samples/").appendComponent(weaponsTable[id]).append(".raw"));
+	_weaponSample.loadFile(Path("kom/samples") / String::format("%s.raw", weaponsTable[id]));
 }
 
 const byte KomEngine::_distanceVolumeTable[] = { 255, 115, 50, 20, 10, 0 };
