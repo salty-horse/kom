@@ -956,7 +956,8 @@ void Screen::drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 hei
 	_dirtyRects->push_back(Rect(MAX(0, xStart - 1), yStart, MIN((int)SCREEN_W, xStart + visibleWidth + 1), yStart + visibleHeight));
 }
 
-void Screen::drawActorFrame(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart) {
+void Screen::drawActorFrame(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
+		bool greyedOut) {
 
 	uint16 startLine = 0;
 	uint16 startCol = 0;
@@ -1003,7 +1004,9 @@ void Screen::drawActorFrame(const int8 *data, uint16 width, uint16 height, int16
 	uint8 sourceLine = startLine;
 	uint8 targetLine = yStart;
 
-	for (int i = 0; i < visibleHeight; i += 1) {
+	uint8 inc = greyedOut ? 2 : 1;
+
+	for (int i = 0; i < visibleHeight; i += inc) {
 		uint16 lineOffset = READ_LE_UINT16(data + sourceLine * 2);
 
 		uint16 targetPixel = targetLine * SCREEN_W + xStart;
@@ -1012,15 +1015,15 @@ void Screen::drawActorFrame(const int8 *data, uint16 width, uint16 height, int16
 		// Copy line to screen
 		uint8 sourcePixel = startCol;
 
-		for (int j = 0; j < visibleWidth; ++j) {
+		for (int j = 0; j < visibleWidth; j += inc) {
 			if (lineBuffer[sourcePixel] != 0)
 				_screenBuf[targetPixel] = lineBuffer[sourcePixel];
-			sourcePixel++;
-			targetPixel++;
+			sourcePixel += inc;
+			targetPixel += inc;
 		}
 
-		sourceLine++;
-		targetLine++;
+		sourceLine += inc;
+		targetLine += inc;
 	}
 
 	_dirtyRects->push_back(Rect(xStart, yStart, xStart + visibleWidth, yStart + visibleHeight));

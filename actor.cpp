@@ -382,12 +382,14 @@ void Actor::display() {
 		} else {
 			//debug("drawing actor: %s", _name.c_str());
 			switch (_effect) {
-			case 5:
-				warning("TODO: Grey-out effect");
-				// Fall-through to 4 for now
 			case 4:
 				_vm->screen()->drawActorFrame((int8 *)(_framesData + frameStream.pos()),
 					width, height, xStart, yStart);
+				break;
+			case 5:
+				// Used only when trying to cast Spell O' Kolagate Shield on another person
+				_vm->screen()->drawActorFrame((int8 *)(_framesData + frameStream.pos()),
+					width, height, xStart, yStart, /* greyed out */ true);
 				break;
 			case 0:
 				_vm->screen()->drawActorFrameScaled((int8 *)(_framesData + frameStream.pos()),

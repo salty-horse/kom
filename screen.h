@@ -84,7 +84,7 @@ public:
 			int16 xEnd, int16 yEnd, int maskDepth, bool invisible = false);
 	void drawActorFrameScaledAura(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,
 			int16 xEnd, int16 yEnd, int maskDepth);
-	void drawActorFrame(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart);
+	void drawActorFrame(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart, bool greyedOut = false);
 	void drawMouseFrame(const int8 *data, uint16 width, uint16 height, int16 xOffset, int16 yOffset);
 
 	void setMouseCursor(const byte *buf, uint w, uint h, int hotspotX, int hotspotY);
