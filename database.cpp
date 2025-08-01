@@ -82,7 +82,7 @@ void Database::init(Common::String databasePrefix) {
 		_pathPrefix = Path("install/db1/");
 
 	_convData = new File();
-	_convData->open(_pathPrefix.appendComponent("conv.bin"));
+	_convData->open(_pathPrefix / ("conv.bin"));
 
 	loadConvIndex();
 	loadNarratorIndex();
@@ -110,7 +110,7 @@ void Database::init(Common::String databasePrefix) {
 void Database::loadConvIndex() {
 	File f;
 
-	f.open(_pathPrefix.appendComponent("conv.idx"));
+	f.open(_pathPrefix / ("conv.idx"));
 	_convIndexLen = f.readUint32LE();
 	_convIndex = new byte[_convIndexLen * 24];
 	f.read(_convIndex, _convIndexLen * 24);
@@ -169,7 +169,7 @@ void Database::initLocations() {
 	File f;
 	Common::String line;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".loc"));
+	f.open(_pathPrefix / (_databasePrefix + ".loc"));
 
 	// Get number of entries in file
 	line = f.readLine();
@@ -215,7 +215,7 @@ void Database::initCharacters() {
 	File f;
 	Common::String line;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".chr"));
+	f.open(_pathPrefix / (_databasePrefix + ".chr"));
 
 	// Get number of entries in file
 	line = f.readLine();
@@ -312,7 +312,7 @@ void Database::initObjects() {
 	File f;
 	Common::String line;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".obs"));
+	f.open(_pathPrefix / (_databasePrefix + ".obs"));
 
 	// Get number of entries in file
 	line = f.readLine();
@@ -417,7 +417,7 @@ void Database::initEvents() {
 	File f;
 	Common::String line;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".box"));
+	f.open(_pathPrefix / (_databasePrefix + ".box"));
 
 	// Get number of entries in file
 	line = f.readLine();
@@ -479,7 +479,7 @@ void Database::initProcs() {
 	File f;
 	Common::String line;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".pro"));
+	f.open(_pathPrefix / (_databasePrefix + ".pro"));
 
 	line = f.readLine();
 	sscanf(line.c_str(), "%d", &_varSize);
@@ -715,20 +715,20 @@ void Database::initRoutes() {
 	int16 boxIndex = 0;
 	int32 parmIndex, parmData;
 
-	f.open(_pathPrefix.appendComponent("test0r.rou"));
+	f.open(_pathPrefix / "test0r.rou");
 	_routesSize = f.size();
 	_routes = new byte[_routesSize];
 	f.read(_routes, _routesSize);
 	f.close();
 
-	f.open(_pathPrefix.appendComponent("test0r.map"));
+	f.open(_pathPrefix / "test0r.map");
 	_mapSize = f.size();
 	_map = new byte[_mapSize];
 	f.read(_map, _mapSize);
 	f.close();
 
 	_locRoutes = new LocRoute[_locRoutesSize];
-	f.open(_pathPrefix.appendComponent("test0r.ked"));
+	f.open(_pathPrefix / "test0r.ked");
 
 	do {
 		line = f.readLine();
@@ -824,7 +824,7 @@ void Database::initScopes() {
 	// Temporary variables to bypass scanf's %hhu - not supported by ISO C++
 	uint16 tmp1, tmp2, tmp3;
 
-	f.open(_pathPrefix.appendComponent(_databasePrefix + ".scp"));
+	f.open(_pathPrefix / (_databasePrefix + ".scp"));
 	do {
 		line = f.readLine();
 	} while (line.empty());

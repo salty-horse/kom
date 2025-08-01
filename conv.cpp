@@ -197,7 +197,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 
 		_narrColorSet = new ColorSet("kom/conv/nartalk.cl");
 		byte *zoomSurface = _vm->screen()->createZoomBlur(char1ZoomX, char1ZoomY);
-		Path fnamePrefix = Path("kom/conv").appendComponent(playerCodename);
+		Path fnamePrefix = Path("kom/conv") / playerCodename;
 		_playerFace = new Face(_vm, fnamePrefix.append(".flc"), zoomSurface);
 		_playerColorSet = new ColorSet(fnamePrefix.append(".cl"));
 		_playerFace->assignLinks(fnamePrefix.append(".lnk"));
@@ -251,7 +251,7 @@ void Lips::init(Common::String playerCodename, Common::String otherCodename,
 }
 
 void Lips::doTalk(uint16 charId, int16 emotion, const char *filename, const char *text, int pitch) {
-	Path sampleFilename = _convDir.appendComponent(Common::String::format("%s.raw", filename));
+	Path sampleFilename = _convDir / Common::String::format("%s.raw", filename);
 
 	bool pitchSet = false;
 	if (text == NULL) {

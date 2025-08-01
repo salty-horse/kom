@@ -111,7 +111,7 @@ void Game::enterLocation(uint16 locId) {
 		_vm->ambientStart(locId);
 
 	Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%db.flc", locName.c_str(), loc->xtend + _player.isNight);
-	_vm->screen()->loadBackground(locDir.appendComponent(filenameBuf));
+	_vm->screen()->loadBackground(locDir / filenameBuf);
 
 	// TODO - init some other flic var
 	_vm->_flicLoaded = 2;
@@ -119,7 +119,7 @@ void Game::enterLocation(uint16 locId) {
 	filenameBuf[strlen(filenameBuf) - 6] = '0';
 	filenameBuf[strlen(filenameBuf) - 5] = 'm';
 	Video::FlicDecoder mask;
-	_vm->screen()->loadMask(locDir.appendComponent(filenameBuf));
+	_vm->screen()->loadMask(locDir / filenameBuf);
 
 	Database *db = _vm->database();
 
@@ -134,7 +134,7 @@ void Game::enterLocation(uint16 locId) {
 
 		if (obj->isSprite) {
 			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%d.act", obj->name, _player.isNight);
-			roomObj.actorId = _vm->actorMan()->load(locDir.appendComponent(filenameBuf));
+			roomObj.actorId = _vm->actorMan()->load(locDir / filenameBuf);
 			roomObj.priority = db->getBox(locId, obj->box)->priority;
 			Actor *act = _vm->actorMan()->get(roomObj.actorId);
 			act->defineScope(0, 0, act->getFramesNum() - 1, 0);
@@ -158,7 +158,7 @@ void Game::enterLocation(uint16 locId) {
 
 			Common::sprintf_s(filenameBuf, sizeof(filenameBuf), "%s%dd.act", exitName.c_str(),
 					loc->xtend + _player.isNight);
-			Path filename = locDir.appendComponent(filenameBuf);
+			Path filename = locDir / filenameBuf;
 
 			// The exit can have no door
 			if (!Common::File::exists(filename))

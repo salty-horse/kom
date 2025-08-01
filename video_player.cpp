@@ -94,7 +94,7 @@ bool VideoPlayer::playVideo(const Path &filename) {
 			error("Could not load video file: %s\n", filename.toString().c_str());
 
 		basename.chop(3);
-		Path filenameWithoutExt = filename.getParent().appendComponent(basename);
+		Path filenameWithoutExt = filename.getParent() / basename;
 
 		ColorSet *cs = new ColorSet(filenameWithoutExt.append("cl"));
 		_vm->screen()->useColorSet(cs, 0, /* applyImmediately */ true);
