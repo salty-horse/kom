@@ -3,7 +3,7 @@ BUGS
 * Crash when dying (talking to dragon in mountain)
 * When leaving the treehouse, there's a glitch in the graphics
 * In the first room, thidney appears before the teleport animation (maybe
-  having the welcoming screens can fix that)
+  having the welcoming screens can fix that). With the fade-in effect it's less visible, but still there.
 * Some actions (e.g. the donut) distinguish between a click and a "held" click.
   Maybe it should be implemented.
 * Clicking on items in the inventory does a "button press" effect that depends
