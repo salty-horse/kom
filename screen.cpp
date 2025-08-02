@@ -37,6 +37,7 @@
 #include "engines/util.h"
 #include "graphics/cursorman.h"
 #include "graphics/surface.h"
+#include "graphics/palette.h"
 #include "graphics/paletteman.h"
 
 #include "kom/screen.h"
@@ -1186,10 +1187,10 @@ void Screen::createSepia(bool shop) {
 	for (uint y = 0; y < ROOM_H; ++y) {
 		for (uint x = 0; x < SCREEN_W; ++x) {
 			byte *color = &_sepiaBackupPalette[((uint8*)screen->getPixels())[y * SCREEN_W + x] * 3];
-
-			// FIXME: this does not produce the same shade as the original
-			_sepiaScreen[y * SCREEN_W + x] = ((color[0] + color[1] + color[2]) / 3 * 23 + 255 / 2) / 255 + 232;
-			//_sepiaScreen[y * SCREEN_W + x] = (color[0] + color[1] + color[2]) / 12 + 232;
+			_sepiaScreen[y * SCREEN_W + x] =
+					(PALETTE_8BIT_TO_6BIT(color[0]) +
+					 PALETTE_8BIT_TO_6BIT(color[1]) +
+					 PALETTE_8BIT_TO_6BIT(color[2])) / 12 + 232;
 		}
 	}
 
