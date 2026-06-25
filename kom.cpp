@@ -87,6 +87,7 @@ Common::Error KomEngine::run() {
 	// ScummVM defaults to 4, KoM needs 5
 	SearchMan.remove(gameDataDir.getPath().toString());
 	SearchMan.addDirectory(gameDataDir, 0, 5);
+	SearchMan.addSubDirectoriesMatching(gameDataDir, "cd?", true, 1, 5);
 
 	_actorMan = new ActorManager(this);
 
