@@ -79,9 +79,10 @@ ColorSet::~ColorSet() {
 
 Screen::Screen(KomEngine *vm, OSystem *system)
 	: _system(system), _vm(vm), _sepiaScreen(0),
-	  _fullRedraw(false), _paletteChanged(false), _newBrightness(256),
+	  _fullRedraw(false), _paletteChanged(false), _currBrightness(0), _newBrightness(256),
 	  _narratorScrollText(0), _narratorWord(0), _narratorTextSurface(0),
-	  _narratorScrollStatus(0), _isFading(false) {
+	  _narratorScrollStatus(0), _isFading(false), _pulseFadeRed(false),
+	  _fadeTargetBrightness(256), _fadeSpeed(0) {
 
 	_lastFrameTime = 0;
 
