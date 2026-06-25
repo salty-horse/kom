@@ -32,6 +32,7 @@
 #include "common/platform.h"
 #include "common/str.h"
 
+#include "kom/detection.h"
 #include "kom/kom.h"
 
 #include "engines/metaengine.h"
@@ -86,20 +87,17 @@ Common::Error KomMetaEngineDetection::identifyGame(DetectedGame &game, const voi
 
 DetectedGames KomMetaEngineDetection::detectGames(const Common::FSList &fslist, uint32 /*skipADFlags*/, bool /*skipIncomplete*/) {
 	DetectedGames detectedGames;
-	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
-		if (!file->isDirectory()) {
-			const char *filename = file->getName().c_str();
 
-			if (0 == scumm_stricmp("thidney.dsk", filename) ||
-			    0 == scumm_stricmp("shahron.dsk", filename)) {
-				// Only 1 target ATM
-				DetectedGame game = DetectedGame(getName(), komSetting.gameId, komSetting.description, Common::EN_ANY, Common::kPlatformDOS);
-				game.gameSupportLevel = kUnstableGame;
-				detectedGames.push_back(game);
-				break;
-			}
+	for (Common::FSList::const_iterator file = fslist.begin(); file != fslist.end(); ++file) {
+		if ((!file->isDirectory() && Kom::isGameDataFile(file->getName())) ||
+		    (file->isDirectory() && file->getName().matchString("cd?", true) && Kom::containsGameData(*file))) {
+			DetectedGame game = DetectedGame(getName(), komSetting.gameId, komSetting.description, Common::EN_ANY, Common::kPlatformDOS);
+			game.gameSupportLevel = kUnstableGame;
+			detectedGames.push_back(game);
+			break;
 		}
 	}
+
 	return detectedGames;
 }
 

@@ -10,6 +10,7 @@
 #include "common/file.h"
 #include "common/path.h"
 
+#include "kom/detection.h"
 #include "kom/kom.h"
 
 class KomMetaEngine : public MetaEngine {
@@ -29,7 +30,7 @@ Common::Error KomMetaEngine::createInstance(OSystem *syst, Engine **engine,
 	Common::FSNode dir(ConfMan.getPath("path"));
 
 	// Unable to locate game data
-	if (!(dir.getChild("thidney.dsk").exists() || dir.getChild("shahron.dsk").exists())) {
+	if (!Kom::hasGameData(dir)) {
 		warning("KOM: unable to locate game data at path '%s'", dir.getPath().toString().c_str());
 		return Common::kNoGameDataFoundError;
 	}
