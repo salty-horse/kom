@@ -118,6 +118,7 @@ void KomEngine::configureCdSearch(uint8 selectedChar) {
 void KomEngine::setSelectedChar(uint8 selectedChar) {
 	_game->player()->selectedChar = selectedChar;
 	configureCdSearch(selectedChar);
+	_database->init(selectedChar == 0 ? "thid" : "shar");
 }
 
 Common::Error KomEngine::run() {
@@ -215,12 +216,6 @@ Common::Error KomEngine::run() {
 			_game->player()->selectedQuest = 0;
 
 			// TODO
-
-			if (_game->player()->selectedChar == 0) {
-				_database->init("thid");
-			} else {
-				_database->init("shar");
-			}
 
 			//TODO
 
