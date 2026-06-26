@@ -1830,22 +1830,22 @@ void Game::loopInterfaceCollide() {
 
 	} else if (_player.command == CMD_USE) {
 
-			if (_settings.collideChar >= 0 &&
-				_settings.collideCharZ < _settings.collideObjZ) {
+		if (_settings.collideChar >= 0 &&
+			_settings.collideCharZ < _settings.collideObjZ) {
 
-				_settings.overType = COLLIDE_CHAR;
-				_settings.overNum = _settings.collideChar;
-				_settings.mouseState = 3; // Hotspot
+			_settings.overType = COLLIDE_CHAR;
+			_settings.overNum = _settings.collideChar;
+			_settings.mouseState = 3; // Hotspot
 
-			} else if (_settings.collideObj >= 0) {
+		} else if (_settings.collideObj >= 0) {
 
-				_settings.overType = COLLIDE_OBJECT;
-				_settings.overNum = _settings.collideObj;
-				_settings.mouseState = 3; // Hotspot
+			_settings.overType = COLLIDE_OBJECT;
+			_settings.overNum = _settings.collideObj;
+			_settings.mouseState = 3; // Hotspot
 
-			} else {
-				_settings.mouseState = 0; // Walk
-			}
+		} else {
+			_settings.mouseState = 0; // Walk
+		}
 
 	} else if (_player.command == CMD_FIGHT ||
 			   _player.command == CMD_CAST_SPELL) {
