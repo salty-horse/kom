@@ -35,7 +35,7 @@
 
 namespace Kom {
 
-Input::Input(KomEngine *vm, OSystem *system) : _system(system), _vm(vm), _inKey(0), _debugMode(false),
+Input::Input(KomEngine *vm, OSystem *system) : _system(system), _vm(vm), _inKey(0), _debugMode(false), _showHotspots(false),
 	_mouseX(0), _mouseY(0), _leftClick(false), _rightClick(false) {
 }
 
@@ -346,17 +346,19 @@ void Input::checkKeys() {
 			if (event.kbd.hasFlags(Common::KBD_CTRL)) {
 				if (event.kbd.keycode == 'd') {
 					_debugMode = true;
+				} else if (event.kbd.keycode == 'h') {
+					_showHotspots = !_showHotspots;
 				}
-			} else {
-				_inKey = event.kbd.keycode;
-				switch (_inKey) {
-					case Common::KEYCODE_ESCAPE:
-						_vm->quitGame();
-						break;
-					default:
-						break;
+				} else {
+					_inKey = event.kbd.keycode;
+					switch (_inKey) {
+						case Common::KEYCODE_ESCAPE:
+							_vm->quitGame();
+							break;
+						default:
+							break;
+					}
 				}
-			}
 			break;
 
 		case Common::EVENT_MOUSEMOVE:

@@ -24,6 +24,7 @@
 #define KOM_ACTOR_H
 
 #include "common/array.h"
+#include "common/rect.h"
 #include "common/scummsys.h"
 
 namespace Common {
@@ -73,7 +74,10 @@ public:
 	int getXPos() { return _xPos; }
 	int getYPos() { return _yPos; }
 	int16 getFramesNum() { return _framesNum; }
-	bool inPos(int32 x, int32 y) {
+	Common::Rect getDisplayBounds() const {
+		return Common::Rect(_displayLeft, _displayTop, _displayRight + 1, _displayBottom + 1);
+	}
+	bool inPos(int32 x, int32 y) const {
 		return x >= _displayLeft && x <= _displayRight &&
 		       y >= _displayTop && y <= _displayBottom; }
 

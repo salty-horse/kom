@@ -44,6 +44,8 @@ namespace Kom {
 
 class Font;
 class KomEngine;
+class Actor;
+struct Box;
 struct Inventory;
 
 enum {
@@ -156,6 +158,10 @@ private:
 	void printIcon(Inventory *inv, int objNum, int mode);
 
 	void updateActionStrings();
+	void drawHotspotOverlay();
+	void drawHotspotBox(int locId, int boxId, bool highlighted);
+	void drawHotspotActor(const Actor *actor);
+	bool isScreenPointInHotspotBox(const Box *box, int x, int y) const;
 
 	OSystem *_system;
 	KomEngine *_vm;

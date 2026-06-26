@@ -617,6 +617,9 @@ void Screen::processGraphics(int mode, bool samplePlaying) {
 
 	updateActionStrings();
 
+	if (_vm->input()->showHotspots())
+		drawHotspotOverlay();
+
 	_vm->panel()->showLoading(false);
 	_vm->panel()->allowLoading();
 
@@ -2170,6 +2173,130 @@ void Screen::drawBox(byte *surface, int x, int y, int width, int height, byte co
 	byte *dest = surface + y * SCREEN_W + x;
 	for (int i = 0; i < height; i++)
 		memset(dest + i * SCREEN_W, color, width);
+}
+
+void Screen::drawHotspotOverlay() {
+	Character *playerChar = _vm->database()->getChar(0);
+	if (!playerChar || playerChar->_lastLocation <= 0)
+		return;
+
+	const int locId = playerChar->_lastLocation;
+	if (!_vm->database()->getLoc(locId))
+		return;
+
+	Settings *settings = _vm->game()->settings();
+
+	Exit *exits = _vm->database()->getExits(locId);
+	for (int i = 0; i < 6; ++i) {
+		if (exits[i].exit <= 0 || exits[i].exitLoc < 0)
+			continue;
+
+		drawHotspotBox(locId, exits[i].exit,
+				settings->overType == COLLIDE_BOX && settings->overNum == exits[i].exit);
+	}
+
+	Common::Array<RoomObject> *roomObjects = _vm->game()->getObjects();
+	for (uint i = 0; i < roomObjects->size(); ++i) {
+		const int objId = (*roomObjects)[i].objectId;
+		if (objId < 0)
+			continue;
+
+		Object *obj = _vm->database()->getObj(objId);
+		if (!obj || !obj->isVisible)
+			continue;
+
+		if ((*roomObjects)[i].actorId >= 0) {
+			drawHotspotActor(_vm->actorMan()->get((*roomObjects)[i].actorId));
+		} else {
+			drawHotspotBox(locId, obj->box,
+					settings->overType == COLLIDE_OBJECT && settings->overNum == objId);
+		}
+	}
+
+	for (int i = 1; i < _vm->database()->charactersNum(); ++i) {
+		Character *chr = _vm->database()->getChar(i);
+		if (!chr || chr->_lastLocation != locId || !chr->_isVisible || chr->_actorId < 0)
+			continue;
+
+		drawHotspotActor(_vm->actorMan()->get(chr->_actorId));
+	}
+}
+
+void Screen::drawHotspotBox(int locId, int boxId, bool highlighted) {
+	if (boxId < 0 || boxId >= 32)
+		return;
+
+	Box *box = _vm->database()->getBox(locId, boxId);
+	if (!box->enabled)
+		return;
+
+	const int left = CLIP(MIN(box->x1, box->x2) / 2, 0, SCREEN_W - 1);
+	const int right = CLIP(MAX(box->x1, box->x2) / 2, 0, SCREEN_W - 1);
+	const int top = CLIP(MIN(box->y1, box->y2) / 2, 0, ROOM_H - 1);
+	const int bottom = CLIP(MAX(box->y1, box->y2) / 2, 0, ROOM_H - 1);
+
+	if (right <= left || bottom <= top)
+		return;
+
+	(void)highlighted;
+	const byte color = 31;
+
+	for (int y = top; y <= bottom; ++y) {
+		for (int x = left; x <= right; ++x) {
+			if (!isScreenPointInHotspotBox(box, x, y))
+				continue;
+
+			if (isScreenPointInHotspotBox(box, x - 1, y) &&
+					isScreenPointInHotspotBox(box, x + 1, y) &&
+					isScreenPointInHotspotBox(box, x, y - 1) &&
+					isScreenPointInHotspotBox(box, x, y + 1))
+				continue;
+
+			_screenBuf[y * SCREEN_W + x] = color;
+		}
+	}
+
+	_dirtyRects->push_back(Rect(left, top, right + 1, bottom + 1));
+}
+
+void Screen::drawHotspotActor(const Actor *actor) {
+	if (!actor)
+		return;
+
+	Rect bounds = actor->getDisplayBounds();
+	bounds.clip(Rect(0, 0, SCREEN_W, ROOM_H));
+	if (!bounds.isValidRect() || bounds.isEmpty())
+		return;
+
+	for (int y = bounds.top; y < bounds.bottom; ++y) {
+		for (int x = bounds.left; x < bounds.right; ++x) {
+			if (!actor->inPos(x, y))
+				continue;
+
+			if (actor->inPos(x - 1, y) &&
+					actor->inPos(x + 1, y) &&
+					actor->inPos(x, y - 1) &&
+					actor->inPos(x, y + 1))
+				continue;
+
+			_screenBuf[y * SCREEN_W + x] = 31;
+		}
+	}
+
+	_dirtyRects->push_back(bounds);
+}
+
+bool Screen::isScreenPointInHotspotBox(const Box *box, int x, int y) const {
+	if (x < 0 || y < 0 || x >= SCREEN_W || y >= ROOM_H)
+		return false;
+
+	const int sourceX = x * 2;
+	const int sourceY = y * 2;
+
+	return sourceX >= MIN(box->x1, box->x2) &&
+			sourceX <= MAX(box->x1, box->x2) &&
+			sourceY >= MIN(box->y1, box->y2) &&
+			sourceY <= MAX(box->y1, box->y2);
 }
 
 byte *Screen::createZoomBlur(int x, int y) {

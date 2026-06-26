@@ -42,6 +42,7 @@ public:
 	void checkKeys();
 	bool debugMode() const { return _debugMode; }
 	void resetDebugMode() { _debugMode = false; }
+	bool showHotspots() const { return _showHotspots; }
 
 	uint16 getMouseX() const { return _mouseX; }
 	uint16 getMouseY() const { return _mouseY; }
@@ -58,6 +59,7 @@ private:
 
 	int _inKey;
 	bool _debugMode;
+	bool _showHotspots;
 	uint16 _mouseX, _mouseY;
 
 	bool _leftClick, _rightClick;
