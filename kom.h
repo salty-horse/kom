@@ -112,6 +112,7 @@ public:
 
 private:
 	void gameLoop();
+	void configureCdSearch(uint8 selectedChar);
 
 	Screen *_screen;
 	Database *_database;
