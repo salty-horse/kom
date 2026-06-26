@@ -86,6 +86,7 @@ public:
 	void ambientPause(bool paused) { _sound->pauseSample(_ambientSample, paused); }
 
 	void loadWeaponSample(int id);
+	void setSelectedChar(uint8 selectedChar);
 
 	uint8 _flicLoaded;
 

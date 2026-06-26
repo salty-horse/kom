@@ -115,6 +115,11 @@ void KomEngine::configureCdSearch(uint8 selectedChar) {
 		warning("KOM: unable to locate %s for selected character", cdName);
 }
 
+void KomEngine::setSelectedChar(uint8 selectedChar) {
+	_game->player()->selectedChar = selectedChar;
+	configureCdSearch(selectedChar);
+}
+
 Common::Error KomEngine::run() {
 
 	const Common::FSNode gameDataDir(ConfMan.getPath("path"));
@@ -206,11 +211,10 @@ Common::Error KomEngine::run() {
 
 			// TODO
 
-			_game->player()->selectedChar = 0;
+			setSelectedChar(1);
 			_game->player()->selectedQuest = 0;
 
 			// TODO
-			configureCdSearch(_game->player()->selectedChar);
 
 			if (_game->player()->selectedChar == 0) {
 				_database->init("thid");
