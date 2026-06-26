@@ -63,34 +63,36 @@ Game::~Game() {
 
 static char filenameBuf[100];
 
-static const int kRecruitmentRoomId = 45;
-static const int kRecruitmentCount = 7;
-static const int kRecruitmentAnimatedSlot = 1;
-static const int kRecruitmentAnimTicks = 26;
-
-static const char *const kRecruitmentCodenames[kRecruitmentCount] = {
-	"s28evs", "m13rog", "m17dwf", "m14gin", "m4cnrd", "m19tre", "m22bst"
+struct RecruitmentChar {
+	int8 charId;
+	int8 frames;
 };
 
-static const int16 kRecruitmentFrames[kRecruitmentCount] = {
-	2, 5, 4, 0, 1, 3, 18
+static const RecruitmentChar kRecruitmentChars[] = {
+	{57, 2}, // Elfis
+	{41, 5}, // Balrog
+	{21, 4}, // Goliath
+	{12, 0}, // Gingerbread Hero
+	{58, 1}, // Conrad the Barbarian
+	{60, 3}, // Tree Bloke
+	{46, 18}, // The Beastie
 };
 
 static void drawRecruitmentFrame(Screen *screen, OSystem *system, Actor *recruitActor,
 		const Graphics::Surface *roomFrame, const bool activeRecruitSlots[], uint16 animTick) {
 	screen->copyBackground(roomFrame);
 
-	for (int recruitIndex = 0; recruitIndex < kRecruitmentCount; ++recruitIndex) {
+	for (int recruitIndex = 0; recruitIndex < ARRAYSIZE(kRecruitmentChars); ++recruitIndex) {
 		if (!activeRecruitSlots[recruitIndex])
 			continue;
 
-		if (recruitIndex == kRecruitmentAnimatedSlot) {
-			recruitActor->setFrame(kRecruitmentFrames[recruitIndex] + animTick / 2);
+		if (recruitIndex == 1) {  // The balrog is animated
+			recruitActor->setFrame(kRecruitmentChars[recruitIndex].frames + animTick / 2);
 			recruitActor->setPos(-1, 183);
 			recruitActor->display();
 			recruitActor->setPos(0, 183);
 		} else {
-			recruitActor->setFrame(kRecruitmentFrames[recruitIndex]);
+			recruitActor->setFrame(kRecruitmentChars[recruitIndex].frames);
 			recruitActor->display();
 		}
 	}
@@ -100,7 +102,7 @@ static void drawRecruitmentFrame(Screen *screen, OSystem *system, Actor *recruit
 
 static void advanceRecruitmentAnim(uint16 &animTick) {
 	animTick++;
-	if (animTick >= kRecruitmentAnimTicks)
+	if (animTick >= 26)
 		animTick = 0;
 }
 
@@ -1950,20 +1952,15 @@ int16 Game::doExternalAction(const char *action) {
 }
 
 void Game::doRecruitmentScreen() {
-	bool activeRecruitSlots[kRecruitmentCount] = {};
+	static const int kRecruitmentRoomId = 45;
+	bool activeRecruitSlots[ARRAYSIZE(kRecruitmentChars)] = {};
 
-	for (int charId = 1; charId < _vm->database()->charactersNum() && charId < 100; ++charId) {
-		Character *chr = _vm->database()->getChar(charId);
+	for (int recruitIndex = 0; recruitIndex < ARRAYSIZE(kRecruitmentChars); ++recruitIndex) {
+		Character *chr = _vm->database()->getChar(kRecruitmentChars[recruitIndex].charId);
 		if (!chr || (chr->_locationId != kRecruitmentRoomId && chr->_lastLocation != kRecruitmentRoomId))
 			continue;
 
-		String charName(chr->_name);
-		for (int recruitIndex = 0; recruitIndex < kRecruitmentCount; ++recruitIndex) {
-			if (charName.equalsIgnoreCase(kRecruitmentCodenames[recruitIndex])) {
-				activeRecruitSlots[recruitIndex] = true;
-				break;
-			}
-		}
+		activeRecruitSlots[recruitIndex] = true;
 	}
 
 	FlicDecoder roomFlic;
