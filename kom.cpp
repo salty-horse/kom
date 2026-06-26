@@ -76,6 +76,15 @@ static Common::FSNode findCdDir(const Common::FSNode &gameDataDir, const Common:
 	return findChildDirIgnoreCase(gameDataDir.getParent(), cdName);
 }
 
+static uint8 getSelectedCharFromConfig() {
+	int selectedChar = ConfMan.getInt("boot_param");
+
+	if (selectedChar < 0 || selectedChar > 1)
+		error("KOM: invalid boot-param %d for selected character", selectedChar);
+
+	return selectedChar;
+}
+
 KomEngine::KomEngine(OSystem *system)
 	: Engine(system) {
 	_screen = 0;
@@ -212,7 +221,7 @@ Common::Error KomEngine::run() {
 
 			// TODO
 
-			setSelectedChar(1);
+			setSelectedChar(getSelectedCharFromConfig());
 			_game->player()->selectedQuest = 0;
 
 			// TODO
