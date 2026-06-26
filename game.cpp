@@ -34,7 +34,6 @@
 #include "common/list.h"
 #include "common/random.h"
 #include "video/flic_decoder.h"
-#include "graphics/surface.h"
 
 #include "kom/kom.h"
 #include "kom/actor.h"
@@ -77,21 +76,9 @@ static const int16 kRecruitmentFrames[kRecruitmentCount] = {
 	2, 5, 4, 0, 1, 3, 18
 };
 
-static void copyRecruitmentBackground(byte *screenBuf, const Graphics::Surface *surface) {
-	memset(screenBuf, 0, SCREEN_W * SCREEN_H);
-
-	if (!surface)
-		return;
-
-	const uint16 width = MIN<uint16>(surface->w, SCREEN_W);
-	const uint16 height = MIN<uint16>(surface->h, SCREEN_H);
-	for (uint16 y = 0; y < height; ++y)
-		memcpy(screenBuf + y * SCREEN_W, (const byte *)surface->getBasePtr(0, y), width);
-}
-
 static void drawRecruitmentFrame(Screen *screen, OSystem *system, Actor *recruitActor,
 		const Graphics::Surface *roomFrame, const bool activeRecruitSlots[], uint16 animTick) {
-	copyRecruitmentBackground(screen->screenBuf(), roomFrame);
+	screen->copyBackground(roomFrame);
 
 	for (int recruitIndex = 0; recruitIndex < kRecruitmentCount; ++recruitIndex) {
 		if (!activeRecruitSlots[recruitIndex])

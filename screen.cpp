@@ -726,6 +726,18 @@ void Screen::clearRoom() {
 	_dirtyRects->push_back(Rect(0, 0, SCREEN_W, SCREEN_H - PANEL_H));
 }
 
+void Screen::copyBackground(const Graphics::Surface *surface) {
+	memset(_screenBuf, 0, SCREEN_W * SCREEN_H);
+
+	if (!surface)
+		return;
+
+	const uint16 width = MIN<uint16>(surface->w, SCREEN_W);
+	const uint16 height = MIN<uint16>(surface->h, SCREEN_H);
+	for (uint16 y = 0; y < height; ++y)
+		memcpy(_screenBuf + y * SCREEN_W, (const byte *)surface->getBasePtr(0, y), width);
+}
+
 static byte lineBuffer[SCREEN_W];
 
 void Screen::drawActorFrameScaled(const int8 *data, uint16 width, uint16 height, int16 xStart, int16 yStart,

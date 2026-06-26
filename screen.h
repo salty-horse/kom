@@ -103,6 +103,7 @@ public:
 	void drawBackground();
 	void pauseBackground(bool pause) { _roomBackgroundFlic.pauseVideo(pause); }
 	void drawTalkFrame(const Graphics::Surface *frame, const byte *background);
+	void copyBackground(const Graphics::Surface *surface);
 	void loadMask(const Common::Path &filename);
 
 	void drawInventory(Inventory *inv);
