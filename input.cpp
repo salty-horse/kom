@@ -35,7 +35,7 @@
 
 namespace Kom {
 
-Input::Input(KomEngine *vm, OSystem *system) : _system(system), _vm(vm), _debugMode(false),
+Input::Input(KomEngine *vm, OSystem *system) : _system(system), _vm(vm), _inKey(0), _debugMode(false),
 	_mouseX(0), _mouseY(0), _leftClick(false), _rightClick(false) {
 }
 

@@ -139,6 +139,7 @@ public:
 	byte *createZoomBlur(int x, int y);
 
 	void fadeTo(uint16 target, uint16 speed);
+	bool isFading() const { return _isFading; }
 	void pulseFade(bool red = false);
 
 private:

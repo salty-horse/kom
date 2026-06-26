@@ -314,6 +314,7 @@ public:
 	bool doProc(int command, int type, int id, int type2, int id2);
 	void doNoUse();
 	int16 doExternalAction(const char *action);
+	void doRecruitmentScreen();
 	bool doActionCollide(int16 char1, int16 char2);
 
 	void doActionDusk();
@@ -328,4 +329,3 @@ public:
 } // End of namespace Kom
 
 #endif
-
