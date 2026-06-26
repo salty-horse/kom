@@ -101,6 +101,7 @@ public:
 	void drawBackground();
 	void pauseBackground(bool pause) { _roomBackgroundFlic.pauseVideo(pause); }
 	void drawTalkFrame(const Graphics::Surface *frame, const byte *background);
+	void copyBackground(const Graphics::Surface *surface);
 	void loadMask(const Common::Path &filename);
 
 	void drawInventory(Inventory *inv);
@@ -139,6 +140,7 @@ public:
 	byte *createZoomBlur(int x, int y);
 
 	void fadeTo(uint16 target, uint16 speed);
+	bool isFading() const { return _isFading; }
 	void pulseFade(bool red = false);
 
 private:

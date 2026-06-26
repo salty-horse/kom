@@ -30,6 +30,7 @@
 #include "common/util.h"
 #include "common/debug.h"
 #include "common/file.h"
+#include "common/keyboard.h"
 #include "common/list.h"
 #include "common/random.h"
 #include "video/flic_decoder.h"
@@ -61,6 +62,49 @@ Game::~Game() {
 }
 
 static char filenameBuf[100];
+
+struct RecruitmentChar {
+	int8 charId;
+	int8 frames;
+};
+
+static const RecruitmentChar kRecruitmentChars[] = {
+	{57, 2}, // Elfis
+	{41, 5}, // Balrog
+	{21, 4}, // Goliath
+	{12, 0}, // Gingerbread Hero
+	{58, 1}, // Conrad the Barbarian
+	{60, 3}, // Tree Bloke
+	{46, 18}, // The Beastie
+};
+
+static void drawRecruitmentFrame(Screen *screen, OSystem *system, Actor *recruitActor,
+		const Graphics::Surface *roomFrame, const bool activeRecruitSlots[], uint16 animTick) {
+	screen->copyBackground(roomFrame);
+
+	for (int recruitIndex = 0; recruitIndex < ARRAYSIZE(kRecruitmentChars); ++recruitIndex) {
+		if (!activeRecruitSlots[recruitIndex])
+			continue;
+
+		if (recruitIndex == 1) {  // The balrog is animated
+			recruitActor->setFrame(kRecruitmentChars[recruitIndex].frames + animTick / 2);
+			recruitActor->setPos(-1, 183);
+			recruitActor->display();
+			recruitActor->setPos(0, 183);
+		} else {
+			recruitActor->setFrame(kRecruitmentChars[recruitIndex].frames);
+			recruitActor->display();
+		}
+	}
+
+	system->copyRectToScreen(screen->screenBuf(), SCREEN_W, 0, 0, SCREEN_W, SCREEN_H);
+}
+
+static void advanceRecruitmentAnim(uint16 &animTick) {
+	animTick++;
+	if (animTick >= 26)
+		animTick = 0;
+}
 
 void Game::enterLocation(uint16 locId) {
 	_vm->panel()->setActionDesc("");
@@ -1861,7 +1905,10 @@ void Game::loopInterfaceCollide() {
 }
 
 int16 Game::doExternalAction(const char *action) {
-	if (strcmp(action, "getquest") == 0) {
+	if (strcmp(action, "recruit") == 0) {
+		doRecruitmentScreen();
+
+	} else if (strcmp(action, "getquest") == 0) {
 		return _player.selectedQuest;
 
 	} else if (strcmp(action, "sleepon") == 0) {
@@ -1902,6 +1949,83 @@ int16 Game::doExternalAction(const char *action) {
 	}
 
 	return 0;
+}
+
+void Game::doRecruitmentScreen() {
+	static const int kRecruitmentRoomId = 45;
+	bool activeRecruitSlots[ARRAYSIZE(kRecruitmentChars)] = {};
+
+	for (int recruitIndex = 0; recruitIndex < ARRAYSIZE(kRecruitmentChars); ++recruitIndex) {
+		Character *chr = _vm->database()->getChar(kRecruitmentChars[recruitIndex].charId);
+		if (!chr || (chr->_locationId != kRecruitmentRoomId && chr->_lastLocation != kRecruitmentRoomId))
+			continue;
+
+		activeRecruitSlots[recruitIndex] = true;
+	}
+
+	FlicDecoder roomFlic;
+	if (!roomFlic.loadFile(Path("kom/extras/REC_ROOM.FLC"))) {
+		warning("Could not load recruitment room background");
+		return;
+	}
+
+	roomFlic.start();
+	const Graphics::Surface *roomFrame = roomFlic.decodeNextFrame();
+	if (!roomFrame) {
+		warning("Could not decode recruitment room background");
+		roomFlic.close();
+		return;
+	}
+
+	int recCharActorId = _vm->actorMan()->load(Path("kom/extras/REC_CHAR.ACT"));
+	Actor *recCharActor = _vm->actorMan()->get(recCharActorId);
+	recCharActor->setEffect(4);
+	recCharActor->setPos(0, 183);
+
+	ColorSet recColorSet(Path("kom/extras/REC_COL.CL"));
+	byte backupPalette[256 * 3];
+	_vm->screen()->backupPalette(backupPalette);
+
+	bool cursorVisible = _vm->screen()->isCursorVisible();
+	_vm->screen()->showMouseCursor(false);
+	_vm->screen()->fadeTo(0, 16);
+	while (!_vm->shouldQuit() && _vm->screen()->isFading())
+		_vm->screen()->gfxUpdate();
+
+	const bool panelEnabled = _vm->panel()->isEnabled();
+	_vm->panel()->enable(false);
+	_vm->screen()->useColorSet(&recColorSet, 0);
+
+	_vm->input()->resetInput();
+	uint16 animTick = 0;
+	_vm->screen()->fadeTo(256, 16);
+	while (!_vm->shouldQuit()) {
+		drawRecruitmentFrame(_vm->screen(), _system, recCharActor, roomFrame, activeRecruitSlots, animTick);
+		advanceRecruitmentAnim(animTick);
+		_vm->screen()->gfxUpdate();
+
+		if (_vm->input()->getLeftClick() || _vm->input()->getRightClick() ||
+				_vm->input()->getKey() == Common::KEYCODE_SPACE)
+			break;
+		_vm->input()->resetInput();
+	}
+
+	_vm->screen()->fadeTo(0, 16);
+	while (!_vm->shouldQuit() && _vm->screen()->isFading()) {
+		drawRecruitmentFrame(_vm->screen(), _system, recCharActor, roomFrame, activeRecruitSlots, animTick);
+		advanceRecruitmentAnim(animTick);
+		_vm->screen()->gfxUpdate();
+	}
+
+	_vm->input()->resetInput();
+	_vm->screen()->showMouseCursor(cursorVisible);
+	_vm->panel()->enable(panelEnabled);
+	_vm->screen()->restorePalette(backupPalette);
+	_vm->screen()->setBrightness(256);
+	_vm->screen()->clearScreen(false);
+	_vm->screen()->gfxUpdate();
+	_vm->actorMan()->unload(recCharActorId);
+	roomFlic.close();
 }
 
 void Game::doActionDusk() {

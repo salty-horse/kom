@@ -47,8 +47,9 @@ public:
 	uint16 getMouseY() const { return _mouseY; }
 	bool getLeftClick() const { return _leftClick; }
 	bool getRightClick() const { return _rightClick; }
+	int getKey() const { return _inKey; }
 	void setMousePos(uint16 x, uint16 y);
-	void resetInput() { _leftClick = _rightClick = false; }
+	void resetInput() { _leftClick = _rightClick = false; _inKey = 0; }
 
 private:
 
