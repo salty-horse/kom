@@ -37,6 +37,7 @@ Debugger::Debugger(KomEngine *vm) : GUI::Debugger(), _vm(vm) {
 	registerCmd("room", WRAP_METHOD(Debugger, cmdRoom));
 	registerCmd("give", WRAP_METHOD(Debugger, cmdGive));
 	registerCmd("proc", WRAP_METHOD(Debugger, cmdProc));
+	registerCmd("movechar", WRAP_METHOD(Debugger, cmdMoveChar));
 	registerCmd("day", WRAP_METHOD(Debugger, cmdDay));
 	registerCmd("night", WRAP_METHOD(Debugger, cmdNight));
 	registerCmd("gold", WRAP_METHOD(Debugger, cmdGold));
@@ -103,6 +104,28 @@ bool Debugger::cmdProc(int argc, const char **argv) {
 		}
 	}
 	return true;
+}
+
+bool Debugger::cmdMoveChar(int argc, const char **argv) {
+	if (argc != 4) {
+		debugPrintf("Usage: movechar <charId> <loc> <box>\n");
+		return true;
+	}
+
+	int charId = atoi(argv[1]);
+	int loc = atoi(argv[2]);
+	int box = atoi(argv[3]);
+	Character *chr = _vm->database()->getChar(charId);
+	if (chr == NULL) {
+		debugPrintf("No such character: %d\n", charId);
+		return true;
+	}
+
+	_vm->database()->setCharPos(charId, loc, box);
+	_vm->game()->doActionMoveChar(charId, loc, box);
+	chr->_destLoc = -4;
+	chr->_destBox = -4;
+	return false;
 }
 
 bool Debugger::cmdDay(int argc, const char **argv) {

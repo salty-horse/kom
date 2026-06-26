@@ -38,6 +38,7 @@ protected:
 	bool cmdRoom(int argc, const char **argv);
 	bool cmdGive(int argc, const char **argv);
 	bool cmdProc(int argc, const char **argv);
+	bool cmdMoveChar(int argc, const char **argv);
 	bool cmdDay(int argc, const char **argv);
 	bool cmdNight(int argc, const char **argv);
 	bool cmdGold(int argc, const char **argv);
