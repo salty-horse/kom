@@ -52,6 +52,30 @@ using Common::Path;
 
 namespace Kom {
 
+static Common::FSNode findChildDirIgnoreCase(const Common::FSNode &dir, const Common::String &name) {
+	Common::FSList children;
+	if (!dir.isDirectory() || !dir.getChildren(children, Common::FSNode::kListDirectoriesOnly))
+		return Common::FSNode();
+
+	for (Common::FSList::const_iterator child = children.begin(); child != children.end(); ++child) {
+		if (child->getName().equalsIgnoreCase(name))
+			return *child;
+	}
+
+	return Common::FSNode();
+}
+
+static Common::FSNode findCdDir(const Common::FSNode &gameDataDir, const Common::String &cdName) {
+	if (gameDataDir.getName().equalsIgnoreCase(cdName))
+		return gameDataDir;
+
+	Common::FSNode cdDir = findChildDirIgnoreCase(gameDataDir, cdName);
+	if (cdDir.exists())
+		return cdDir;
+
+	return findChildDirIgnoreCase(gameDataDir.getParent(), cdName);
+}
+
 KomEngine::KomEngine(OSystem *system)
 	: Engine(system) {
 	_screen = 0;
@@ -77,6 +101,18 @@ KomEngine::~KomEngine() {
 	delete _game;
 
 	delete _rnd;
+}
+
+void KomEngine::configureCdSearch(uint8 selectedChar) {
+	const Common::FSNode gameDataDir(ConfMan.getPath("path"));
+	const char *cdName = selectedChar == 0 ? "cd1" : "cd2";
+	Common::FSNode cdDir = findCdDir(gameDataDir, cdName);
+
+	SearchMan.remove("kom-current-cd");
+	if (cdDir.exists())
+		SearchMan.addDirectory("kom-current-cd", cdDir, 2, 5);
+	else
+		warning("KOM: unable to locate %s for selected character", cdName);
 }
 
 Common::Error KomEngine::run() {
@@ -174,6 +210,7 @@ Common::Error KomEngine::run() {
 			_game->player()->selectedQuest = 0;
 
 			// TODO
+			configureCdSearch(_game->player()->selectedChar);
 
 			if (_game->player()->selectedChar == 0) {
 				_database->init("thid");
